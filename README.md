@@ -11,12 +11,14 @@ Compile and Build
 Add the dependent include directories.<br/>
 "Project Properties" => "C/C++ Gerneral" =>"Paths and Symbols"<br/>
 => "Includes" => "GNU C++" => Add"."<br/>
+Build "src" project, generator libsrc.so in Debug directory.<br/>
     
 Run Example
 --------------------
 Import a example in "TimePass/example".<br/>
 "Project Properties" => "C/C++ Gerneral" => "Paths and Symbols" =>"Includes" => "GNU C++" => Add"../../src" => "Libraries" => Add "pthread", "src", "rt" => "Libraries Paths" => "../../src/Debug"<br/>
 Building project is OK, but Running project will be fault, it shows "can't find libsrc.so". edit /etc/ld.so.conf with root mode, and add "libsrc.so" file's path.<br/>
+Build example project, gernerate executable file.<br/>
     
 Contact Me
 -------------------
