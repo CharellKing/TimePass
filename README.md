@@ -1,9 +1,10 @@
 TimePass-For-Eclipse
 ====================
-TimePass includes tree parts: "shm", "lock", "model", "time".<br/>
+TimePass includes four parts: "shm", "lock", "model", "time".<br/>
 The "shm" part is about some container which imitates STL and bases on shared memory (ShmArray, ShmList, ShmDoublyList, ShmQueue, ShmSet, ShmMultiset, ShmMap, ShmMultimap, ShmHashlist, ShmHashset, ShmHashmap, ShmHashmultimap, ShmHashmultiset).<br/>
 The "lock" part implements some locks, the lock's sorts are thread's lock which is implemented by sem and process'lock which is implemented by mutex(FileLock, Mutex, SemMutex, RWMutex, RWSem).<br/>
-The "model" mainly implements the producer-consumer problem between threads and process.
+The "model" mainly implements the producer-consumer problem between threads and process.<br/>
+The "time" has a timer which sets your program to do some actions at a interval time and a time to calculate your program's running time. <br/>
 TimePass is based on GPL license.<br/>
 
 Compile and Build
