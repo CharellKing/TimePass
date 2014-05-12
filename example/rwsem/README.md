@@ -30,8 +30,10 @@ read data <br/>
 
 initialization:</br>
      ./rwsem -c 1024
+
 in a terminal write datas:</br>
      ./rwsem -w
+
 in other terminal read datas:</br>
      ./rwsem -r
 
