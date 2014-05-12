@@ -12,28 +12,30 @@ Run executable file
 ---------------------------------------
 The executable file is in Debug directory. The read thread reads datas from a queue and the write thread write datas to the same queue <br/>
 
-show help <br/>    
+### show help <br/>    
      ./rwsem -h      
 
-create sem and queue <br/>
+### create sem and queue <br/>
      ./rwsem -c [size]
 
-destroy sem and queue <br/>
+### destroy sem and queue <br/>
      ./rwsem -d
 
-write data <br/>
+### write data <br/>
      ./rwsem -w
 
-read data <br/>
+### read data <br/>
      ./rwsem -r
 
 
-initialization:</br>
+executable example
+----------------------------------------
+### initialization
      ./rwsem -c 1024
 
-in a terminal write datas:</br>
+### in a terminal write datas
      ./rwsem -w
 
-in other terminal read datas:</br>
+### in other terminal read datas
      ./rwsem -r
 
