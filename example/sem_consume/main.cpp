@@ -16,12 +16,10 @@
 
 #define MAX_THREAD 100
 
+#define PREFIX_NAME "sem_consume_"
 
 bool Create(size_t capacity) {
-    MyProduceConsume pro_con("mutex_name",
-                             "empty_name",
-                             "stored_name",
-                             "queue_name");
+    MyProduceConsume pro_con(PREFIX_NAME);
 
     MyCondParam cond_param;
     cond_param.max = 100000000;
@@ -29,18 +27,12 @@ bool Create(size_t capacity) {
 }
 
 bool Destroy() {
-    MyProduceConsume pro_con("mutex_name",
-                             "empty_name",
-                             "stored_name",
-                             "queue_name");
+    MyProduceConsume pro_con(PREFIX_NAME);
     return pro_con.Destroy();
 }
 
 bool Produce(int thread_num) {
-    MyProduceConsume pro_con("mutex_name",
-                             "empty_name",
-                             "stored_name",
-                             "queue_name");
+    MyProduceConsume pro_con(PREFIX_NAME);
     if (false == pro_con.Open()) {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return false;
@@ -66,10 +58,7 @@ bool Produce(int thread_num) {
 
 
 bool Consume() {
-    MyProduceConsume pro_con("mutex_name",
-                             "empty_name",
-                             "stored_name",
-                             "queue_name");
+    MyProduceConsume pro_con(PREFIX_NAME);
     if (false == pro_con.Open()) {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return false;

@@ -75,7 +75,7 @@ class SemProduceConsume {
         }
 
         /*创建Queue*/
-        if (false == p_queue_->CreateShm(queue_capacity)) {
+        if (false == p_queue_->Create(queue_capacity)) {
             ret = false;
             goto _ERROR;
         }
@@ -106,7 +106,7 @@ class SemProduceConsume {
             ret = false;
         }
 
-        if (false == p_queue_->DestroyShm()) {
+        if (false == p_queue_->Destroy()) {
             ret = false;
         }
 
@@ -132,7 +132,7 @@ class SemProduceConsume {
             goto _ERROR;
         }
 
-        if (false == p_queue_->AttachShm()) {
+        if (false == p_queue_->Open()) {
             ret = false;
             goto _ERROR;
         }
@@ -161,7 +161,7 @@ class SemProduceConsume {
             ret = false;
         }
 
-        if (false == p_queue_->DetachShm()) {
+        if (false == p_queue_->Close()) {
             ret = false;
         }
 

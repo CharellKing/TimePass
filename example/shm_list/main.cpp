@@ -49,14 +49,14 @@ void ToDotPs(const char* name, const TimePass::ShmList<int>* p_l) {
 
 void Create(off_t len) {
     TimePass::ShmList<int> numbers(SHM_FILE);
-    if (false == numbers.CreateShm(len)) {
+    if (false == numbers.Create(len)) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
 
 void Destroy() {
     TimePass::ShmList<int> numbers(SHM_FILE);
-    if (false == numbers.DestroyShm()) {
+    if (false == numbers.Destroy()) {
         printf("errmsg=%s\n",
             TimePass::Error::GetLastErrmsg().c_str());
     }
@@ -64,7 +64,7 @@ void Destroy() {
 
 void Write() {
     TimePass::ShmList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n",
             TimePass::Error::GetLastErrmsg().c_str());
         return;
@@ -89,7 +89,7 @@ void Write() {
 
 void Remove() {
     TimePass::ShmList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -115,7 +115,7 @@ void Remove() {
 
 void Read() {
     TimePass::ShmList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n",
             TimePass::Error::GetLastErrmsg().c_str());
         return;
@@ -130,7 +130,7 @@ void Read() {
 
 void Show() {
     TimePass::ShmList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n",
             TimePass::Error::GetLastErrmsg().c_str());
         return;
@@ -140,7 +140,7 @@ void Show() {
 
 void Clear() {
     TimePass::ShmList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -150,7 +150,7 @@ void Clear() {
 
 void About() {
     TimePass::ShmList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -162,7 +162,7 @@ void About() {
 
 void Optimize() {
     TimePass::ShmList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n",
             TimePass::Error::GetLastErrmsg().c_str());
         return;

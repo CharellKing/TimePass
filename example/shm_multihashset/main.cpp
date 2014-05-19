@@ -63,21 +63,21 @@ void ToDotPs(const char* name, const TimePass::ShmMultihashset<Month>* p_l) {
 
 void Create(off_t len) {
     TimePass::ShmMultihashset<Month> months("/tmp/multihashset");
-    if (false == months.CreateShm(len)) {
+    if (false == months.Create(len)) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
 
 void Destroy() {
     TimePass::ShmMultihashset<Month> months("/tmp/multihashset");
-    if (false == months.DestroyShm()) {
+    if (false == months.Destroy()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
 
 void Insert() {
     TimePass::ShmMultihashset<Month> months("/tmp/multihashset");
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -88,7 +88,7 @@ void Insert() {
 
 void Remove() {
     TimePass::ShmMultihashset<Month> months("/tmp/multihashset");
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -102,7 +102,7 @@ void Remove() {
 
 void Show() {
     TimePass::ShmMultihashset<Month> months("/tmp/multihashset");
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -111,7 +111,7 @@ void Show() {
 
 void Clear() {
     TimePass::ShmMultihashset<Month> months("/tmp/multihashset");
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }

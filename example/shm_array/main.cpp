@@ -48,17 +48,17 @@ off_t Convert(const char* digit) {
 
 void Create(off_t len) {
     TimePass::ShmArray<int> numbers(SHM_FILE);
-    if (false == numbers.CreateShm(len)) {
+    if (false == numbers.Create(len)) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
 
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Destroy() {
     TimePass::ShmArray<int> numbers(SHM_FILE);
-    if (false == numbers.DestroyShm()) {
+    if (false == numbers.Destroy()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
@@ -66,7 +66,7 @@ void Destroy() {
 void Write() {
     int method = 0;
     TimePass::ShmArray<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -96,13 +96,13 @@ void Write() {
         printf("%d ", number);
     }
     printf("共插入数据的条数%d\n", count);
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Remove() {
     int method = 0;
     TimePass::ShmArray<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -129,12 +129,12 @@ void Remove() {
         }
     }
     printf("共插入删除的条数%d\n", count);
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Read() {
     TimePass::ShmArray<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -142,32 +142,32 @@ void Read() {
         printf("%d ", *numbers.At(i));
     }
     printf("\n");
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Show() {
     TimePass::ShmArray<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
     ToDotPs("array", &numbers);
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Clear() {
     TimePass::ShmArray<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
     numbers.Clear();
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void About() {
     TimePass::ShmArray<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -176,12 +176,12 @@ void About() {
            numbers.Name(),
            numbers.Capacity(), numbers.Size(),
            numbers.TotalSize(), numbers.UsedSize());
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Optimize() {
     TimePass::ShmArray<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -189,7 +189,7 @@ void Optimize() {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Usage() {

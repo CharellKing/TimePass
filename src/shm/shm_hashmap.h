@@ -31,20 +31,20 @@ class ShmHashmap{
     }
 
     /*创建共享内存*/
-    bool CreateShm(off_t capacity) {
-        return MAP_TREE::CreateShm(&p_head_, &p_ext_, &p_bucket_,
+    bool Create(off_t capacity) {
+        return MAP_TREE::Create(&p_head_, &p_ext_, &p_bucket_,
                                    &p_addr_, capacity, name_);
     }
 
     /*加载共享内存*/
-    bool AttachShm(bool is_readonly = false) {
-        return MAP_TREE::AttachShm(&p_head_, &p_ext_, &p_bucket_,
+    bool Open(bool is_readonly = false) {
+        return MAP_TREE::Open(&p_head_, &p_ext_, &p_bucket_,
                                    &p_addr_, name_, is_readonly);
     }
 
     /*删除共享内存*/
-    bool DestroyShm() {
-        return ShmBase::DestroyShm(name_);
+    bool Destroy() {
+        return ShmBase::Destroy(name_);
     }
 
     /*获取数据个数*/

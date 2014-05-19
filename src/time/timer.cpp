@@ -17,7 +17,7 @@
 #include"global/errno.h"
 
 namespace TimePass {
-struct itimerval Timer::timer_val_ = {1, 0, 1, 0};
+struct itimerval Timer::timer_val_ = {{1, 0}, {1, 0}};
 
 /*actions集合, key为action_id*/
 std::map<int, Action*> Timer::actions_;

@@ -66,21 +66,21 @@ void ToDotPs(const char* name, const TimePass::ShmHashlist<Month>* p_l) {
 
 void Create(off_t len) {
     TimePass::ShmHashlist<Month> months(SHM_FILE);
-    if (false == months.CreateShm(len)) {
+    if (false == months.Create(len)) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
 
 void Destroy() {
     TimePass::ShmHashlist<Month> months(SHM_FILE);
-    if (false == months.DestroyShm()) {
+    if (false == months.Destroy()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
 
 void Insert() {
     TimePass::ShmHashlist<Month> months(SHM_FILE);
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -91,7 +91,7 @@ void Insert() {
 
 void Remove() {
     TimePass::ShmHashlist<Month> months(SHM_FILE);
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -105,7 +105,7 @@ void Remove() {
 
 void Read() {
     TimePass::ShmHashlist<Month> months(SHM_FILE);
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -120,7 +120,7 @@ void Read() {
 
 void Show() {
     TimePass::ShmHashlist<Month> months(SHM_FILE);
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -129,7 +129,7 @@ void Show() {
 
 void Clear() {
     TimePass::ShmHashlist<Month> months(SHM_FILE);
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -138,7 +138,7 @@ void Clear() {
 
 void Find(const char* t_month) {
     TimePass::ShmHashlist<Month> months(SHM_FILE);
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }

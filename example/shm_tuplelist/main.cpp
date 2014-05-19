@@ -49,15 +49,15 @@ void ToDotPs(const char* name, const TimePass::ShmTupleList<int>* p_l) {
 
 void Create(off_t tuple_amount, off_t len) {
     TimePass::ShmTupleList<int> numbers(SHM_FILE);
-    if (false == numbers.CreateShm(tuple_amount, len)) {
+    if (false == numbers.Create(tuple_amount, len)) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Destroy() {
     TimePass::ShmTupleList<int> numbers(SHM_FILE);
-    if (false == numbers.DestroyShm()) {
+    if (false == numbers.Destroy()) {
         printf("errmsg=%s\n",
             TimePass::Error::GetLastErrmsg().c_str());
     }
@@ -65,7 +65,7 @@ void Destroy() {
 
 void Write() {
     TimePass::ShmTupleList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n",
             TimePass::Error::GetLastErrmsg().c_str());
         return;
@@ -88,12 +88,12 @@ void Write() {
         printf("number = %ld size = %ld\n", number, numbers.Size());
     }
     printf("共插入数据的条数%ld\n", count);
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Remove() {
     TimePass::ShmTupleList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -120,12 +120,12 @@ void Remove() {
         printf("number = %d size = %ld\n", p_ret->data, numbers.Size());
     }
     printf("共删除数据的条数%d\n", count);
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Read() {
     TimePass::ShmTupleList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n",
             TimePass::Error::GetLastErrmsg().c_str());
         return;
@@ -140,34 +140,34 @@ void Read() {
         }
         putchar('\n');
     }
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Show() {
     TimePass::ShmTupleList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n",
             TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
     ToDotPs("list", &numbers);
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Clear() {
     TimePass::ShmTupleList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
     numbers.Clear();
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 
 void About() {
     TimePass::ShmTupleList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -175,12 +175,12 @@ void About() {
            "total_size = %ld, used_size = %ld\n",
            numbers.Name(), numbers.Capacity(),
            numbers.Size(), numbers.TotalBytes(), numbers.UsedBytes());
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Optimize() {
     TimePass::ShmTupleList<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n",
             TimePass::Error::GetLastErrmsg().c_str());
         return;

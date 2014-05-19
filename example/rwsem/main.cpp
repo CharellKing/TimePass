@@ -62,7 +62,7 @@ void Create(off_t capacity) {
         return;
     }
 
-    if (false == array.CreateShm(capacity)) {
+    if (false == array.Create(capacity)) {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
         rwsem.Destroy();
     }
@@ -77,7 +77,7 @@ void Destroy() {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 
-    if (false == array.DestroyShm()) {
+    if (false == array.Destroy()) {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
@@ -92,7 +92,7 @@ void Write() {
         return;
     }
 
-    if (false == array.AttachShm()) {
+    if (false == array.Open()) {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
         rwsem.Close();
     }
@@ -117,7 +117,7 @@ void Read() {
         return;
     }
 
-    if (false == array.AttachShm()) {
+    if (false == array.Open()) {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
         rwsem.Close();
     }

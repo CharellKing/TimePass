@@ -13,7 +13,7 @@
 
 int main() {
 	TimePass::FileLock file_lock;
-	if (false == file_lock.Init("file_mutex")) {
+	if (false == file_lock.Create("file_mutex")) {
 		printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
 		return 0;
 	}

@@ -25,22 +25,22 @@ class ShmMultihashset {
     }
 
     /*创建共享内存*/
-    bool CreateShm(off_t capacity) {
+    bool Create(off_t capacity) {
         return ShmHashrbtree<T, Compare, HashFunc, EXTEND>::
-                CreateShm(&p_head_, &p_ext_, &p_bucket_,
+                Create(&p_head_, &p_ext_, &p_bucket_,
                           &p_addr_, capacity, name_);
     }
 
     /*加载共享内存*/
-    bool AttachShm(bool is_readonly = false) {
+    bool Open(bool is_readonly = false) {
         return ShmHashrbtree<T, Compare, HashFunc, EXTEND>::
-                AttachShm(&p_head_, &p_ext_, &p_bucket_,
+                Open(&p_head_, &p_ext_, &p_bucket_,
                           &p_addr_, name_, is_readonly);
     }
 
     /*删除共享内存*/
-    bool DestroyShm() {
-        return ShmBase::DestroyShm(name_);
+    bool Destroy() {
+        return ShmBase::Destroy(name_);
     }
 
     /*获取数据个数*/

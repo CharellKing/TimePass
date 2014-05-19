@@ -35,8 +35,8 @@ class ShmQueue{
     }
 
      /*创建共享内存*/
-    bool CreateShm(off_t capacity) {
-        char* p_tmp = ShmBase::CreateShm(name_,
+    bool Create(off_t capacity) {
+        char* p_tmp = ShmBase::Create(name_,
                                          capacity * sizeof(T) +
                                          sizeof(QueueHead) +
                                          sizeof(EXTEND));
@@ -62,8 +62,8 @@ class ShmQueue{
     }
 
      /*加载共享内存*/
-    bool AttachShm(bool is_readonly = false) {
-        char* p_tmp = ShmBase::AttachShm(name_, is_readonly);
+    bool Open(bool is_readonly = false) {
+        char* p_tmp = ShmBase::Open(name_, is_readonly);
         p_head_ = reinterpret_cast<QueueHead*>(p_tmp);
 
         if (NULL == p_head_) {
@@ -80,14 +80,14 @@ class ShmQueue{
     }
 
      /*卸载共享内存*/
-    bool DetachShm() {
-        return ShmBase::DetachShm(reinterpret_cast<char*>(p_head_),
+    bool Close() {
+        return ShmBase::Close(reinterpret_cast<char*>(p_head_),
                                   TotalSize());
     }
 
      /*销毁共享内存*/
-    bool DestroyShm() {
-        return ShmBase::DestroyShm(name_);
+    bool Destroy() {
+        return ShmBase::Destroy(name_);
     }
 
      /*获取队列的长度*/

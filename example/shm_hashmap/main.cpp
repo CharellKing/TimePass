@@ -72,7 +72,7 @@ void ToDotPs(const char* name,
 
 void Create(off_t len) {
     TimePass::ShmHashmap<MonthName, int> months(SHM_FILE);
-    if (false == months.CreateShm(len)) {
+    if (false == months.Create(len)) {
         printf("errmsg = %s\n",
                TimePass::Error::GetLastErrmsg().c_str());
     }
@@ -80,14 +80,14 @@ void Create(off_t len) {
 
 void Destroy() {
     TimePass::ShmHashmap<MonthName, int> months(SHM_FILE);
-    if (false == months.DestroyShm()) {
+    if (false == months.Destroy()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
 
 void Insert() {
     TimePass::ShmHashmap<MonthName, int> months(SHM_FILE);
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -100,7 +100,7 @@ void Insert() {
 
 void Remove() {
     TimePass::ShmHashmap<MonthName, int> months(SHM_FILE);
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -114,7 +114,7 @@ void Remove() {
 
 void Show() {
     TimePass::ShmHashmap<MonthName, int> months(SHM_FILE);
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -123,7 +123,7 @@ void Show() {
 
 void Clear() {
     TimePass::ShmHashmap<MonthName, int> months(SHM_FILE);
-    if (false == months.AttachShm()) {
+    if (false == months.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }

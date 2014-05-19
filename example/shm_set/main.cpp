@@ -57,7 +57,7 @@ void ToDotPs(const char* name, const TimePass::ShmSet<int, Compare>* p_l) {
 
 void Create(off_t len) {
     TimePass::ShmSet<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.CreateShm(len)) {
+    if (false == numbers.Create(len)) {
         printf("errmsg = %s\n",
                TimePass::Error::GetLastErrmsg().c_str());
     }
@@ -65,14 +65,14 @@ void Create(off_t len) {
 
 void Destroy() {
     TimePass::ShmSet<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.DestroyShm()) {
+    if (false == numbers.Destroy()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
 
 void Insert() {
     TimePass::ShmSet<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -86,7 +86,7 @@ void Insert() {
 
 void Remove() {
     TimePass::ShmSet<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -101,7 +101,7 @@ void Remove() {
 
 void Show() {
     TimePass::ShmSet<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -110,7 +110,7 @@ void Show() {
 
 void Clear() {
     TimePass::ShmSet<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -119,7 +119,7 @@ void Clear() {
 
 void Optimize() {
     TimePass::ShmSet<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -131,7 +131,7 @@ void Optimize() {
 
 void Read() {
     TimePass::ShmSet<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -154,7 +154,7 @@ void Read() {
 
 void About() {
     TimePass::ShmSet<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -163,7 +163,7 @@ void About() {
            numbers.Capacity(), numbers.Size(),
            numbers.TotalSize(), numbers.UsedSize());
 
-    if (false == numbers.DetachShm()) {
+    if (false == numbers.Close()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }

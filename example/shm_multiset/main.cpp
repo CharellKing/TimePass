@@ -56,21 +56,21 @@ void ToDotPs(const char* name, const TimePass::ShmMultiset<int, Compare>* p_l) {
 
 void Create(off_t len) {
     TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.CreateShm(len)) {
+    if (false == numbers.Create(len)) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
 
 void Destroy() {
     TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.DestroyShm()) {
+    if (false == numbers.Destroy()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
 
 void Insert() {
     TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -84,7 +84,7 @@ void Insert() {
 
 void Remove() {
     TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -98,7 +98,7 @@ void Remove() {
 
 void Show() {
     TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -107,7 +107,7 @@ void Show() {
 
 void Clear() {
     TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg = %s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }

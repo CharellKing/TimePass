@@ -92,14 +92,14 @@ class SemMultiBuffProduceConsume {
 
         /*创建buff*/
         for (off_t which_buff = 0; which_buff < buff_amount_; ++which_buff) {
-            if (false == p_buffs_[which_buff]->CreateShm(buff_capacity_)) {
+            if (false == p_buffs_[which_buff]->Create(buff_capacity_)) {
                 ret = false;
                 goto _ERROR;
             }
         }
 
         /*创建TupleList*/
-        if (false == p_sort_buffs_->CreateShm(2, buff_amount_)) {
+        if (false == p_sort_buffs_->Create(2, buff_amount_)) {
             ret = false;
             goto _ERROR;
         }
@@ -138,12 +138,12 @@ class SemMultiBuffProduceConsume {
     bool Destroy() {
         bool ret = true;
         for (off_t which_buff = 0; which_buff < buff_amount_; ++which_buff) {
-            if (false == p_buffs_[which_buff]->DestroyShm()) {
+            if (false == p_buffs_[which_buff]->Destroy()) {
                 ret = false;
             }
         }
 
-        if (false == p_sort_buffs_->DestroyShm()) {
+        if (false == p_sort_buffs_->Destroy()) {
             ret = false;
         }
 
@@ -166,13 +166,13 @@ class SemMultiBuffProduceConsume {
     bool Open() {
         bool ret = true;
         for (off_t which_buff = 0; which_buff < buff_amount_; ++which_buff) {
-            if (false == p_buffs_[which_buff]->AttachShm()) {
+            if (false == p_buffs_[which_buff]->Open()) {
                 ret = false;
                 goto _ERROR;
             }
         }
 
-        if (false == p_sort_buffs_->AttachShm()) {
+        if (false == p_sort_buffs_->Open()) {
             ret = false;
             goto _ERROR;
         }
@@ -206,13 +206,13 @@ class SemMultiBuffProduceConsume {
 
         for (off_t which_buff = 0; which_buff < buff_amount_; ++which_buff) {
             if (true == p_buffs_[which_buff]->IsAttached() &&
-                false == p_buffs_[which_buff]->DetachShm()) {
+                false == p_buffs_[which_buff]->Close()) {
                 ret = false;
             }
         }
 
         if (true == p_sort_buffs_->IsAttached() &&
-            false == p_sort_buffs_->DetachShm()) {
+            false == p_sort_buffs_->Close()) {
              ret = false;
         }
 

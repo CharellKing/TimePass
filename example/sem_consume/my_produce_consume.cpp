@@ -8,14 +8,8 @@
 
 #include <cstdio>
 
-MyProduceConsume::MyProduceConsume(const char* mutex_name,
-                                   const char* empty_name,
-                                   const char* stored_name,
-                                   const char* queue_name):
-                                    MySemProduceConsume(mutex_name,
-                                                        empty_name,
-                                                        stored_name,
-                                                        queue_name) {
+MyProduceConsume::MyProduceConsume(const char* prefix_name):
+                                   MySemProduceConsume(prefix_name) {
 }
 
 

@@ -37,13 +37,13 @@ class ShmArray {
     }
 
     /*创建共享内存*/
-    bool CreateShm(off_t capacity) {
+    bool Create(off_t capacity) {
         char* p_tmp = NULL;
         size_t bytes = capacity * sizeof (T) +
                        sizeof(ArrayHead) +
                        sizeof(EXTEND);
 
-        p_tmp = ShmBase::CreateShm(name_, bytes);
+        p_tmp = ShmBase::Create(name_, bytes);
         p_head_ = reinterpret_cast<ArrayHead*>(p_tmp);
         if (NULL == p_head_) {
             return false;
@@ -60,14 +60,14 @@ class ShmArray {
     }
 
     /*销毁共享内存*/
-    bool DestroyShm() {
-        return ShmBase::DestroyShm(name_);
+    bool Destroy() {
+        return ShmBase::Destroy(name_);
     }
 
     /*加载共享内存*/
-    bool AttachShm(bool is_readonly = false) {
+    bool Open(bool is_readonly = false) {
         char* p_tmp = NULL;
-        p_tmp = ShmBase::AttachShm(name_, is_readonly);
+        p_tmp = ShmBase::Open(name_, is_readonly);
         p_head_ = reinterpret_cast<ArrayHead*>(p_tmp);
         if (NULL == p_head_) {
             return false;
@@ -80,8 +80,8 @@ class ShmArray {
     }
 
     /*卸载共享内存*/
-    bool DetachShm() {
-        return ShmBase::DetachShm(reinterpret_cast<char*>(p_head_),
+    bool Close() {
+        return ShmBase::Close(reinterpret_cast<char*>(p_head_),
                                   TotalSize());
     }
 

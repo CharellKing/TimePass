@@ -28,9 +28,9 @@ class ShmList{
     }
 
     /*创建共享内存*/
-    bool CreateShm(off_t capacity) {
+    bool Create(off_t capacity) {
         char* p_tmp = NULL;
-        p_tmp = ShmBase::CreateShm(name_,
+        p_tmp = ShmBase::Create(name_,
                                    capacity * sizeof(ListNode<T>) +
                                    sizeof(EXTEND) +
                                    sizeof(ListHead));
@@ -54,9 +54,9 @@ class ShmList{
     }
 
     /*加载共享内存*/
-    bool AttachShm(bool is_readonly = false) {
+    bool Open(bool is_readonly = false) {
         char* p_tmp = NULL;
-        p_tmp = ShmBase::AttachShm(name_, is_readonly);
+        p_tmp = ShmBase::Open(name_, is_readonly);
         p_head_ = reinterpret_cast<ListHead*>(p_tmp);
         if (NULL == p_head_) {
             return false;
@@ -71,13 +71,13 @@ class ShmList{
     }
 
     /*卸载共享内存*/
-    bool DetachShm() {
-        return ShmBase::DetachShm(static_cast<char*>(p_head_), TotalSize());
+    bool Close() {
+        return ShmBase::Close(static_cast<char*>(p_head_), TotalSize());
     }
 
     /*删除共享内存*/
-    bool DestroyShm() {
-        return ShmBase::DestroyShm(name_);
+    bool Destroy() {
+        return ShmBase::Destroy(name_);
     }
 
     /*获取数据个数*/

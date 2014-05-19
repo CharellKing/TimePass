@@ -20,10 +20,7 @@ typedef TimePass::SemProduceConsume<int, MyCondParam> MySemProduceConsume;
 
 class MyProduceConsume:public MySemProduceConsume {
  public:
-    explicit MyProduceConsume(const char* mutex_name,
-            				  const char* empty_name,
-            				  const char* stored_name,
-            				  const char* queue_name);
+    explicit MyProduceConsume(const char* prefix_name);
 
     virtual ~MyProduceConsume() {
 

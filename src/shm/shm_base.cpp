@@ -19,7 +19,7 @@ off_t default_size = 1 << 10;   /* 默认容器的大小 1K size*/
 off_t max_capacity = 1 << 30;   /* 容器的最大容量 1G size*/
 
 /*创建共享内存块*/
-char* TimePass::ShmBase::CreateShm(const char* name,
+char* TimePass::ShmBase::Create(const char* name,
                                    off_t length,
                                    mode_t mode) {
     int fd = shm_open(name, O_CREAT | O_RDWR, mode);
@@ -46,7 +46,7 @@ char* TimePass::ShmBase::CreateShm(const char* name,
 }
 
 /*销毁共享内存*/
-bool TimePass::ShmBase::DestroyShm(const char* name) {
+bool TimePass::ShmBase::Destroy(const char* name) {
     int ret = shm_unlink(name);
     if (-1 == ret) {
         SET_ERRNO(errno);
@@ -56,7 +56,7 @@ bool TimePass::ShmBase::DestroyShm(const char* name) {
 }
 
 /*加载共享内存块*/
-char* TimePass::ShmBase::AttachShm(const char* name, bool is_readonly) {
+char* TimePass::ShmBase::Open(const char* name, bool is_readonly) {
     int o_flag = O_RDONLY;
     if (!is_readonly) {
         o_flag = O_RDWR;
@@ -89,7 +89,7 @@ char* TimePass::ShmBase::AttachShm(const char* name, bool is_readonly) {
 }
 
 /*卸载共享内存块*/
-bool TimePass::ShmBase::DetachShm(char* p_addr, off_t length) {
+bool TimePass::ShmBase::Close(char* p_addr, off_t length) {
     if (-1 == munmap(p_addr, length)) {
         SET_ERRNO(errno);
         return false;

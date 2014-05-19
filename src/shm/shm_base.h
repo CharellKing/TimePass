@@ -38,17 +38,17 @@
 namespace TimePass {
 namespace ShmBase {
 /*创建共享内存块*/
-char* CreateShm(const char* name, off_t length,
+char* Create(const char* name, off_t length,
                        mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_ROTH);
 
 /*销毁共享内存*/
-bool DestroyShm(const char* name);
+bool Destroy(const char* name);
 
 /*加载共享内存块*/
-char* AttachShm(const char* name, bool is_readonly = false);
+char* Open(const char* name, bool is_readonly = false);
 
 /*卸载共享内存块*/
-bool DetachShm(char* p_addr, off_t length);
+bool Close(char* p_addr, off_t length);
 
 /*提交变化*/
 bool Commit(char* p_addr, off_t length, bool is_sync = true);

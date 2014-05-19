@@ -4,10 +4,11 @@
  * DATE :       2014-04-03
  */
 
+#include <stdio.h>
+
 #include"my_produce_consume.h"
 
 #include"model/mutex_thread_func_loader.h"
-
 #include"global/error.h"
 
 #define THREAD_NUM 100

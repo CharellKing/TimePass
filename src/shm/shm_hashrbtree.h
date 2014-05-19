@@ -59,7 +59,7 @@ template <typename T,
 class ShmHashrbtree{
  public:
     /*创建共享内存*/
-    static bool CreateShm(HashrbtreeHead** p_head,
+    static bool Create(HashrbtreeHead** p_head,
                           EXTEND** p_ext,
                           Bucket** p_bucket,
                           RbtreeNode<T>**  p_addr,
@@ -77,7 +77,7 @@ class ShmHashrbtree{
                              sizeof(Bucket) * bucket_size +
                              sizeof(RbtreeNode<T>) * capacity;
 
-        char* p_tmp = ShmBase::CreateShm(name,  total_bytes);
+        char* p_tmp = ShmBase::Create(name,  total_bytes);
         *p_head =  reinterpret_cast<HashrbtreeHead*>(p_tmp);
         if (NULL == *p_head) {
             return false;
@@ -104,13 +104,13 @@ class ShmHashrbtree{
     }
 
     /*加载共享内存*/
-    static bool AttachShm(HashrbtreeHead** p_head,
+    static bool Open(HashrbtreeHead** p_head,
                           EXTEND** p_ext,
                           Bucket** p_bucket,
                           RbtreeNode<T>**  p_addr,
                           const char* name,
                           bool is_readonly = false) {
-        char* p_tmp = ShmBase::AttachShm(name, is_readonly);
+        char* p_tmp = ShmBase::Open(name, is_readonly);
         *p_head =  reinterpret_cast<HashrbtreeHead*>(p_tmp);
         if (NULL == p_head) {
             return false;

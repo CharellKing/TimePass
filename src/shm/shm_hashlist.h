@@ -51,7 +51,7 @@ class ShmHashlist {
     }
 
     /*创建共享内存*/
-    bool CreateShm(off_t capacity) {
+    bool Create(off_t capacity) {
         off_t tmp = (off_t)capacity / HashlistHead::factor;
         off_t bucket_size = 1;
 
@@ -64,7 +64,7 @@ class ShmHashlist {
                       sizeof(ListBucket) * bucket_size +
                       sizeof(ListNode<T>) * capacity;
 
-        char* p_tmp = ShmBase::CreateShm(name_, size);
+        char* p_tmp = ShmBase::Create(name_, size);
         p_head_ = reinterpret_cast<HashlistHead*>(p_tmp);
         if (NULL == p_head_) {
             return false;
@@ -92,8 +92,8 @@ class ShmHashlist {
     }
 
     /*加载共享内存*/
-    bool AttachShm(bool is_readonly = false) {
-        char* p_tmp = ShmBase::AttachShm(name_, is_readonly);
+    bool Open(bool is_readonly = false) {
+        char* p_tmp = ShmBase::Open(name_, is_readonly);
         p_head_ = reinterpret_cast<HashlistHead*>(p_tmp);
         if (NULL == p_head_) {
             return false;
@@ -113,8 +113,8 @@ class ShmHashlist {
     }
 
     /*删除共享内存*/
-    bool DestroyShm() {
-        return ShmBase::DestroyShm(name_);
+    bool Destroy() {
+        return ShmBase::Destroy(name_);
     }
 
     /*获取数据个数*/

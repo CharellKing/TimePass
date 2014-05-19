@@ -47,24 +47,24 @@ void ToDotPs(const char* name, const TimePass::ShmQueue<int>* p_l) {
 
 void Create(off_t len) {
     TimePass::ShmQueue<int> numbers(SHM_FILE);
-    if (false == numbers.CreateShm(len)) {
+    if (false == numbers.Create(len)) {
         printf("errmsg=%s\n",
                TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Destroy() {
     TimePass::ShmQueue<int> numbers(SHM_FILE);
-    if (false == numbers.DestroyShm()) {
+    if (false == numbers.Destroy()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
     }
 }
 
 void Write() {
     TimePass::ShmQueue<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
@@ -93,27 +93,27 @@ void Write() {
             }
         }
     }
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Show() {
     TimePass::ShmQueue<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
     ToDotPs("queue", &numbers);
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Clear() {
     TimePass::ShmQueue<int> numbers(SHM_FILE);
-    if (false == numbers.AttachShm()) {
+    if (false == numbers.Open()) {
         printf("errmsg=%s\n", TimePass::Error::GetLastErrmsg().c_str());
         return;
     }
     numbers.Clear();
-    numbers.DetachShm();
+    numbers.Close();
 }
 
 void Usage() {
