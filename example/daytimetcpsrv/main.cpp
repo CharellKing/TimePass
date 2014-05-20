@@ -29,10 +29,6 @@ int main(int argc, char **argv)
     char    buff[MAX_LINE];
     time_t  ticks;
 
-    if (argc != 2) {
-        printf("usage: daytimetcpcli <IPaddress>");
-    }
-
     listenfd = TimePass::SockBase::Socket(AF_INET, SOCK_STREAM, 0);
     if (listenfd < 0) {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
