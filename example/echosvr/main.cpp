@@ -10,6 +10,7 @@
 #include <time.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 
 #include "global/macro.h"
@@ -29,7 +30,7 @@
 void SigChild(int signo) {
     int pid = 0;
     int stat = 0;
-    if (TimePass::Sys::Wait(&stat, &pid)) {
+    if (TimePass::Sys::Wait(-1, WNOHANG, &stat, &pid)) {
         printf("child %d terminate\n", pid);
     } else {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
@@ -49,7 +50,7 @@ void EchoClient(int connfd) {
 }
 
 int main(int argc, char **argv) {
-    int     listenfd, connfd;
+    int     listenfd = 0, connfd = 0;
     struct sockaddr_in servaddr;
 
     listenfd = TimePass::SockBase::Socket(AF_INET, SOCK_STREAM, 0);
