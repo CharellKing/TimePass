@@ -23,5 +23,21 @@ sighandler_t TimePass::Sys::Signal(int signum, sighandler_t handler) {
     return signal(signum, handler);
 }
 
+/*
+ * 等待进程的结束
+ * p_pid可以为NULL，表示不获取子进程的ID
+ * */
+bool TimePass::Sys::Wait(int* p_status, int* p_child_pid) {
+    int child_pid = wait(p_status);
+    if (child_pid < 0) {
+        SET_ERRNO(errno);
+        return false;
+    }
+
+    if (NULL != p_child_pid) {
+        *p_child_pid = child_pid;
+    }
+    return true;
+}
 
 
