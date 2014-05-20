@@ -27,6 +27,11 @@ sighandler_t Signal(int signum, sighandler_t handler);
  * */
 bool Wait(int* p_status, int* p_child_pid);
 
+/*
+ * 针对进程id，暂停某进程执行
+ */
+bool Wait(int pid, int option, int* p_status, int* p_pid);
+
 }; /*namespace Sys*/
 }; /*namespace TimePass*/
 

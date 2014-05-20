@@ -40,4 +40,18 @@ bool TimePass::Sys::Wait(int* p_status, int* p_child_pid) {
     return true;
 }
 
+/*
+ * 针对进程id，暂停某进程执行
+ */
+bool TimePass::Sys::Wait(int pid, int option, int* p_status, int* p_pid) {
+    int ret = waitpid(pid, p_status, option);
+    if (ret < 0) {
+        SET_ERRNO(errno);
+        return false;
+    }
+    if (p_pid) {
+        *p_pid = ret;
+    }
+    return true;
+}
 
