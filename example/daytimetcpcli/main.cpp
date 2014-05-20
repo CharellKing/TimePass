@@ -20,8 +20,9 @@
 
 #define PORT 45678   /*端口号*/
 
-int main(int argc, char **argv)
-{
+#define SA reinterpret_cast<sockaddr*>
+
+int main(int argc, char **argv) {
     int     sockfd;
     char    recvline[MAX_LINE + 1];
     struct sockaddr_in servaddr;
@@ -47,7 +48,9 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    if (TimePass::SockBase::Connect(sockfd, (sockaddr*)& servaddr, sizeof(sockaddr)) == false) {
+    if (TimePass::SockBase::Connect(sockfd,
+                                    SA(&servaddr),
+                                    sizeof(sockaddr)) == false) {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
         exit(1);
     }
@@ -57,5 +60,5 @@ int main(int argc, char **argv)
         recvline[len] = 0;        /* null terminate */
         printf("%s\n", recvline);
     }
-    exit(0);
+    return 0;
 }
