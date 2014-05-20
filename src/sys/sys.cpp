@@ -19,6 +19,9 @@ pid_t TimePass::Sys::Fork() {
     return pid;
 }
 
+sighandler_t TimePass::Sys::Signal(int signum, sighandler_t handler) {
+    return signal(signum, handler);
+}
 
 
 
