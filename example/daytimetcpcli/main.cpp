@@ -28,12 +28,14 @@ int main(int argc, char **argv)
     size_t len = 0;
 
     if (argc != 2) {
-        printf("usage: daytimetcpcli <IPaddress>");
+        printf("usage: daytimetcpcli <IPaddress>\n");
+        exit(1);
     }
 
     sockfd = TimePass::SockBase::Socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
+        exit(1);
     }
 
     TimePass::Util::Zero(&servaddr, sizeof(servaddr));
