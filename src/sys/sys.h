@@ -15,10 +15,14 @@
 
 namespace TimePass {
 namespace Sys {
-/*创建子进程*/
+/*
+ * 创建子进程
+ * */
 pid_t Fork();
 
-/*捕获系统异常信号*/
+/*
+ * 捕获系统异常信号
+ * */
 sighandler_t Signal(int signum, sighandler_t handler);
 
 /*
@@ -31,6 +35,11 @@ bool Wait(int* p_status, int* p_child_pid);
  * 针对进程id，暂停某进程执行
  */
 bool Wait(int pid, int option, int* p_status, int* p_pid);
+
+/*
+ * 睡眠以微妙为单位
+ */
+bool USleep(int32_t usec);
 
 }; /*namespace Sys*/
 }; /*namespace TimePass*/

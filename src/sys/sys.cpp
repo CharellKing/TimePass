@@ -8,9 +8,16 @@
 #include "sys/sys.h"
 
 #include <errno.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/select.h>
+#include <unistd.h>
 
 #include "global/error.h"
 
+/*
+ * 创建子进程
+ * */
 pid_t TimePass::Sys::Fork() {
     pid_t pid = fork();
     if (pid < 0) {
@@ -19,6 +26,9 @@ pid_t TimePass::Sys::Fork() {
     return pid;
 }
 
+/*
+ * 捕获系统异常信号
+ * */
 sighandler_t TimePass::Sys::Signal(int signum, sighandler_t handler) {
     return signal(signum, handler);
 }
@@ -55,3 +65,15 @@ bool TimePass::Sys::Wait(int pid, int option, int* p_status, int* p_pid) {
     return true;
 }
 
+/*
+ * 睡眠以微妙为单位
+ */
+bool TimePass::Sys::USleep(int32_t usec) {
+    struct timeval tv = {0, usec};
+    int maxfd = 1;
+    if (select(maxfd, NULL, NULL, NULL, &tv) < 0) {
+        SET_ERRNO(errno);
+        return false;
+    }
+    return true;
+}
