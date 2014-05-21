@@ -135,7 +135,7 @@ class ShmQueue{
             ++p_head_->size;
             return true;
         }
-        SET_ERRNO(ErrorNo::SPACE_SHORTAGE);
+        SET_ERRNO(ErrorNo::CONTAINER_CAPACITY_SHORTAGE);
         return false;
     }
 

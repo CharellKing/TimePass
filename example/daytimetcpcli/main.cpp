@@ -18,7 +18,7 @@
 
 #define MAX_LINE 256 /*最大的行*/
 
-#define PORT 45678   /*端口号*/
+#define PORT 4567   /*端口号*/
 
 #define SA reinterpret_cast<sockaddr*>
 

@@ -34,12 +34,12 @@ bool TimePass::Timer::AddAction(int action_id, int64_t next_time, int interval,
                                 int times, void (*func)(void* p_param),
                                 void* p_param) {
     if (next_time < time(NULL)) {
-        SET_ERRNO(ErrorNo::TIME_EXPIRE);
+        SET_ERRNO(ErrorNo::TIMER_TIME_EXPIRE);
         return false;
     }
 
     if (actions_.end() != actions_.find(action_id)) {
-        SET_ERRNO(ErrorNo::KEY_EXIST);
+        SET_ERRNO(ErrorNo::CONTAINER_KEY_EXIST );
         return false;
     }
 

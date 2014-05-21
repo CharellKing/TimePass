@@ -183,10 +183,9 @@ bool TimePass::RWMutex::UnLock(bool write_is_prior) {
     } else if (-1 == lock_status_) {
         lock_status_ = 0;
     } else if (0 == lock_status_) {
-        SET_ERRNO(TimePass::ErrorNo::LOCK_EMPTY);
-        return false;
+        return true;
     } else {
-        SET_ERRNO(TimePass::ErrorNo::LOCK_STATUS);
+        SET_ERRNO(TimePass::ErrorNo::LOCK_STATUS_UNKNOWN);
         return false;
     }
 

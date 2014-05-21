@@ -143,7 +143,7 @@ class ShmArray {
             off_t new_capacity = ShmBase::ExpandToCapacity(p_head_->capacity);
             /*为原有的容器大小，表示不能扩展*/
             if (new_capacity <=  p_head_->capacity) {
-                SET_ERRNO(ErrorNo::EXPAND_CAPACITY_TO_MAX);
+                SET_ERRNO(ErrorNo::CONTAINER_CAPACITY_EXCEED);
                 return false;
             }
 
@@ -153,7 +153,7 @@ class ShmArray {
             if (true == ret) {
                 p_head_->capacity = new_capacity;
             } else {
-                SET_ERRNO(ErrorNo::EXPAND_CAPACITY_FAILED);
+                SET_ERRNO(ErrorNo::CONTAINER_EXPAND_FAILED);
                 return false;
             }
         }
@@ -177,7 +177,7 @@ class ShmArray {
     bool Remove(off_t index) {
         /*判断index是否在[0, size)之内*/
         if (index >= p_head_->size || index < 0) {
-            SET_ERRNO(ErrorNo::INDEX_NONEXIST);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_NONEXIST);
             return false;
         }
 
@@ -198,7 +198,7 @@ class ShmArray {
         if (p_head_->size >= p_head_->capacity) {
             off_t new_capacity = ShmBase::ExpandToCapacity(p_head_->capacity);
             if (new_capacity <= p_head_->capacity) {
-                SET_ERRNO(ErrorNo::EXPAND_CAPACITY_TO_MAX);
+                SET_ERRNO(ErrorNo::CONTAINER_CAPACITY_EXCEED);
                 return false;
             }
 
@@ -208,14 +208,14 @@ class ShmArray {
             if (true == ret) {
                 p_head_->capacity = new_capacity;
             } else {
-                SET_ERRNO(ErrorNo::EXPAND_CAPACITY_FAILED);
+                SET_ERRNO(ErrorNo::CONTAINER_EXPAND_FAILED);
                 return false;
             }
         }
 
         /*判断index是否在[0, size]之内*/
         if (index > p_head_->size) {
-            SET_ERRNO(ErrorNo::INDEX_NONEXIST);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_NONEXIST);
             return false;
         }
 

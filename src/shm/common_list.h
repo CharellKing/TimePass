@@ -61,7 +61,7 @@ class CommonList {
                            const ListHead* p_list_head,
                            off_t index) {
         if (index < 0 || index >= p_list_head->size) {
-            SET_ERRNO(ErrorNo::INDEX_NONEXIST);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_NONEXIST);
             return -1;
         }
 
@@ -160,7 +160,7 @@ class CommonList {
                                      off_t index,
                                      bool is_expand = true) {
         if (index < 0 || index > p_list_head->size) {
-            SET_ERRNO(ErrorNo::INDEX_NONEXIST);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_NONEXIST);
             return NULL;
         }
 
@@ -260,7 +260,7 @@ class CommonList {
                                      ListHead* p_list_head,
                                      off_t index) {
         if (index < 0 || index >= p_list_head->size) {
-            SET_ERRNO(ErrorNo::INDEX_NONEXIST);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_NONEXIST);
             return NULL;
         }
 
@@ -472,7 +472,7 @@ class CommonList {
                     off_t new_capacity = ShmBase::ExpandToCapacity(
                             p_list_head->capacity);
                     if (new_capacity <= p_list_head->capacity) {
-                        SET_ERRNO(ErrorNo::EXPAND_CAPACITY_TO_MAX);
+                        SET_ERRNO(ErrorNo::CONTAINER_CAPACITY_EXCEED);
                         return NULL;
                     }
                     off_t len = sizeof(ListHead) + sizeof(EXTEND) +
@@ -480,11 +480,11 @@ class CommonList {
                     if (ShmBase::Resize(name, len)) {
                         p_list_head->capacity = new_capacity;
                     } else {
-                        SET_ERRNO(ErrorNo::EXPAND_CAPACITY_FAILED);
+                        SET_ERRNO(ErrorNo::CONTAINER_CAPACITY_EXCEED);
                         return NULL;
                     }
                 } else {
-                    SET_ERRNO(ErrorNo::SPACE_SHORTAGE);
+                    SET_ERRNO(ErrorNo::CONTAINER_CAPACITY_SHORTAGE);
                     return NULL;
                 }
             }

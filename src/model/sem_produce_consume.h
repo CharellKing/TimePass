@@ -52,7 +52,7 @@ class SemProduceConsume {
     bool Create(size_t queue_capacity, const Param& cond_param) {
         bool ret = true;
         if (queue_capacity <= 0) {
-            SET_ERRNO(ErrorNo::SIZE_NONZERO);
+            SET_ERRNO(ErrorNo::NORMAL_SIZE_NONZERO );
             return false;
         }
 

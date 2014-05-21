@@ -84,7 +84,7 @@ class SemMultiBuffProduceConsume {
      */
     bool Create(const Param& cond_param) {
         if (buff_amount_ < 2 || buff_capacity_ < 0) {
-            SET_ERRNO(ErrorNo::SIZE_NONFIT);
+            SET_ERRNO(ErrorNo::NORMAL_SIZE_NONFIT );
             return false;
         }
 

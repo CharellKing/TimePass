@@ -32,7 +32,7 @@ class MutexMultiBuffProduceConsume {
      */
     bool Create(size_t buff_amount, size_t buff_size) {
         if (buff_amount < 2 || buff_size < 1024) {
-            SET_ERRNO(ErrorNo::SIZE_NONFIT);
+            SET_ERRNO(ErrorNo::NORMAL_SIZE_NONFIT );
             return false;
         }
 

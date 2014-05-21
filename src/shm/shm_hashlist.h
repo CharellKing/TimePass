@@ -221,7 +221,7 @@ class ShmHashlist {
         while (-1 != tmp) {
             p_node = (p_addr_ + tmp);
             if (0 == Compare(p_node->data, data)) {
-                SET_ERRNO(ErrorNo::KEY_EXIST);
+                SET_ERRNO(ErrorNo::CONTAINER_KEY_EXIST );
                 return false;
             }
             tmp = p_node->next;
@@ -254,7 +254,7 @@ class ShmHashlist {
         ListNode<T>* p_cur = ShmBase::At(p_addr_, p_bucket_[n_bucket].head);
         while (NULL != p_cur) {
             if (0 == Compare(p_cur->data, data)) {
-                SET_ERRNO(ErrorNo::KEY_EXIST);
+                SET_ERRNO(ErrorNo::CONTAINER_KEY_EXIST );
                 break;
             }
             p_prep = p_cur;

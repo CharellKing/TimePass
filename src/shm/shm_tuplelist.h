@@ -131,7 +131,7 @@ class ShmTupleList {
     /*获取某个list里面的数据个数*/
     off_t ListSize(off_t which_list) {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return -1;
         }
         return p_tuple_list_head_[which_list].size;
@@ -179,12 +179,12 @@ class ShmTupleList {
     ListNode<T>* At(off_t which_list, off_t index, off_t* p_pos) {
         *p_pos = -1;
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
         if (index < 0 || index >= p_tuple_list_head_[which_list].size) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
@@ -214,12 +214,12 @@ class ShmTupleList {
     const ListNode<T>* At(off_t which_list, off_t index, off_t* p_pos)const {
         *p_pos = -1;
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
         if (index < 0 || index >= p_tuple_list_head_[which_list].size) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
@@ -249,7 +249,7 @@ class ShmTupleList {
 
     ListNode<T>* Head(off_t which_list) {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
@@ -258,7 +258,7 @@ class ShmTupleList {
 
     const ListNode<T>* Head(off_t which_list)const {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
@@ -267,7 +267,7 @@ class ShmTupleList {
 
     ListNode<T>* Tail(off_t which_list) {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
@@ -276,7 +276,7 @@ class ShmTupleList {
 
     const ListNode<T>* Tail(off_t which_list)const {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
@@ -286,7 +286,7 @@ class ShmTupleList {
      /*在链表头部放置数据*/
     const ListNode<T>* PushFront(off_t which_list, const T& data) {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
@@ -314,12 +314,12 @@ class ShmTupleList {
 
     const ListNode<T>* Insert(off_t which_list, off_t index, const T& data) {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
         if (index < 0 || index > p_tuple_list_head_[which_list].size) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
@@ -373,7 +373,7 @@ class ShmTupleList {
      /*在链表尾部放置数据*/
     const ListNode<T>* PushBack(off_t which_list, const T& data) {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
@@ -403,12 +403,12 @@ class ShmTupleList {
      /*在链表头部弹出数据*/
     const ListNode<T>* PopFront(off_t which_list) {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
         if (-1 == p_tuple_list_head_[which_list].head) {
-            SET_ERRNO(ErrorNo::CONTAINER_ISEMPTY);
+            SET_ERRNO(ErrorNo::CONTAINER_SIZE_ZERO);
             return NULL;
         }
 
@@ -435,12 +435,12 @@ class ShmTupleList {
     /*在链表尾部弹出数据*/
     const ListNode<T>* PopBack(off_t which_list) {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
         if (-1 == p_tuple_list_head_[which_list].tail) {
-            SET_ERRNO(ErrorNo::CONTAINER_ISEMPTY);
+            SET_ERRNO(ErrorNo::CONTAINER_SIZE_ZERO);
             return NULL;
         }
 
@@ -467,12 +467,12 @@ class ShmTupleList {
     /*删除链表的顺序index的节点, 删除的节点，很可能又被利用，数值发生变化*/
     const ListNode<T>* Remove(off_t which_list, off_t index) {
         if (which_list < 0 || which_list >= p_tuple_head_->tuple_amount) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
         if (index < 0 || index >= p_tuple_list_head_[which_list].size) {
-            SET_ERRNO(ErrorNo::INDEX_EXCEED);
+            SET_ERRNO(ErrorNo::CONTAINER_INDEX_EXCEED);
             return NULL;
         }
 
@@ -578,18 +578,18 @@ class ShmTupleList {
                     off_t new_capacity = ShmBase::ExpandToCapacity(
                             p_tuple_head_->capacity);
                     if (new_capacity <= p_tuple_head_->capacity) {
-                        SET_ERRNO(ErrorNo::EXPAND_CAPACITY_TO_MAX);
+                        SET_ERRNO(ErrorNo::CONTAINER_CAPACITY_EXCEED);
                         return NULL;
                     }
                     off_t old_capacity = p_tuple_head_->capacity;
                     p_tuple_head_->capacity = new_capacity;
                     if (false == ShmBase::Resize(name_, TotalBytes())) {
                         p_tuple_head_->capacity = old_capacity;
-                        SET_ERRNO(ErrorNo::EXPAND_CAPACITY_FAILED);
+                        SET_ERRNO(ErrorNo::CONTAINER_EXPAND_FAILED);
                         return NULL;
                     }
                 } else {
-                    SET_ERRNO(ErrorNo::SPACE_SHORTAGE);
+                    SET_ERRNO(ErrorNo::CONTAINER_CAPACITY_SHORTAGE);
                     return NULL;
                 }
             }

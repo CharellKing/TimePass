@@ -1058,7 +1058,7 @@ class ShmRbtree{
                         return NULL;
                     }
                 } else {
-                    SET_ERRNO(ErrorNo::SPACE_SHORTAGE);
+                    SET_ERRNO(ErrorNo::CONTAINER_CAPACITY_SHORTAGE);
                     return NULL;
                 }
             }
