@@ -4,11 +4,13 @@
  * DATE :       2014-04-03
 */
 
-#include"error.h"
+#include "global/error.h"
 
-#include <cstdio>
+#include <stdio.h>
 
 #include <string>
+
+#include "global/macro.h"
 
 int TimePass::Error::errno_ = 0;
 
@@ -28,7 +30,7 @@ int TimePass::Error::GetLastErrno() {
 }
 
 const std::string TimePass::Error::GetLastErrmsg() {
-    char errmsg[512];
+    char errmsg[MAX_ERR_MSG];
     snprintf(errmsg, sizeof(errmsg) - 1, "errno (%d), %s:%d",
              errno_, errfile_.c_str(), errline_);
     return std::string(errmsg);

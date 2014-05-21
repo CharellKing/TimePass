@@ -24,7 +24,7 @@ class Error {
     static std::string errfile_;
     static int errline_;
 };
-};  // namespace TimePass
+};  /*namespace TimePass*/
 
 #define SET_ERRNO(no) TimePass::Error::SetErrno(no, __FILE__, __LINE__)
 
