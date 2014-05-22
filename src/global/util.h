@@ -19,9 +19,9 @@ namespace Util {
 bool IsBigEndian();
 
 /**
- * 将数组清零
- * @param p_addr 数组的首地址
- * @param size 数组的字节数目
+ * 将数据块清零
+ * @param p_addr 数据块的首地址
+ * @param size 数据块的字节大小
  */
 void Zero(void* p_addr, size_t size);
 
