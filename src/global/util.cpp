@@ -26,9 +26,9 @@ bool TimePass::Util::IsBigEndian() {
 }
 
 /**
- * 将数组清零
- * @param p_addr 数组的首地址
- * @param size 数组的字节数目
+ * 将数据清零
+ * @param p_addr 数据块的首地址
+ * @param size 数组块的字节大小
  */
 void TimePass::Util::Zero(void* p_addr, size_t size) {
     memset(reinterpret_cast<char*>(p_addr), 0, size);
