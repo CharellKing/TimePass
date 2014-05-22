@@ -26,7 +26,7 @@ pid_t Fork();
  * 捕获系统异常信号
  * @param signum 信号id
  * @param handler 捕获到信号的处理函数
- * @return 返回处理函数，为NULL则为空
+ * @return 返回处理函数，为NULL则为失败
  */
 sighandler_t Signal(int signum, sighandler_t handler);
 
