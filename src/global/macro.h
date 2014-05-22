@@ -1,9 +1,8 @@
-/*
- * macro.h
- *
- *  Created on: 2014年5月8日
- *      Author: root
- */
+/* COPYRIGHT:   Copyright 2014 CharellkingQu
+ * LICENSE:     GPL
+ * AUTHOR:      CharellkingQu
+ * DATE :       2014-05-08
+*/
 
 #ifndef _GLOBAL_MACRO_H_
 #define _GLOBAL_MACRO_H_
