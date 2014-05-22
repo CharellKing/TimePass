@@ -12,10 +12,13 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 
+#include <algorithm>
+
 #include "global/macro.h"
 #include "global/error.h"
 #include "sock/sock_base.h"
 #include "global/util.h"
+#include "sys/sys.h"
 
 #define MAX_LINE 256 /*最大的行*/
 
@@ -26,18 +29,44 @@
 void EchoSvr(int sockfd, FILE* fp) {
     char sendbuff[MAX_LINE] = {0}, recvbuff[MAX_LINE] = {0};
     size_t n = 0;
-    while (fgets(sendbuff, MAX_LINE - 1, fp)) {
-        if (false == TimePass::SockBase::Write(sockfd, sendbuff,
-                                               strlen(sendbuff), NULL)) {
-            printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
-        }
+    int maxfd = 0;
+    fd_set rset;
 
-        if (false == TimePass::SockBase::Read(sockfd, recvbuff,
-                                              MAX_LINE, &n)) {
+    FD_ZERO(&rset);
+    while (true) {
+        FD_SET(fileno(fp), &rset);
+        FD_SET(sockfd, &rset);
+        maxfd = std::max(fileno(fp), sockfd) + 1;
+
+
+        if (false == TimePass::Sys::Select(maxfd, &rset, NULL, NULL, NULL, NULL)) {
             printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
+            break;
         } else {
-            recvbuff[n] = '\0';
-            printf("%s", recvbuff);
+            if (FD_ISSET(sockfd, &rset)) {
+                if (false == TimePass::SockBase::Read(sockfd, recvbuff,
+                                                      MAX_LINE, &n)) {
+                    printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
+                } else if (n > 0){
+                    recvbuff[n] = '\0';
+                    printf("%s", recvbuff);
+                } else {
+                    /*服务端子进程断开，会给客户端发送FIN, Select会捕获到读的socket，但是
+                     * 读出的数据为空
+                     */
+                    printf("catch server child pid terminate\n");
+                    break;
+                }
+            } else if (FD_ISSET(fileno(fp), &rset)) {
+                if (fgets(sendbuff, MAX_LINE - 1, fp)) {
+                    if (false == TimePass::SockBase::Write(sockfd, sendbuff,
+                                                           strlen(sendbuff), NULL)) {
+                        printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
+                    }
+                } else {
+                    break;
+                }
+            }
         }
     }
 }
