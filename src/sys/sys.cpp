@@ -105,7 +105,7 @@ bool TimePass::Sys::Select(int nfds, fd_set* p_readfds, fd_set* p_writefds,
                            fd_set* p_exceptfds, struct timeval* p_timeout,
                            int* p_nfd) {
     int nfd = select(nfds, p_readfds, p_writefds, p_exceptfds, p_timeout);
-    if (*p_nfd < -1) {
+    if (nfd < 0) {
         SET_ERRNO(errno);
         return false;
     }
