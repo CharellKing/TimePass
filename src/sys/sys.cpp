@@ -98,16 +98,20 @@ bool TimePass::Sys::USleep(int32_t usec) {
  * @param p_writefds 监听的写描述符的集合
  * @param p_exceptfds 监听的异常描述符的集合
  * @param p_timeout select返回前的最大时间延迟
- * @param p_nfd 返回监控到的描述符id
+ * @param p_nfd 为NULL，则不返回，否则返回可读、可写、异常的描述符的总数量
  * @return true为成功，false为失败，用Error获取错误信息
  */
 bool TimePass::Sys::Select(int nfds, fd_set* p_readfds, fd_set* p_writefds,
                            fd_set* p_exceptfds, struct timeval* p_timeout,
                            int* p_nfd) {
-    *p_nfd = select(nfds, p_readfds, p_writefds, p_exceptfds, p_timeout);
+    int nfd = select(nfds, p_readfds, p_writefds, p_exceptfds, p_timeout);
     if (*p_nfd < -1) {
         SET_ERRNO(errno);
         return false;
+    }
+
+    if (p_nfd) {
+        *p_nfd = nfd;
     }
     return true;
 }

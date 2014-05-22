@@ -62,7 +62,7 @@ bool USleep(int32_t usec);
  * @param p_writefds 监听的写描述符的集合
  * @param p_exceptfds 监听的异常描述符的集合
  * @param p_timeout select返回前的最大时间延迟
- * @param p_nfd 返回监控到的描述符id
+ * @param p_nfd 为NULL，则不返回，否则返回可读、可写、异常的描述符的总数量
  * @return true为成功，false为失败，用Error获取错误信息
  */
 bool Select(int nfds, fd_set* p_readfds, fd_set* p_writefds,
