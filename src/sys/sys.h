@@ -55,6 +55,19 @@ bool Wait(int pid, int option, int* p_status, int* p_pid);
  */
 bool USleep(int32_t usec);
 
+/**
+ * 监控多个描述符
+ * @param nfds 在这三个集合中的最大描述符id，然后+1
+ * @param p_readfds 监听的读描述符的集合
+ * @param p_writefds 监听的写描述符的集合
+ * @param p_exceptfds 监听的异常描述符的集合
+ * @param p_timeout select返回前的最大时间延迟
+ * @param p_nfd 返回监控到的描述符id
+ * @return true为成功，false为失败，用Error获取错误信息
+ */
+bool Select(int nfds, fd_set* p_readfds, fd_set* p_writefds,
+            fd_set* p_exceptfds, struct timeval* p_timeout, int* p_nfd);
+
 }; /*namespace Sys*/
 }; /*namespace TimePass*/
 
