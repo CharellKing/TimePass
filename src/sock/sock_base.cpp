@@ -147,5 +147,9 @@ bool TimePass::SockBase::Close(int sockfd) {
  * @return true - 成功；false - 失败；通过Error可以获取错误信息
  */
 bool TimePass::SockBase::Shutdown(int sockfd, int howto) {
-    return 0 == shutdown(sockfd, howto);
+    if (shutdown(sockfd, howto) < 0) {
+        SET_ERRNO(errno);
+        return false;
+    }
+    return true;
 }
