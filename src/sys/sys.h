@@ -62,11 +62,34 @@ bool USleep(int32_t usec);
  * @param p_writefds 监听的写描述符的集合
  * @param p_exceptfds 监听的异常描述符的集合
  * @param p_timeout select返回前的最大时间延迟
- * @param p_nfd 为NULL，则不返回，否则返回可读、可写、异常的描述符的总数量
+ * @param p_nfd 为NULL，则不返回，否则返回可读、可写、异常的描述符的总数量, 0为超时
  * @return true为成功，false为失败，用Error获取错误信息
  */
 bool Select(int nfds, fd_set* p_readfds, fd_set* p_writefds,
-            fd_set* p_exceptfds, struct timeval* p_timeout, int* p_nfd);
+            fd_set* p_exceptfds, struct timeval* p_timeout,
+            int* p_nfd);
+
+/**
+ * 以纳妙来设置睡眠时间
+ * @param nsec 睡眠时间
+ * @return true为成功，false为失败，用Error获取错误信息
+ */
+bool NSleep(int32_t nsec);
+
+/**
+ * I/O复用，相对于Select函数，超时的精度精确到纳秒；以及可以设置禁止的打断信号
+ * @param nfds 最大的描述服+ 1
+ * @param p_readfds 读描述符集
+ * @param p_writefds　写描述符集合
+ * @param p_exceptfds　异常描述符集合
+ * @param p_timeout　　超时时间
+ * @param p_sigmask 禁止打断PSelect的信号集合
+ * @param p_nfds　　返回就绪的描述符个数
+ * @return
+ */
+bool PSelect(int nfds, fd_set* p_readfds, fd_set* p_writefds,
+             fd_set* p_exceptfds, struct timespec* p_timeout,
+             const sigset_t* p_sigmask, int* p_nfds);
 
 }; /*namespace Sys*/
 }; /*namespace TimePass*/
