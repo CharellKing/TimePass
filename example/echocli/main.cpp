@@ -64,7 +64,14 @@ void EchoSvr(int sockfd, FILE* fp) {
                         printf("%s\n", TimePass::Error::GetLastErrmsg().c_str());
                     }
                 } else {
-                    break;
+                    /*客户端数据发送完毕，出现两种情况，不能立即关闭：
+                     * （1）客户端缓冲区里面的数据还没有发送完毕
+                     * （2）服务端的数据还没有完全返回
+                     * */
+
+                    TimePass::SockBase::Shutdown(sockfd, SHUT_WR);
+                    FD_CLR(fileno(fp), &rset);
+                    continue;
                 }
             }
         }
