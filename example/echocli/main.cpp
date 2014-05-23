@@ -57,7 +57,9 @@ void EchoSvr(int sockfd, FILE* fp) {
                     printf("catch server child pid terminate\n");
                     break;
                 }
-            } else if (FD_ISSET(fileno(fp), &rset)) {
+            }
+
+            if (FD_ISSET(fileno(fp), &rset)) {
                 if (fgets(sendbuff, MAX_LINE - 1, fp)) {
                     if (false == TimePass::SockBase::Write(sockfd, sendbuff,
                                                            strlen(sendbuff), NULL)) {
