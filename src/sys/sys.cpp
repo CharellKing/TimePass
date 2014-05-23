@@ -140,7 +140,7 @@ bool TimePass::Sys::NSleep(int32_t nsec) {
  * @param p_timeout　　超时时间
  * @param p_sigmask 禁止打断PSelect的信号集合
  * @param p_nfds　　返回就绪的描述符个数
- * @return
+ * @return true为成功，false为失败，用Error获取错误信息
  */
 bool TimePass::Sys::PSelect(int nfds, fd_set* p_readfds, fd_set* p_writefds,
                             fd_set* p_exceptfds, struct timespec* p_timeout,
@@ -152,6 +152,27 @@ bool TimePass::Sys::PSelect(int nfds, fd_set* p_readfds, fd_set* p_writefds,
         return false;
     }
 
+    if (p_nfds) {
+        *p_nfds = nfd;
+    }
+    return true;
+}
+
+/**
+ * 实现IO异步
+ * @param fdarray 描述符数组
+ * @param nfds    标记数组中元素个数
+ * @param timeout 超时时间
+ * @param p_nfds  返回就绪的描述符个数
+ * @return true为成功，false为失败，用Error获取错误信息
+ */
+bool TimePass::Sys::Poll(struct pollfd *fdarray, unsigned long nfds,
+                        int timeout, int* p_nfds) {
+    int nfd = poll(fdarray, nfds, timeout);
+    if (nfd < 0) {
+        SET_ERRNO(errno);
+        return false;
+    }
     if (p_nfds) {
         *p_nfds = nfd;
     }

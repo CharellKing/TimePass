@@ -12,6 +12,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
+#include <poll.h>
 
 namespace TimePass {
 namespace Sys {
@@ -85,11 +86,23 @@ bool NSleep(int32_t nsec);
  * @param p_timeout　　超时时间
  * @param p_sigmask 禁止打断PSelect的信号集合
  * @param p_nfds　　返回就绪的描述符个数
- * @return
+ * @return true为成功，false为失败，用Error获取错误信息
  */
 bool PSelect(int nfds, fd_set* p_readfds, fd_set* p_writefds,
              fd_set* p_exceptfds, struct timespec* p_timeout,
              const sigset_t* p_sigmask, int* p_nfds);
+
+
+/**
+ * 实现IO异步
+ * @param fdarray 描述符数组
+ * @param nfds    标记数组中元素个数
+ * @param timeout 超时时间
+ * @param p_nfds  返回就绪的描述符个数
+ * @return true为成功，false为失败，用Error获取错误信息
+ */
+bool Poll(struct pollfd *fdarray, unsigned long nfds, int timeout, int* p_nfds);
+
 
 }; /*namespace Sys*/
 }; /*namespace TimePass*/
