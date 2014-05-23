@@ -15,4 +15,8 @@
 
 #define MAX_UNSIGNED_INT 0xffffffff /*最大无符号整型*/
 
+#ifndef INFTIM
+#define INFTIM -1                   /*定义poll的无限阻塞参数*/
+#endif
+
 #endif /* _GLOBAL_MACRO_H_ */
