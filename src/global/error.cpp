@@ -19,10 +19,10 @@ std::string TimePass::Error::errfile_;
 int TimePass::Error::errline_ = 0;
 
 /**
- * 设置错误信息
- * @param no 错误ID
- * @param errfile 错误所在的文件路径
- * @param errline 错误所在的文件行
+ * set error information
+ * @param no:       error id
+ * @param errfile:  the files error occurs in
+ * @param errline:  the line error occus in a file(errfile)
  */
 void TimePass::Error::SetErrno(int no, const char* errfile, int errline) {
     errno_ = no;
@@ -31,16 +31,16 @@ void TimePass::Error::SetErrno(int no, const char* errfile, int errline) {
 }
 
 /**
- * 获取错误的ID
- * @return 错误的ID
+ * get error id
+ * @return: error id
  */
 int TimePass::Error::GetLastErrno() {
     return errno_;
 }
 
 /**
- * 获取错误的整合信息，报错（错误码、错误文件路径、错误所在的行）
- * @return 错误整合信息
+ * get the error's composed information(error id、error file、error line)
+ * @return: error's message
  */
 const std::string TimePass::Error::GetLastErrmsg() {
     char errmsg[MAX_ERR_MSG];

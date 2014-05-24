@@ -13,15 +13,15 @@ namespace TimePass {
 namespace Util {
 
 /**
- * 判断系统是否属于大端字节序列
- * @return true为是，false为否
+ * justy whether the system is big endian or not
+ * @return true for yes, false for no
  */
 bool IsBigEndian();
 
 /**
- * 将数据块清零
- * @param p_addr 数据块的首地址
- * @param size 数据块的字节大小
+ * zero a data block
+ * @param p_addr the block's initial address
+ * @param size the data block's byte-size
  */
 void Zero(void* p_addr, size_t size);
 

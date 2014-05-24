@@ -12,34 +12,34 @@
 
 namespace TimePass {
 /**
- * 错误码处理
+ * handle error
  */
 class Error {
  public:
     /**
-     * 设置错误信息
-     * @param no 错误ID
-     * @param errfile 错误所在的文件路径
-     * @param errline 错误所在的文件行
+     * set error information
+     * @param no:       error id
+     * @param errfile:  the files error occurs in
+     * @param errline:  the line error occus in a file(errfile)
      */
     static void SetErrno(int no, const char* errfile, int errline);
 
     /**
-     * 获取错误的ID
-     * @return 错误的ID
+     * get error id
+     * @return: error id
      */
     static int GetLastErrno();
 
     /**
-     * 获取错误的整合信息，报错（错误码、错误文件路径、错误所在的行）
-     * @return 错误整合信息
+     * get the error's composed information(error id、error file、error line)
+     * @return: error's message
      */
     static const std::string GetLastErrmsg();
 
  private:
-    static int errno_;          /*错误码*/
-    static std::string errfile_;/*错误所在的文件*/
-    static int errline_;        /*错误所在的行号*/
+    static int errno_;          /*error id*/
+    static std::string errfile_;/*file path errors occurs in*/
+    static int errline_;        /*line number errors occurs in a file*/
 };
 };  /*namespace TimePass*/
 
