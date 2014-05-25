@@ -13,6 +13,16 @@
 namespace TimePass {
 namespace SockBase {
 /**
+ * GetSockOpt's optval type
+ */
+union OptionVal {
+    int i_val;
+    long l_val;
+    struct linger linger_val;
+    struct timeval timeval_val;
+};
+
+/**
  * create socket
  * @param family: a domain of communication. such as AF_INET and so on
  * @param type: a socket type. such as SOCK_STREAM、SOCK_DGRAM and so on
