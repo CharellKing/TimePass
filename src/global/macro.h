@@ -15,6 +15,8 @@
 
 #define MAX_UNSIGNED_INT 0xffffffff /*the max unsigned integer*/
 
+#define SOCK_FAILED -1              /*invalid socket*/
+
 #ifndef INFTIM
 #define INFTIM -1                   /*the wait-time be infinite*/
 #endif
