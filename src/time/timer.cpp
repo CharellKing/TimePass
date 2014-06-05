@@ -39,7 +39,7 @@ bool TimePass::Timer::AddAction(int action_id, int64_t next_time, int interval,
     }
 
     if (actions_.end() != actions_.find(action_id)) {
-        SET_ERRNO(ErrorNo::CONTAINER_KEY_EXIST );
+        SET_ERRNO(ErrorNo::CONTAINER_KEY_EXIST);
         return false;
     }
 
