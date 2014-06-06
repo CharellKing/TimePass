@@ -55,4 +55,7 @@ Improvment
 Contact Me
 -------------------
 CharellkingQu@gmail.com
-  
+
+My Blogs
+-------------------
+www.cnblogs.com/wind-qu
