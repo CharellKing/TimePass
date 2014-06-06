@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ $# -gt 1 ] #>
 then
 	echo "usage: $0 CMAKE_INSTALL_PREFIX(/usr/share etc..)"
