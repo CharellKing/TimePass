@@ -27,6 +27,7 @@ struct ThreadFuncArg {
     int* p_count;
     std::vector<int>* p_v;
     TimePass::RWMutex* p_l;
+
 };
 
 void* ReadFunc(void* read_arg) {
