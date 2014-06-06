@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -g   -shared -Wl,-soname,libTimepassSys.so -o libTimepassSys.so CMakeFiles/sys_shared.dir/sys.cpp.o 

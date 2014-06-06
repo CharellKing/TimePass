@@ -1,2 +1,0 @@
-/usr/bin/ar cr libTimepassSock.a  CMakeFiles/sock_static.dir/sock_base.cpp.o
-/usr/bin/ranlib libTimepassSock.a

@@ -1,2 +1,0 @@
-/usr/bin/ar cr libTimepassShm.a  CMakeFiles/shm_static.dir/shm_base.cpp.o
-/usr/bin/ranlib libTimepassShm.a

@@ -1,2 +1,0 @@
-/usr/bin/ar cr libTimepassTime.a  CMakeFiles/TimepassTime_static.dir/timer.cpp.o CMakeFiles/TimepassTime_static.dir/watch.cpp.o
-/usr/bin/ranlib libTimepassTime.a

@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -g   -shared -Wl,-soname,libTimepassTime.so -o libTimepassTime.so CMakeFiles/time_shared.dir/timer.cpp.o CMakeFiles/time_shared.dir/watch.cpp.o 
