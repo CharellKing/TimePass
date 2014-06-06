@@ -1,0 +1,19 @@
+AUX_SOURCE_DIRECTORY(. SRC)
+ADD_EXECUTABLE(echocli ${SRC})
+
+IF (GLOBAL AND SOCK AND SYS)
+	TARGET_LINK_LIBRARIES(echocli ${GLOBAL} ${SOCK} ${SYS})
+	INSTALL(TARGETS echocli RUNTIME DESTINATION bin)
+ELSE (GLOBAL AND SOCK AND SYS)
+	IF (NOT GLOBAL)
+		MESSAGE("can't find libTimepassGlobal.so")
+	ENDIF (NOT GLOBAL)
+
+	IF (NOT SOCK)
+		MESSAGE("can't find libTimepassSock.so")
+	ENDIF (NOT SOCK)
+
+    IF (NOT SYS)
+        MESSAGE("can't find libTimepassSys.so")
+    ENDIF (NOT SYS)
+ENDIF (GLOBAL AND SOCK AND SYS)

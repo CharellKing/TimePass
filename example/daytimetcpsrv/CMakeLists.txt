@@ -1,0 +1,15 @@
+AUX_SOURCE_DIRECTORY(. SRC)
+ADD_EXECUTABLE(daytimetcpsrv ${SRC})
+
+IF (GLOBAL AND SOCK)
+	TARGET_LINK_LIBRARIES(daytimetcpsrv ${GLOBAL} ${SOCK})
+	INSTALL(TARGETS daytimetcpsrv RUNTIME DESTINATION bin)
+ELSE (GLOBAL AND SOCK)
+	IF (NOT GLOBAL)
+		MESSAGE("can't find libTimepassGlobal.so")
+	ENDIF (NOT GLOBAL)
+
+	IF (NOT SOCK)
+		MESSAGE("can't find libTimepassSock.so")
+	ENDIF (NOT SOCK)
+ENDIF (GLOBAL AND SOCK)
