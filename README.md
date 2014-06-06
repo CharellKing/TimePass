@@ -14,39 +14,27 @@ shm, sock, sys, time).
 Compile and Build
 --------------------
 ### use cmake to compile and build
-sudo apt-get install cmake #for debian(ubuntu etc)
-
-sudo yum install cmake     #for redhat(fedora centos etc)
+    sudo apt-get install cmake #for debian(ubuntu etc)
+    sudo yum install cmake     #for redhat(fedora centos etc)
 
 ### only install shared librarys
-cd TimePass/src
-
-mkdir build
-
-cmake .. (CMAKE_PREFIX_INSALL="path")
-
-make
-
-sudo make install
+    cd TimePass/src
+    mkdir build
+    cmake .. (CMAKE_PREFIX_INSALL="path")
+    make
+    sudo make install
 
 ### generate executable examples
-cd TimePass/example
-
-#the path must be same with above
- 
-cmake .. (CMAKE_PREFIX_INSTALL="path")
-
-make
-
-sudo make install
+    cd TimePass/example
+    #the path must be same with above
+    cmake .. (CMAKE_PREFIX_INSTALL="path")
+    make
+    sudo make install
 
 ### automake.sh
-
-#be fully compatible with bash, not others scripts. the argument is optional;
-
-sudo bash automake.sh [insall-path]
- 
-(for convenience, execute automake.sh to finish above two steps)
+    #be fully compatible with bash, not others scripts. the argument is optional;
+    sudo bash automake.sh [insall-path]
+    (for convenience, execute automake.sh to finish above two steps)
 
 ### autoclean.sh
 
