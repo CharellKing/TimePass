@@ -15,27 +15,37 @@ Compile and Build
 --------------------
 ### use cmake to compile and build
  sudo apt-get install cmake #for debian(ubuntu etc)
+
  sudo yum install cmake     #for redhat(fedora centos etc)
 
 ### only install shared librarys
  cd TimePass/src
+
  mkdir build
+
  cmake .. (CMAKE_PREFIX_INSALL="path")
+
  make
+
  sudo make install
 
 ### generate executable examples
  cd TimePass/example
+
  cmake .. (CMAKE_PREFIX_INSTALL="path") # the path must be same with above
+
  make
+
  sudo make install
 
-### for convenience, execute automake.sh to finish above two steps
+### automake.sh
  sudo bash automake.sh [insall-path] #be fully compatible with bash, not others scripts. the argument is optional;
  
-### for convenience, execute autoclean.sh to clean all the intermediate files and installed files
+ (for convenience, execute automake.sh to finish above two steps)
+### autoclean.sh
  sudo bash autoclean.sh [install-path] #installed path mush be correspondence between autoinstall.sh
 
+ (for convenience, execute autoclean.sh to clean all the intermediate files and installed files)
 
 Improvment
 --------------------
