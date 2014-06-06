@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -g   -shared -Wl,-soname,libTimepassGlobal.so -o libTimepassGlobal.so CMakeFiles/global_shared.dir/error.cpp.o CMakeFiles/global_shared.dir/util.cpp.o 
