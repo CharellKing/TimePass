@@ -33,16 +33,13 @@ Compile and Build
 
 ### automake.sh
     #be fully compatible with bash, not others scripts. the argument is optional;
+    #for convenience, execute automake.sh to finish above two steps
     sudo bash automake.sh [insall-path]
-    (for convenience, execute automake.sh to finish above two steps)
 
 ### autoclean.sh
-
-#installed path mush be correspondence between autoinstall.sh
-
-sudo bash autoclean.sh [install-path]
-
-(for convenience, execute autoclean.sh to clean all the intermediate files and installed files)
+    #installed path mush be correspondence between autoinstall.sh
+    #for convenience, execute autoclean.sh to clean all the intermediate files and installed files
+    sudo bash autoclean.sh [install-path]
 
 Improvment
 --------------------
