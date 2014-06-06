@@ -14,38 +14,47 @@ shm, sock, sys, time).
 Compile and Build
 --------------------
 ### use cmake to compile and build
- sudo apt-get install cmake #for debian(ubuntu etc)
+sudo apt-get install cmake #for debian(ubuntu etc)
 
- sudo yum install cmake     #for redhat(fedora centos etc)
+sudo yum install cmake     #for redhat(fedora centos etc)
 
 ### only install shared librarys
- cd TimePass/src
+cd TimePass/src
 
- mkdir build
+mkdir build
 
- cmake .. (CMAKE_PREFIX_INSALL="path")
+cmake .. (CMAKE_PREFIX_INSALL="path")
 
- make
+make
 
- sudo make install
+sudo make install
 
 ### generate executable examples
- cd TimePass/example
+cd TimePass/example
 
- cmake .. (CMAKE_PREFIX_INSTALL="path") # the path must be same with above
+#the path must be same with above
+ 
+cmake .. (CMAKE_PREFIX_INSTALL="path")
 
- make
+make
 
- sudo make install
+sudo make install
 
 ### automake.sh
- sudo bash automake.sh [insall-path] #be fully compatible with bash, not others scripts. the argument is optional;
- 
- (for convenience, execute automake.sh to finish above two steps)
-### autoclean.sh
- sudo bash autoclean.sh [install-path] #installed path mush be correspondence between autoinstall.sh
 
- (for convenience, execute autoclean.sh to clean all the intermediate files and installed files)
+#be fully compatible with bash, not others scripts. the argument is optional;
+
+sudo bash automake.sh [insall-path]
+ 
+(for convenience, execute automake.sh to finish above two steps)
+
+### autoclean.sh
+
+#installed path mush be correspondence between autoinstall.sh
+
+sudo bash autoclean.sh [install-path]
+
+(for convenience, execute autoclean.sh to clean all the intermediate files and installed files)
 
 Improvment
 --------------------
