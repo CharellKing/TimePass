@@ -47,7 +47,7 @@ Improvment
  * optimize the shared memory: the shared memory alloc a big memory, it will cause many memory-slices; to manage these
  sclies, I should make most use of these slices.
 
- * expand hash container's capacity: to expand hash container, all the data must rehash, so I should deal with moment of rehashing
+ * expand hash container's capacity: to expand hash container, all the data must rehash, so I should deal with rehash
    to prevent reducing the efficiency.
 
 Contact Me
