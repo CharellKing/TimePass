@@ -6,12 +6,15 @@ then
 fi
 
 root=`pwd`
-opt="/usr/local/TimePass"
+opt="~/TimePass"
 if [ $# -eq 1 ]
 then
 	opt=${1}
 fi
-roots=(${root}"/src" ${root}"/example")
+
+#roots=(${root}"/src" ${root}"/example")
+roots=(${root}"/src")
+
 for i in ${roots[@]}
 do
 	cd $i;
