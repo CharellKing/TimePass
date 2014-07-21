@@ -37,7 +37,15 @@ class ShmBlock {
 
   const BlockHead* Head()const;
 
+  char* Begin();
+
+  const char* Begin()const;
+
+  const char* End()const;
+
   char* Offset(off_t offset);
+
+  const char* Offset(off_t offset)const;
 
   char* Write(const char* p_data, off_t len, off_t offset);
 

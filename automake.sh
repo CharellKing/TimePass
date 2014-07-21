@@ -12,8 +12,8 @@ then
 	opt=${1}
 fi
 
-#roots=(${root}"/src" ${root}"/example")
-roots=(${root}"/src")
+roots=(${root}"/src" ${root}"/example")
+# roots=(${root}"/src")
 
 for i in ${roots[@]}
 do
