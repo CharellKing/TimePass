@@ -6,9 +6,11 @@
 
 #include"shm_base.h"
 
-#include <stdio.h>
+
 #include <errno.h>
-#include <string.h>
+
+#include <cstdio>
+#include <cstring>
 
 #include"global/error.h"
 #include"global/errno.h"

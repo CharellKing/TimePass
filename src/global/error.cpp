@@ -6,12 +6,7 @@
 
 #include "global/error.h"
 
-#include <stdio.h>
-
-#include <string>
-
 int TimePass::Error::errno_ = 0;
-
 
 void TimePass::Error::SetErrno(int err) {
     errno_ = err;
