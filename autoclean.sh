@@ -19,3 +19,8 @@ rm -rf build
 
 cd ${root}"/src"
 rm -rf build
+
+cd ${root}
+rm -rf bin
+rm -rf include
+rm -rf lib
