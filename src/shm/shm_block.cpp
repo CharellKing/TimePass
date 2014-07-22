@@ -89,27 +89,15 @@ const TimePass::BlockHead* TimePass::ShmBlock::Head()const {
 }
 
 char* TimePass::ShmBlock::Begin() {
-  if (NULL == p_head_) {
-    Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return NULL;
-  }
   return p_data_;
 }
 
 const char* TimePass::ShmBlock::Begin()const {
-  if (NULL == p_head_) {
-    Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return NULL;
-  }
   return p_data_;
 }
 
 const char* TimePass::ShmBlock::End()const {
-  if (NULL == p_head_) {
-    Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return NULL;
-  }
-  return p_data_ + p_head_->capacity;
+  return NULL;
 }
 
 char* TimePass::ShmBlock::Offset(off_t offset) {

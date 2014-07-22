@@ -107,6 +107,32 @@ class ShmArray {
     return p_ext_;
   }
 
+  T* Begin() {
+    return p_data_;
+  }
+
+  const T* Begin()const {
+    return p_data_;
+  }
+
+  const T* End() {
+    return NULL;
+  }
+
+  T* Next(T* p_cur) {
+    if (p_cur  - p_data_ >= p_head_->capacity) {
+      return NULL;
+    }
+    return p_cur + 1;
+  }
+
+  const T* Next(const T* p_cur)const {
+    if (p_cur  - p_data_ >= p_head_->capacity) {
+      return NULL;
+    }
+    return p_cur + 1;
+  }
+
   T* At(off_t index) {
     if (index < 0 || index >= p_head_->capacity) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
@@ -172,6 +198,10 @@ class ShmArray {
       p_head_->capacity = capacity;
     }
     return ret;
+  }
+
+  static T* FailedValue() {
+    return static_cast<T*>(-1);
   }
 
  private:
