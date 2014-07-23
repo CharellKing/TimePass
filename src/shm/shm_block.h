@@ -43,6 +43,10 @@ class ShmBlock {
 
   const char* End()const;
 
+  char* Next(char* p_cur);
+
+  const char* Next(const char* p_cur)const;
+
   char* Offset(off_t offset);
 
   const char* Offset(off_t offset)const;
@@ -52,6 +56,8 @@ class ShmBlock {
   char* Read(char* p_data, off_t len, off_t offset)const;
 
   bool Resize(off_t capacity);
+
+  static char* ShmFailed();
 
  private:
   char name_[ShmBase::SHM_MAX_NAME_LEN];

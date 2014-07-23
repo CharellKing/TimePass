@@ -15,7 +15,6 @@
 
 #include "global/error.h"
 #include "global/errno.h"
-#include "global/macro.h"
 #include "shm/shm_base.h"
 #include "shm/shm_array.h"
 
@@ -41,7 +40,7 @@ class ShmVector {
       return false;
     }
 
-    p_head_ = shm_array_.Extend();
+    p_head_ = shm_array_.GetExtend();
     p_head_->capacity = capacity;
     p_head_->size = 0;
 
@@ -60,7 +59,7 @@ class ShmVector {
       return false;
     }
 
-    p_head_ = shm_array_.Extend();
+    p_head_ = shm_array_.GetExtend();
 
     p_ext_ = &p_head_->extend;
 
@@ -77,18 +76,38 @@ class ShmVector {
   }
 
   off_t Capacity()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
+
     return p_head_->capacity;
   }
 
   off_t Size()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
+
     return p_head_->size;
   }
 
   off_t TotalBytes()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
+
     return shm_array_.TotalBytes();
   }
 
-  off_t UsedSize()const {
+  off_t UsedBytes()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
+
     return sizeof(off_t) + sizeof(ArrayHead) +
            sizeof(VectorHead<EXTEND>) + sizeof(T) * p_head_->capacity;
   }
@@ -98,22 +117,46 @@ class ShmVector {
   }
 
   const VectorHead<EXTEND>* Head()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return reinterpret_cast<VectorHead<EXTEND>*>(ShmArray<T, char*>());
+    }
     return p_head_;
   }
 
-  void SetExtend(const EXTEND& ext) {
+  bool SetExtend(const EXTEND& ext) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+    }
+
     *p_ext_ = ext;
+    return true;
   }
 
-  const EXTEND* GetExtend()const {
+  const EXTEND* GetExtend() {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return reinterpret_cast<EXTEND*>(ShmFailed());
+    }
     return p_ext_;
   }
 
   T* Begin() {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
     return p_data_;
   }
 
   const T* Begin()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
     return p_data_;
   }
 
@@ -122,20 +165,35 @@ class ShmVector {
   }
 
   T* Next(T* p_cur) {
-    if (p_cur  - p_data_ >= size) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
+    if (p_cur  - p_data_ >= p_head_->size - 1) {
       return NULL;
     }
     return p_cur + 1;
   }
 
   const T* Next(const T* p_cur)const {
-    if (p_cur  - p_data_ >= size) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
+    if (p_cur  - p_data_ >= p_head_->size - 1) {
       return NULL;
     }
     return p_cur + 1;
   }
 
   T* At(off_t index) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
     if (index < 0 || index >= p_head_->size) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
       return NULL;
@@ -145,6 +203,11 @@ class ShmVector {
   }
 
   const T* At(off_t index)const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
     if (index < 0 || index >= p_head_->size) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
       return NULL;
@@ -154,6 +217,11 @@ class ShmVector {
   }
 
   T* Write(const T& data, off_t index) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
     if (index < 0 || index >= p_head_->size) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
       return NULL;
@@ -169,6 +237,11 @@ class ShmVector {
   }
 
   T* Read(T* p_data, off_t index) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
     if (NULL == p_data) {
       Error::SetErrno(ErrorNo::PTR_NULL);
       return NULL;
@@ -190,15 +263,20 @@ class ShmVector {
   T* PushFront(const T& data) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return NULL;
     }
 
-    if (size == capacity) {
+    if (p_head_->size == p_head_->capacity) {
       if (false == Resize(p_head_->capacity << 1)) {
         return NULL;
       }
     }
-    for (off_t i = p_head_->size; i >= 1; ++i) {
+    for (off_t i = p_head_->size; i > 0; --i) {
       *(p_data_ + i) = *(p_data_ + i - 1);
     }
     *(p_data_) = data;
@@ -209,10 +287,15 @@ class ShmVector {
   T* PushBack(const T& data) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return NULL;
     }
 
-    if (size == capacity) {
+    if (p_head_->size == p_head_->capacity) {
       if (false == Resize(p_head_->capacity << 1)) {
         return NULL;
       }
@@ -253,11 +336,12 @@ class ShmVector {
   T* Front() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmArray<T, VectorHead<EXTEND>::FailedValue();
+      return ShmFailed();
     }
 
     if (p_head_->size <= 0) {
-      return NULL;
+      Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
+      return ShmFailed();
     }
 
     return p_data_;
@@ -266,11 +350,12 @@ class ShmVector {
   T* Back() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmArray<T, VectorHead<EXTEND>::FailedValue();
+      return ShmFailed();
     }
 
     if (p_head_->size <= 0) {
-      return NULL;
+      Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
+      return ShmFailed();
     }
 
     return p_data_ + p_head_->size - 1;
@@ -279,21 +364,21 @@ class ShmVector {
   T* Insert(const T& data, off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return NULL;
+      return ShmFailed();
     }
 
     if (index < 0 || index > p_head_->size) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return NULL;
+      return ShmFailed();
     }
 
-    if (size == capacity) {
+    if (p_head_->size == p_head_->capacity) {
       if (false == Resize(p_head_->capacity << 1)) {
-        return NULL;
+        return ShmFailed();
       }
     }
 
-    for (int i = index + 1; i <= p_head_->size; ++i) {
+    for (int i = p_head_->size; i > index; --i) {
       *(p_data_ + i) = *(p_data_ + i - 1);
     }
     *(p_data_ + index) = data;
@@ -301,15 +386,81 @@ class ShmVector {
     return (p_data_ + index);
   }
 
+  bool Remove(off_t index) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+    }
+
+    if (index <0 || index >= p_head_->size) {
+      Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
+      return false;
+    }
+
+    for (off_t i = p_head_->size - 1; i > index; --i) {
+      *(p_data_ + i - 1) = *(p_data_ + i);
+    }
+    --p_head_->size;
+    return true;
+  }
+
+  bool Clear() {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+    }
+    p_head_->size = 0;
+    return 0;
+  }
+
   bool Optimize() {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+    }
+
     if (p_head_->capacity - (p_head_->size << 1) > p_head_->size) {
       return Resize(p_head_->size << 1);
     }
     return true;
   }
-private:
- bool Resize(off_t capacity) {
-   if (capacity < 0) {
+
+  bool ToDot(const std::string& filename,
+            const std::string (*Label)(const T& value))const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+    }
+
+    FILE* fp = fopen(filename.c_str(), "wb");
+    if (NULL == fp) {
+      return false;
+    }
+
+    fprintf(fp, "digraph G {\n");
+    if (p_head_->size > 0) {
+      fprintf(fp, "array [shape=record, label=\"<f0>%s",
+              Label(*At(0)).c_str());
+    }
+
+    for (off_t index = 1; index < p_head_->size; ++index) {
+      fprintf(fp, "|<f%ld>%s", index, Label(*At(index)).c_str());
+    }
+    if (p_head_->size > 0) {
+      fprintf(fp, "\"];\n");
+    }
+    fprintf(fp, "}\n");
+    fclose(fp);
+    return true;
+  }
+
+  static T* ShmFailed() {
+    return reinterpret_cast<T*>(-1);
+  }
+
+ private:
+  bool Resize(off_t capacity) {
+    if (capacity < 0) {
      Error::SetErrno(ErrorNo::SHM_CAPACITY_NONNEGATIVE);
      return false;
     }
@@ -328,8 +479,7 @@ private:
   VectorHead<EXTEND>* p_head_;
   EXTEND*     p_ext_;
   T*          p_data_;
-}
-
+};
 };
 
 #endif /*_SHM_SHM_VECTOR_H_*/

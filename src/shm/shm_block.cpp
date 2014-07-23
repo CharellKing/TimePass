@@ -85,14 +85,28 @@ const char* TimePass::ShmBlock::Name()const {
 }
 
 const TimePass::BlockHead* TimePass::ShmBlock::Head()const {
+  if (NULL == p_head_) {
+    Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+    return reinterpret_cast<BlockHead*>(ShmFailed());
+  }
   return p_head_;
 }
 
 char* TimePass::ShmBlock::Begin() {
+  if (NULL == p_head_) {
+    Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+    return ShmFailed();
+  }
+
   return p_data_;
 }
 
 const char* TimePass::ShmBlock::Begin()const {
+  if (NULL == p_head_) {
+    Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+    return ShmFailed();
+  }
+
   return p_data_;
 }
 
@@ -100,15 +114,39 @@ const char* TimePass::ShmBlock::End()const {
   return NULL;
 }
 
+char* TimePass::ShmBlock::Next(char* p_cur) {
+  if (NULL == p_head_) {
+    Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+    return ShmFailed();
+  }
+
+  if (p_cur - p_data_ >= p_head_->capacity - 1) {
+    return NULL;
+  }
+  return p_cur + 1;
+}
+
+const char* TimePass::ShmBlock::Next(const char* p_cur)const {
+  if (NULL == p_head_) {
+    Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+    return ShmFailed();
+  }
+
+  if (p_cur - p_data_ >= p_head_->capacity - 1) {
+    return NULL;
+  }
+  return p_cur + 1;
+}
+
 char* TimePass::ShmBlock::Offset(off_t offset) {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return NULL;
+    return ShmFailed();
   }
 
   if (offset >= p_head_->capacity || offset < 0) {
     Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-    return NULL;
+    return ShmFailed();
   }
 
   return p_data_ + offset;
@@ -117,12 +155,12 @@ char* TimePass::ShmBlock::Offset(off_t offset) {
 const char* TimePass::ShmBlock::Offset(off_t offset)const {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return NULL;
+    return ShmFailed();
   }
 
   if (offset >= p_head_->capacity || offset < 0) {
     Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-    return NULL;
+    return ShmFailed();
   }
 
   return p_data_ + offset;
@@ -131,22 +169,22 @@ const char* TimePass::ShmBlock::Offset(off_t offset)const {
 char* TimePass::ShmBlock::Write(const char* p_data, off_t len, off_t offset) {
   if (NULL == p_data) {
     Error::SetErrno(ErrorNo::PTR_NULL);
-    return NULL;
+    return ShmFailed();
   }
 
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return NULL;
+    return ShmFailed();
   }
 
   if (len < 0 || offset < 0) {
     Error::SetErrno(ErrorNo::SHM_INDEX_NONNEGATIVE);
-    return NULL;
+    return ShmFailed();
   }
 
   if (offset + len >= p_head_->capacity) {
     Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-    return NULL;
+    return ShmFailed();
   }
 
   memcpy(p_data_ + offset, p_data, len);
@@ -156,22 +194,22 @@ char* TimePass::ShmBlock::Write(const char* p_data, off_t len, off_t offset) {
 char* TimePass::ShmBlock::Read(char* p_data, off_t len, off_t offset)const {
   if (NULL == p_data) {
     Error::SetErrno(ErrorNo::PTR_NULL);
-    return NULL;
+    return ShmFailed();
   }
 
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return NULL;
+    return ShmFailed();
   }
 
   if (len < 0 || offset < 0) {
     Error::SetErrno(ErrorNo::SHM_INDEX_NONNEGATIVE);
-    return NULL;
+    return ShmFailed();
   }
 
   if (offset + len >= p_head_->capacity) {
     Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-    return NULL;
+    return ShmFailed();
   }
 
   memcpy(p_data, p_data_ + offset, len);
@@ -189,4 +227,8 @@ bool TimePass::ShmBlock::Resize(off_t capacity) {
     p_head_->capacity = capacity;
   }
   return ret;
+}
+
+char* TimePass::ShmBlock::ShmFailed() {
+  return reinterpret_cast<char*>(-1);
 }
