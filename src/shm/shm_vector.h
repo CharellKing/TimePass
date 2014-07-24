@@ -216,6 +216,20 @@ class ShmVector {
     return p_data_ + index;
   }
 
+  off_t Index(const T* p_data) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmFailed();
+    }
+
+    off_t index = p_data - p_data_;
+    if (index < 0 || index >= p_head_->size) {
+      Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
+      return -1;
+    }
+    return index;
+  }
+
   T* Write(const T& data, off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
@@ -224,11 +238,6 @@ class ShmVector {
 
     if (index < 0 || index >= p_head_->size) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return NULL;
-    }
-
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return NULL;
     }
 
@@ -244,11 +253,6 @@ class ShmVector {
 
     if (NULL == p_data) {
       Error::SetErrno(ErrorNo::PTR_NULL);
-      return NULL;
-    }
-
-    if (false == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return NULL;
     }
 
@@ -313,7 +317,7 @@ class ShmVector {
     }
 
     if (p_head_->size > 0) {
-      for (off_t i = p_head_->size - 1; i > 0; --i) {
+      for (off_t i = 1; i < p_head_->size; ++i) {
         *(p_data_ + i - 1) = *(p_data_ + i);
       }
       --p_head_->size;
@@ -397,9 +401,10 @@ class ShmVector {
       return false;
     }
 
-    for (off_t i = p_head_->size - 1; i > index; --i) {
+    for (off_t i = index + 1; i < p_head_->size; ++i) {
       *(p_data_ + i - 1) = *(p_data_ + i);
     }
+
     --p_head_->size;
     return true;
   }
