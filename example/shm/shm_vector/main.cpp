@@ -58,7 +58,7 @@ void Create(off_t len) {
 void Destroy() {
   TimePass::ShmVector<int> numbers(SHM_FILE);
   if (false == numbers.Destroy()) {
-    printf("errmsg=%s\n", TimePass::Error::GetErrno());
+    printf("errno=%d\n", TimePass::Error::GetErrno());
   }
 }
 
@@ -66,7 +66,7 @@ void Write() {
   int method = 0;
   TimePass::ShmVector<int> numbers(SHM_FILE);
   if (false == numbers.Open()) {
-    printf("errmsg=%s\n", TimePass::Error::GetErrno());
+    printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
 
@@ -80,19 +80,19 @@ void Write() {
       pos = rand_r(p_seed) % (numbers.Size() + 1);
       number = rand_r(p_seed) % 100;
       if (false == numbers.Insert(number, pos)) {
-        printf("errmsg=%s\n", TimePass::Error::GetErrno());
+        printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
       }
       printf("<insert %d>", pos);
     } else if (1 == method) {
       if (false == numbers.PushBack(number = rand_r(p_seed) % 100)) {
-        printf("errmsg=%s\n", TimePass::Error::GetErrno());
+        printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
       }
       printf("<push_back>");
     } else {
       if (false == numbers.PushFront(number = rand_r(p_seed) % 100)) {
-        printf("errmsg=%s\n", TimePass::Error::GetErrno());
+        printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
       }
       printf("<push_front>");
@@ -107,7 +107,7 @@ void Remove() {
   int method = 0;
   TimePass::ShmVector<int> numbers(SHM_FILE);
   if (false == numbers.Open()) {
-    printf("errmsg=%s\n", TimePass::Error::GetErrno());
+    printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
 
@@ -115,21 +115,35 @@ void Remove() {
   unsigned int* p_seed = &seed;
   int count = rand_r(p_seed) % 5 + 1, pos = 0;
 
+  char name[512];
   for (int i = 0; i < count; ++i) {
-    method = rand_r(p_seed) % 2;
+    method = rand_r(p_seed) % 3;
     if (0 == method) {
-      pos = rand_r(p_seed) % (numbers.Size() + 1);
+      pos = rand_r(p_seed) % (numbers.Size());
       if (false == numbers.Remove(pos)) {
-        printf("errmsg=%s\n", TimePass::Error::GetErrno());
+        printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
       }
+      snprintf(name, sizeof(name) - 1, "vector%d", i);
+      ToDotPs(name, &numbers);
+
       printf("<remove %d>", pos);
-    } else {
+    } else if (1 == method) {
       if (false == numbers.PopBack()) {
-        printf("errmsg=%s\n", TimePass::Error::GetErrno());
+        printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
       }
+      snprintf(name, sizeof(name) - 1, "vector%d", i);
+      ToDotPs(name, &numbers);
       printf("<pop_back>");
+    } else {
+      if (false == numbers.PopFront()) {
+        printf("errno=%d\n", TimePass::Error::GetErrno());
+        return;
+      }
+      snprintf(name, sizeof(name) - 1, "vector%d", i);
+      ToDotPs(name, &numbers);
+      printf("<pop_front>");
     }
   }
   printf("totally remove %d numbers\n", count);
@@ -139,7 +153,7 @@ void Remove() {
 void Read() {
   TimePass::ShmVector<int> numbers(SHM_FILE);
   if (false == numbers.Open()) {
-    printf("errmsg=%s\n", TimePass::Error::GetErrno());
+    printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
   for (off_t i = 0; i < numbers.Size(); ++i) {
@@ -152,10 +166,10 @@ void Read() {
 void Show() {
   TimePass::ShmVector<int> numbers(SHM_FILE);
   if (false == numbers.Open()) {
-    printf("errmsg=%s\n", TimePass::Error::GetErrno());
+    printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
-  ToDotPs("array", &numbers);
+  ToDotPs("vector", &numbers);
   numbers.Close();
 }
 
