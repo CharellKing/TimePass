@@ -128,6 +128,20 @@ class ShmArray {
     return p_ext_;
   }
 
+  off_t Index(T* p_data) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
+      return -1;
+    }
+
+    off_t index = p_data - p_data_;
+    if (index < 0 || index >= p_head_->capacity) {
+      Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
+      return -1;
+    }
+    return index;
+  }
+
   T* Begin() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
