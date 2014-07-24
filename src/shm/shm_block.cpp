@@ -152,6 +152,20 @@ char* TimePass::ShmBlock::Offset(off_t offset) {
   return p_data_ + offset;
 }
 
+off_t TimePass::ShmBlock::Index(const char* p_data)const {
+  if (NULL == p_head_) {
+    Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+    return -1;
+  }
+
+  off_t index = p_data - p_data_;
+  if (index < 0 || index >= p_head_->capacity) {
+    Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
+    return -1;
+  }
+  return index;
+}
+
 const char* TimePass::ShmBlock::Offset(off_t offset)const {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);

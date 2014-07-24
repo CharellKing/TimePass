@@ -49,6 +49,8 @@ class ShmBlock {
 
   char* Offset(off_t offset);
 
+  off_t Index(const char* p_data)const;
+
   const char* Offset(off_t offset)const;
 
   char* Write(const char* p_data, off_t len, off_t offset);
