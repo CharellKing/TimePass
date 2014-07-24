@@ -281,6 +281,15 @@ class ShmArray {
     return ret;
   }
 
+  bool Commit(bool is_sync) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+    }
+
+    return shm_block_.Commit(is_sync);
+  }
+
   static T* ShmFailed() {
     return reinterpret_cast<T*>(-1);
   }

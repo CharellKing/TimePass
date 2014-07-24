@@ -109,7 +109,7 @@ class ShmVector {
     }
 
     return sizeof(off_t) + sizeof(ArrayHead) +
-           sizeof(VectorHead<EXTEND>) + sizeof(T) * p_head_->capacity;
+           sizeof(VectorHead<EXTEND>) + sizeof(T) * p_head_->size;
   }
 
   const char* Name()const {
@@ -219,7 +219,7 @@ class ShmVector {
   off_t Index(const T* p_data) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return -1;
     }
 
     off_t index = p_data - p_data_;
@@ -228,6 +228,16 @@ class ShmVector {
       return -1;
     }
     return index;
+  }
+
+  bool Clear() {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+    }
+
+    p_head_->size = 0;
+    return true;
   }
 
   T* Write(const T& data, off_t index) {
@@ -409,15 +419,6 @@ class ShmVector {
     return true;
   }
 
-  bool Clear() {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return false;
-    }
-    p_head_->size = 0;
-    return 0;
-  }
-
   bool Optimize() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
@@ -457,6 +458,15 @@ class ShmVector {
     fprintf(fp, "}\n");
     fclose(fp);
     return true;
+  }
+
+  bool Commit(bool is_sync) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+    }
+
+    shm_array_.Commit(is_sync);
   }
 
   static T* ShmFailed() {

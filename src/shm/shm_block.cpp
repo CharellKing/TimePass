@@ -243,6 +243,17 @@ bool TimePass::ShmBlock::Resize(off_t capacity) {
   return ret;
 }
 
+bool TimePass::ShmBlock::Commit(bool is_sync) {
+  if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+  }
+
+  return ShmBase::Commit(reinterpret_cast<char*>(p_head_),
+                         TotalBytes(),
+                         is_sync);
+}
+
 char* TimePass::ShmBlock::ShmFailed() {
   return reinterpret_cast<char*>(-1);
 }

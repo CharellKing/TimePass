@@ -59,6 +59,8 @@ class ShmBlock {
 
   bool Resize(off_t capacity);
 
+  bool Commit(bool is_sync);
+
   static char* ShmFailed();
 
  private:
