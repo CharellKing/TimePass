@@ -28,7 +28,7 @@ struct QueueHead {
   EXTEND extend;
 };
 
-template <typename T, typename EXTEND = char>
+template <typename T, typename EXTEND = off_t>
 class ShmQueue {
  public:
   explicit ShmQueue(const char* name):shm_array_(name), p_head_(NULL),

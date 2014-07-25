@@ -28,7 +28,7 @@ struct VectorHead {
   EXTEND extend;
 };
 
-template <typename T, typename EXTEND = char>
+template <typename T, typename EXTEND = off_t>
 class ShmVector {
  public:
   explicit ShmVector(const char* name):shm_array_(name), p_head_(NULL),

@@ -24,7 +24,7 @@ struct ArrayHead {
   off_t capacity;
 };
 
-template <typename T, typename EXTEND = char>
+template <typename T, typename EXTEND = off_t>
 class ShmArray {
  public:
   explicit ShmArray(const char* name):shm_block_(name), p_head_(NULL),
