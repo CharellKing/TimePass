@@ -8,6 +8,8 @@
 
 #define _SHM_SHM_LIST_H_
 
+#include <errno.h>
+
 #include <cstdio>
 
 #include "shm/shm_array.h"
@@ -205,7 +207,7 @@ class ShmList {
     return p_data_ + p_cur->next;
   }
 
-  T* At(off_t index) {
+  ListNode<T>* At(off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<ListNode<T> >();
@@ -224,7 +226,7 @@ class ShmList {
     return p_cur;
   }
 
-  const T* At(off_t index)const {
+  const ListNode<T>* At(off_t index)const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<ListNode<T> >();
@@ -297,8 +299,8 @@ class ShmList {
     }
 
 
-    *(p_data_ + free_offset)->data = data;
-    *(p_data_ + free_offset)->next = p_head_->front;
+    (p_data_ + free_offset)->data = data;
+    (p_data_ + free_offset)->next = p_head_->front;
     p_head_->front = free_offset;
     if (-1 == p_head_->back) {
       p_head_->back = p_head_->front;
@@ -318,8 +320,8 @@ class ShmList {
       return ShmBase::ShmFailed<ListNode<T> >();
     }
 
-    *(p_data_ + free_offset)->data = data;
-    *(p_data_ + free_offset)->next = -1;
+    (p_data_ + free_offset)->data = data;
+    (p_data_ + free_offset)->next = -1;
 
     if (-1 == p_head_->back) {
       p_head_->front = p_head_->back = free_offset;
@@ -371,7 +373,7 @@ class ShmList {
     } else {
       off_t back = p_head_->front;
       ListNode<T>* p_cur = p_data_ + p_head_->front;
-      while (p_head_->tail == p_cur->next) {
+      while (p_head_->back == p_cur->next) {
         p_cur = p_data_ + p_cur->next;
         back = p_cur->next;
       }
@@ -392,7 +394,7 @@ class ShmList {
 
     if (p_head_->size <= 0) {
       Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
-      return ShmBase::ShmFailed<T>();
+      return ShmBase::ShmFailed<ListNode<T> >();
     }
 
     return p_data_ + p_head_->front;
@@ -406,7 +408,7 @@ class ShmList {
 
     if (p_head_->size <= 0) {
       Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
-      return ShmBase::ShmFailed<T>();
+      return ShmBase::ShmFailed<ListNode<T> >();
     }
 
     return p_data_ + p_head_->back;
@@ -415,12 +417,12 @@ class ShmList {
   ListNode<T>* Insert(const T& data, off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<T>();
+      return ShmBase::ShmFailed<ListNode<T> >();
     }
 
     if (index < 0 || index > p_head_->size) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return ShmBase::ShmFailed<T>();
+      return ShmBase::ShmFailed<ListNode<T> >();
     }
 
     if (0 == index) {
@@ -444,8 +446,8 @@ class ShmList {
       --index;
     }
 
-    *(p_data_ + free_offset)->data = data;
-    *(p_data_ + free_offset)->next = p_cur->next;
+    (p_data_ + free_offset)->data = data;
+    (p_data_ + free_offset)->next = p_cur->next;
     p_cur->next = free_offset;
 
     ++p_head_->size;
@@ -516,6 +518,7 @@ class ShmList {
         cur = p_cur->next;
         p_cur = p_data_ + cur;
     }
+    fclose(fp);
     return true;
   }
 
