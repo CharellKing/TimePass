@@ -28,7 +28,7 @@ struct DoublylistHead {
 template <typename T>
 struct DoublylistNode {
   DoublylistNode(const T& data, off_t prior = -1, off_t next = -1)
-                                            :data(data), prior(prior), next(next) {
+                                     :data(data), prior(prior), next(next) {
   }
   T     data;
   off_t prior;
@@ -38,90 +38,89 @@ struct DoublylistNode {
 template <typename T, typename EXTEND = off_t>
 class ShmDoublylist {
  public:
- public:
-   explicit ShmDoublylist(const char* name):shm_array_(name), p_head_(NULL),
+  explicit ShmDoublylist(const char* name):shm_array_(name), p_head_(NULL),
                                             p_ext_(NULL), p_data_(NULL) {
-   }
+  }
 
-   bool Create(off_t capacity) {
-     if (false == shm_array_.Create(capacity * sizeof(T))) {
-       return false;
-     }
+  bool Create(off_t capacity) {
+    if (false == shm_array_.Create(capacity * sizeof(T))) {
+      return false;
+    }
 
-     p_head_ = shm_array_.GetExtend();
-     p_head_->front = -1;
-     p_head_->back = -1;
-     p_head_->free_stack = -1;
-     p_head_->capacity = capacity;
-     p_head_->size = 0;
+    p_head_ = shm_array_.GetExtend();
+    p_head_->front = -1;
+    p_head_->back = -1;
+    p_head_->free_stack = -1;
+    p_head_->capacity = capacity;
+    p_head_->size = 0;
 
-     p_ext_ = &p_head_->extend;
-     p_data_ = shm_array_.Begin();
-     return true;
-   }
+    p_ext_ = &p_head_->extend;
+    p_data_ = shm_array_.Begin();
+    return true;
+  }
 
-   bool Destroy() {
-     return shm_array_.Destroy();
-   }
+  bool Destroy() {
+    return shm_array_.Destroy();
+  }
 
-   bool Open(bool is_readonly = false) {
-     if (false == shm_array_.Open(is_readonly)) {
-       return false;
-     }
+  bool Open(bool is_readonly = false) {
+    if (false == shm_array_.Open(is_readonly)) {
+      return false;
+    }
 
-     p_head_ = shm_array_.GetExtend();
-     p_ext_  = &p_head_->extend;
-     p_data_ = shm_array_.Begin();
-     return true;
-   }
+    p_head_ = shm_array_.GetExtend();
+    p_ext_  = &p_head_->extend;
+    p_data_ = shm_array_.Begin();
+    return true;
+  }
 
-   bool Close() {
-     return shm_array_.Close();
-   }
+  bool Close() {
+    return shm_array_.Close();
+  }
 
-   bool IsOpen()const {
-     return NULL != p_head_;
-   }
+  bool IsOpen()const {
+    return NULL != p_head_;
+  }
 
-   off_t Capacity()const  {
-     if (NULL == p_head_) {
-       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-       return -1;
-     }
-     return p_head_->capacity;
-   }
+  off_t Capacity()const  {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
+    return p_head_->capacity;
+  }
 
-   off_t Size()const {
-     if (NULL == p_head_) {
-       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-       return -1;
-     }
+  off_t Size()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
 
-     return p_head_->size;
-   }
+    return p_head_->size;
+  }
 
-   off_t TotalBytes()const {
-     if (NULL == p_head_) {
-       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-       return -1;
-     }
+  off_t TotalBytes()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
 
-     return shm_array_.TotalBytes();
-   }
+    return shm_array_.TotalBytes();
+  }
 
-     off_t UsedBytes()const {
-       if (NULL == p_head_) {
-         Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return -1;
-       }
+  off_t UsedBytes()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
 
-       return sizeof(off_t) + sizeof(ArrayHead) +
-              sizeof(ListHead<EXTEND>) + sizeof(DoublylistNode<T>) * p_head_->size;
-     }
+    return sizeof(off_t) + sizeof(ArrayHead) +
+    sizeof(ListHead<EXTEND>) + sizeof(DoublylistNode<T>) * p_head_->size;
+  }
 
-     const char* Name()const {
-       return shm_array_.Name();
-     }
+  const char* Name()const {
+    return shm_array_.Name();
+  }
 
      const ListHead<EXTEND>* Head()const {
        if (NULL == p_head_) {
