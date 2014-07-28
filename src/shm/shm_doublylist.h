@@ -599,10 +599,12 @@ class ShmDoublylist {
        }
        return ret;
      }
-  ShmArray<DoublylistNode<T>, DoublylistHead<EXTEND> > shm_array_;
-  DoublylistHead<EXTEND>* p_head_;
-  EXTEND*                 p_ext_;
-  DoublylistNode<T>*      p_data_;
+
+    private:
+     ShmArray<DoublylistNode<T>, DoublylistHead<EXTEND> > shm_array_;
+     DoublylistHead<EXTEND>* p_head_;
+     EXTEND*                 p_ext_;
+     DoublylistNode<T>*      p_data_;
 };
 };
 
