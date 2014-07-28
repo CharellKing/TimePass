@@ -40,7 +40,7 @@ class ShmDoublylist {
  public:
  public:
    explicit ShmDoublylist(const char* name):shm_array_(name), p_head_(NULL),
-                                        p_ext_(NULL), p_data_(NULL) {
+                                            p_ext_(NULL), p_data_(NULL) {
    }
 
    bool Create(off_t capacity) {
@@ -116,7 +116,7 @@ class ShmDoublylist {
        }
 
        return sizeof(off_t) + sizeof(ArrayHead) +
-              sizeof(ListHead<EXTEND>) + sizeof(ListNode<T>) * p_head_->size;
+              sizeof(ListHead<EXTEND>) + sizeof(DoublylistNode<T>) * p_head_->size;
      }
 
      const char* Name()const {
@@ -149,37 +149,37 @@ class ShmDoublylist {
        return p_ext_;
      }
 
-     ListNode<T>* Begin() {
+     DoublylistNode<T>* Begin() {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        return p_data_;
      }
 
-     const ListNode<T>* Begin()const {
+     const DoublylistNode<T>* Begin()const {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        return p_data_;
      }
 
-     const ListNode<T>* End() {
+     const DoublylistNode<T>* End() {
        return NULL;
      }
 
-     ListNode<T>* Next(ListNode<T>* p_cur) {
+     DoublylistNode<T>* Next(ListNode<T>* p_cur) {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (NULL == p_cur) {
          Error::SetErrno(ErrorNo::PTR_NULL);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (-1 == p_cur->next) {
@@ -188,15 +188,15 @@ class ShmDoublylist {
        return p_data_ + p_cur->next;
      }
 
-     const ListNode<T>* Next(const ListNode<T>* p_cur)const {
+     const DoublylistNode<T>* Next(const DoublylistNode<T>* p_cur)const {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (NULL == p_cur) {
          Error::SetErrno(ErrorNo::PTR_NULL);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (-1 == p_cur->next) {
@@ -205,15 +205,15 @@ class ShmDoublylist {
        return p_data_ + p_cur->next;
      }
 
-     ListNode<T>* Prior(ListNode<T>* p_cur) {
+     DoublylistNode<T>* Prior(DoublylistNode<T>* p_cur) {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (NULL == p_cur) {
          Error::SetErrno(ErrorNo::PTR_NULL);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (-1 == p_cur->prior) {
@@ -222,15 +222,15 @@ class ShmDoublylist {
        return p_data_ + p_cur->prior;
      }
 
-     const ListNode<T>* Prior(const ListNode<T>* p_cur)const {
+     const DoublylistNode<T>* Prior(const DoublylistNode<T>* p_cur)const {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (NULL == p_cur) {
          Error::SetErrno(ErrorNo::PTR_NULL);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (-1 == p_cur->prior) {
@@ -239,10 +239,10 @@ class ShmDoublylist {
        return p_data_ + p_cur->prior;
      }
 
-     T* At(off_t index) {
+     DoublylistNode<T>* At(off_t index) {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (index < 0 || index >= p_head_->size) {
@@ -258,10 +258,10 @@ class ShmDoublylist {
        return p_cur;
      }
 
-     const T* At(off_t index)const {
+     const DoublylistNode<T>* At(off_t index)const {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (index < 0 || index >= p_head_->size) {
@@ -277,7 +277,7 @@ class ShmDoublylist {
        return p_cur;
      }
 
-     off_t Index(const T* p_data) {
+     off_t Index(const DoublylistNode<T>* p_data) {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
          return -1;
@@ -319,15 +319,15 @@ class ShmDoublylist {
        return true;
      }
 
-     ListNode<T>* PushFront(const T& data) {
+     DoublylistNode<T>* PushFront(const T& data) {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        off_t free_offset = GetFree();
        if (-1 == free_offset) {
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
 
@@ -341,15 +341,15 @@ class ShmDoublylist {
        return p_data_ + free_offset;
      }
 
-     ListNode<T>* PushBack(const T& data) {
+     DoublylistNode<T>* PushBack(const T& data) {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        off_t free_offset = GetFree();
        if (-1 == free_offset) {
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        *(p_data_ + free_offset)->data = data;
@@ -418,15 +418,15 @@ class ShmDoublylist {
      }
 
 
-     ListNode<T>* Front() {
+     DoublylistNode<T>* Front() {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<T>();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (p_head_->size <= 0) {
          Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
-         return ShmBase::ShmFailed<T>();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        return p_data_ + p_head_->front;
@@ -435,12 +435,12 @@ class ShmDoublylist {
      ListNode<T>* Back() {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<T>();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (p_head_->size <= 0) {
          Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
-         return ShmBase::ShmFailed<T>();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        return p_data_ + p_head_->back;
@@ -449,12 +449,12 @@ class ShmDoublylist {
      ListNode<T>* Insert(const T& data, off_t index) {
        if (NULL == p_head_) {
          Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-         return ShmBase::ShmFailed<T>();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (index < 0 || index > p_head_->size) {
          Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-         return ShmBase::ShmFailed<T>();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
        if (0 == index) {
@@ -468,7 +468,7 @@ class ShmDoublylist {
 
        off_t free_offset = GetFree();
        if (-1 == free_offset) {
-         return ShmBase::ShmFailed<ListNode<T> >();
+         return ShmBase::ShmFailed<DoublylistNode<T> >();
        }
 
 
