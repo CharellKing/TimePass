@@ -141,7 +141,7 @@ class ShmQueue {
   const EXTEND* GetExtend() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return reinterpret_cast<EXTEND*>(ShmFailed());
+      return ShmBase::ShmFailed<EXTEND>();
     }
     return p_ext_;
   }
@@ -161,7 +161,7 @@ class ShmQueue {
     if (p_head_->back >= p_head_->capacity) {
       p_head_->back = 0;
     }
-    *(p_addr_ + p_head_->back) = elem;
+    *(p_data_ + p_head_->back) = data;
 
     if (-1 == p_head_->front) {
       p_head_->front = p_head_->back;
@@ -202,7 +202,7 @@ class ShmQueue {
     }
 
     if (p_head_->size > 0) {
-      return p_addr_ + p_head_->front;
+      return p_data_ + p_head_->front;
     }
 
     return NULL;
@@ -216,7 +216,7 @@ class ShmQueue {
     }
 
     if (p_head_->size > 0) {
-      return p_addr_ + p_head_->back;
+      return p_data_ + p_head_->back;
     }
 
     return NULL;
@@ -245,13 +245,13 @@ class ShmQueue {
     fprintf(fp, "digraph G {\n");
     int number = 0;
     if (p_head_->size > 0) {
-      number = *(p_addr_ + p_head_->front);
+      number = *(p_data_ + p_head_->front);
       fprintf(fp, "queue [shape=record, label=\"<f0>%s",
               Label(number).c_str());
     }
 
     for (int index = 1; index < p_head_->size; ++index) {
-      number = *(p_addr_ + (p_head_->front + index));
+      number = *(p_data_ + (p_head_->front + index));
       fprintf(fp, "|<f%d> %s", index, Label(number).c_str());
     }
     if (p_head_->size > 0) {
