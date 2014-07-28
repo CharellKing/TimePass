@@ -119,7 +119,7 @@ class ShmVector {
   const VectorHead<EXTEND>* Head()const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return reinterpret_cast<VectorHead<EXTEND>*>(ShmArray<T, char*>());
+      return ShmBase::ShmFailed<VectorHead<EXTEND> >();
     }
     return p_head_;
   }
@@ -137,7 +137,7 @@ class ShmVector {
   const EXTEND* GetExtend() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return reinterpret_cast<EXTEND*>(ShmFailed());
+      return ShmBase::ShmFailed<EXTEND>();
     }
     return p_ext_;
   }
@@ -145,7 +145,7 @@ class ShmVector {
   T* Begin() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     return p_data_;
@@ -154,7 +154,7 @@ class ShmVector {
   const T* Begin()const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     return p_data_;
@@ -167,7 +167,7 @@ class ShmVector {
   T* Next(T* p_cur) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (p_cur  - p_data_ >= p_head_->size - 1) {
@@ -179,7 +179,7 @@ class ShmVector {
   const T* Next(const T* p_cur)const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (p_cur  - p_data_ >= p_head_->size - 1) {
@@ -191,7 +191,7 @@ class ShmVector {
   T* At(off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (index < 0 || index >= p_head_->size) {
@@ -205,7 +205,7 @@ class ShmVector {
   const T* At(off_t index)const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (index < 0 || index >= p_head_->size) {
@@ -243,7 +243,7 @@ class ShmVector {
   T* Write(const T& data, off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (index < 0 || index >= p_head_->size) {
@@ -258,7 +258,7 @@ class ShmVector {
   T* Read(T* p_data, off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (NULL == p_data) {
@@ -277,17 +277,12 @@ class ShmVector {
   T* PushFront(const T& data) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
-    }
-
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return NULL;
+      return ShmBase::ShmFailed<T>();
     }
 
     if (p_head_->size == p_head_->capacity) {
       if (false == Resize(p_head_->capacity << 1)) {
-        return NULL;
+        return ShmBase::ShmFailed<T>();
       }
     }
     for (off_t i = p_head_->size; i > 0; --i) {
@@ -301,17 +296,12 @@ class ShmVector {
   T* PushBack(const T& data) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
-    }
-
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return NULL;
+      return ShmBase::ShmFailed<T>();
     }
 
     if (p_head_->size == p_head_->capacity) {
       if (false == Resize(p_head_->capacity << 1)) {
-        return NULL;
+        return ShmBase::ShmFailed<T>();
       }
     }
 
@@ -350,12 +340,12 @@ class ShmVector {
   T* Front() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (p_head_->size <= 0) {
       Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     return p_data_;
@@ -364,12 +354,12 @@ class ShmVector {
   T* Back() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (p_head_->size <= 0) {
       Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     return p_data_ + p_head_->size - 1;
@@ -378,17 +368,17 @@ class ShmVector {
   T* Insert(const T& data, off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (index < 0 || index > p_head_->size) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (p_head_->size == p_head_->capacity) {
       if (false == Resize(p_head_->capacity << 1)) {
-        return ShmFailed();
+        return ShmBase::ShmFailed<T>();
       }
     }
 
@@ -467,10 +457,6 @@ class ShmVector {
     }
 
     shm_array_.Commit(is_sync);
-  }
-
-  static T* ShmFailed() {
-    return reinterpret_cast<T*>(-1);
   }
 
  private:

@@ -61,8 +61,6 @@ class ShmBlock {
 
   bool Commit(bool is_sync);
 
-  static char* ShmFailed();
-
  private:
   char name_[ShmBase::SHM_MAX_NAME_LEN];
   BlockHead* p_head_;

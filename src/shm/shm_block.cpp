@@ -87,7 +87,7 @@ const char* TimePass::ShmBlock::Name()const {
 const TimePass::BlockHead* TimePass::ShmBlock::Head()const {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return reinterpret_cast<BlockHead*>(ShmFailed());
+    return ShmBase::ShmFailed<BlockHead>();
   }
   return p_head_;
 }
@@ -95,7 +95,7 @@ const TimePass::BlockHead* TimePass::ShmBlock::Head()const {
 char* TimePass::ShmBlock::Begin() {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   return p_data_;
@@ -104,7 +104,7 @@ char* TimePass::ShmBlock::Begin() {
 const char* TimePass::ShmBlock::Begin()const {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   return p_data_;
@@ -117,7 +117,7 @@ const char* TimePass::ShmBlock::End()const {
 char* TimePass::ShmBlock::Next(char* p_cur) {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   if (p_cur - p_data_ >= p_head_->capacity - 1) {
@@ -129,7 +129,7 @@ char* TimePass::ShmBlock::Next(char* p_cur) {
 const char* TimePass::ShmBlock::Next(const char* p_cur)const {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   if (p_cur - p_data_ >= p_head_->capacity - 1) {
@@ -141,12 +141,12 @@ const char* TimePass::ShmBlock::Next(const char* p_cur)const {
 char* TimePass::ShmBlock::Offset(off_t offset) {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   if (offset >= p_head_->capacity || offset < 0) {
     Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   return p_data_ + offset;
@@ -169,12 +169,12 @@ off_t TimePass::ShmBlock::Index(const char* p_data)const {
 const char* TimePass::ShmBlock::Offset(off_t offset)const {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   if (offset >= p_head_->capacity || offset < 0) {
     Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   return p_data_ + offset;
@@ -183,22 +183,22 @@ const char* TimePass::ShmBlock::Offset(off_t offset)const {
 char* TimePass::ShmBlock::Write(const char* p_data, off_t len, off_t offset) {
   if (NULL == p_data) {
     Error::SetErrno(ErrorNo::PTR_NULL);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   if (len < 0 || offset < 0) {
     Error::SetErrno(ErrorNo::SHM_INDEX_NONNEGATIVE);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   if (offset + len >= p_head_->capacity) {
     Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   memcpy(p_data_ + offset, p_data, len);
@@ -208,22 +208,22 @@ char* TimePass::ShmBlock::Write(const char* p_data, off_t len, off_t offset) {
 char* TimePass::ShmBlock::Read(char* p_data, off_t len, off_t offset)const {
   if (NULL == p_data) {
     Error::SetErrno(ErrorNo::PTR_NULL);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   if (len < 0 || offset < 0) {
     Error::SetErrno(ErrorNo::SHM_INDEX_NONNEGATIVE);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   if (offset + len >= p_head_->capacity) {
     Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-    return ShmFailed();
+    return ShmBase::ShmFailed<char>();
   }
 
   memcpy(p_data, p_data_ + offset, len);
@@ -252,8 +252,4 @@ bool TimePass::ShmBlock::Commit(bool is_sync) {
   return ShmBase::Commit(reinterpret_cast<char*>(p_head_),
                          TotalBytes(),
                          is_sync);
-}
-
-char* TimePass::ShmBlock::ShmFailed() {
-  return reinterpret_cast<char*>(-1);
 }

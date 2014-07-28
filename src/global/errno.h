@@ -17,6 +17,8 @@ const int SHM_NOT_OPEN             = 19881004; /*not open*/
 const int SHM_IS_EMPTY             = 19881004; /*is empty*/
 const int SHM_QUEUE_FULL           = 19881005; /*queue is full*/
 const int SHM_QUEUE_EMPTY          = 19881006; /*queue is empty*/
+const int SHM_NOT_FOUND            = 19881007; /*can't find data*/
+const int SHM_LIST_EMPTY           = 19881008; /*list is empty*/
 
 const int PTR_NULL                 = 20001001; /*pointer null*/
 }; /*namespace ErrorNo*/

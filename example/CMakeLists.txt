@@ -21,3 +21,4 @@ FIND_LIBRARY(SHM NAMES TimepassShm PATHS ${CMAKE_INSTALL_PREFIX}/lib)
 
 ADD_SUBDIRECTORY(shm/shm_array)
 ADD_SUBDIRECTORY(shm/shm_vector)
+ADD_SUBDIRECTORY(shm/shm_queue)

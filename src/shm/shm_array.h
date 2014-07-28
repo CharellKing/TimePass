@@ -105,7 +105,7 @@ class ShmArray {
   const ArrayHead* Head()const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return reinterpret_cast<ArrayHead*>(ShmFailed());
+      return reinterpret_cast<ArrayHead*>(ShmBase::ShmFailed<T>());
     }
     return p_head_;
   }
@@ -122,7 +122,7 @@ class ShmArray {
   EXTEND* GetExtend() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return reinterpret_cast<EXTEND*>(ShmFailed());
+      return ShmBase::ShmFailed<EXTEND>();
     }
 
     return p_ext_;
@@ -145,7 +145,7 @@ class ShmArray {
   T* Begin() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     return p_data_;
@@ -154,7 +154,7 @@ class ShmArray {
   const T* Begin()const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     return p_data_;
@@ -167,7 +167,7 @@ class ShmArray {
   T* Next(T* p_cur) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (p_cur  - p_data_ >= p_head_->capacity) {
@@ -179,7 +179,7 @@ class ShmArray {
   const T* Next(const T* p_cur)const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (p_cur  - p_data_ >= p_head_->capacity) {
@@ -191,7 +191,7 @@ class ShmArray {
   T* At(off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (index < 0 || index >= p_head_->capacity) {
@@ -205,7 +205,7 @@ class ShmArray {
   const T* At(off_t index)const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (index < 0 || index >= p_head_->capacity) {
@@ -219,18 +219,18 @@ class ShmArray {
   T* Write(const T& data, off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
 
     if (index < 0 || index >= p_head_->capacity) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     *(p_data_ + index) = data;
@@ -240,22 +240,22 @@ class ShmArray {
   T* Read(T* p_data, off_t index) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (NULL == p_data) {
       Error::SetErrno(ErrorNo::PTR_NULL);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (false == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
 
     if (index < 0 || index >= p_head_->capacity) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return ShmFailed();
+      return ShmBase::ShmFailed<T>();
     }
     *p_data = *(p_data_ + index);
     return p_data;
@@ -288,10 +288,6 @@ class ShmArray {
     }
 
     return shm_block_.Commit(is_sync);
-  }
-
-  static T* ShmFailed() {
-    return reinterpret_cast<T*>(-1);
   }
 
  private:
