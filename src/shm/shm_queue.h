@@ -171,7 +171,7 @@ class ShmQueue {
     return true;
   }
 
-  bool Pop() {
+  bool Pop(T* p_remove) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
@@ -182,6 +182,7 @@ class ShmQueue {
       return false;
     }
 
+    *p_remove = (p_data_ + p_head_->front)->data;
     --p_head_->size;
     if (0 == p_head_->size) {
       p_head_->front = -1;

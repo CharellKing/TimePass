@@ -335,7 +335,7 @@ class ShmList {
     return p_data_ + free_offset;
   }
 
-  bool PopFront() {
+  bool PopFront(T* p_remove) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
@@ -347,6 +347,9 @@ class ShmList {
     }
 
     SetFree(p_head_->front);
+    if (p_remove) {
+      *p_remove = *(p_data_ + p_head_->front);
+    }
     if (p_head_->back == p_head_->front) {
       p_head_->back = p_head_->front = -1;
     } else {
@@ -357,7 +360,7 @@ class ShmList {
     return true;
   }
 
-  bool PopBack() {
+  bool PopBack(T* p_remove) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
@@ -369,6 +372,9 @@ class ShmList {
     }
 
     SetFree(p_head_->back);
+    if (p_remove) {
+      *p_remove = *(p_data_ + p_head_->back);
+    }
 
     if (p_head_->back == p_head_->front) {
       p_head_->back = p_head_->front = -1;
@@ -456,7 +462,7 @@ class ShmList {
     return p_data_ + free_offset;
   }
 
-  bool Remove(off_t index) {
+  bool Remove(off_t index, T* p_remove) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
@@ -468,11 +474,11 @@ class ShmList {
     }
 
     if (0 == index) {
-      return PopFront();
+      return PopFront(p_remove);
     }
 
     if (p_head_->size - 1 == index) {
-      return PopBack();
+      return PopBack(p_remove);
     }
 
     ListNode<T>* p_cur = p_data_ + p_head_->front;
@@ -482,6 +488,9 @@ class ShmList {
     }
 
     SetFree(p_cur->next);
+    if (p_remove) {
+      *p_remove = *(p_data_ + p_cur->next);
+    }
     p_cur->next = (p_data_ + p_cur->next)->next;
     --p_head_->size;
     return true;

@@ -310,12 +310,18 @@ class ShmVector {
     return (p_data_ + p_head_->size);
   }
 
-  bool PopFront() {
+  bool PopFront(T* p_remove) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
     }
 
+    if (p_head_->size <= 0) {
+      Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
+      return false;
+    }
+
+    *p_remove = p_data_->data;
     if (p_head_->size > 0) {
       for (off_t i = 1; i < p_head_->size; ++i) {
         *(p_data_ + i - 1) = *(p_data_ + i);
@@ -325,11 +331,18 @@ class ShmVector {
     return true;
   }
 
-  bool PopBack() {
+  bool PopBack(T* p_remove) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
     }
+
+    if (p_head_->size <= 0) {
+      Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
+      return false;
+    }
+
+    *p_remove = (p_data_ + p_head_->size - 1)->data;
 
     if (p_head_->size > 0) {
       --p_head_->size;
@@ -390,7 +403,7 @@ class ShmVector {
     return (p_data_ + index);
   }
 
-  bool Remove(off_t index) {
+  bool Remove(off_t index, T* p_remove) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
@@ -399,6 +412,10 @@ class ShmVector {
     if (index <0 || index >= p_head_->size) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
       return false;
+    }
+
+    if (p_remove) {
+        *p_remove = *(p_data_ + index);
     }
 
     for (off_t i = index + 1; i < p_head_->size; ++i) {
