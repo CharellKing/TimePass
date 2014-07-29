@@ -85,12 +85,12 @@ void Write() {
       }
       printf("push %d\n", number);
     } else {
-      int elem = *numbers.Front();
-
-      if (numbers.Pop()) {
-        printf("pop %d\n", elem);
-      } else {
+      if (0 == numbers.Size()) {
         printf("pop 空\n");
+      } else if (numbers.Size() > 0) {
+        int elem = *numbers.Front();
+        printf("pop %d\n", elem);
+        numbers.Pop();
       }
     }
   }
@@ -117,23 +117,39 @@ void Clear() {
   numbers.Close();
 }
 
+void About() {
+    TimePass::ShmQueue<int> numbers(SHM_FILE);
+    if (false == numbers.Open()) {
+        printf("errno=%d\n", TimePass::Error::GetErrno());
+        return;
+    }
+    printf("name = %s capacity = %ld size = %ld"
+           "total_size = %ld, used_size = %ld\n",
+           numbers.Name(), numbers.Capacity(),
+           numbers.Size(), numbers.TotalBytes(), numbers.UsedBytes());
+}
+
 void Usage() {
   printf("usage:\n"
+         "-a for info\n"
          "-c [capacity] for create\n"
          "-d for destroy\n"
          "-w for write\n"
-         "-r for read\n"
          "-s for dot\n"
          "-e for clear\n");
 }
+
 int main(int argc, char** argv) {
-  int result = getopt(argc, argv, "ewdsc:");
+  int result = getopt(argc, argv, "aewdsc:");
   if (-1 == result) {
     Usage();
     return 0;
   }
 
   switch (result) {
+    case 'a':
+      About();
+      break;
     case 'c':
       Create(Convert(optarg));
       break;
