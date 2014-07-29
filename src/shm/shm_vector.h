@@ -456,7 +456,7 @@ class ShmVector {
       return false;
     }
 
-    shm_array_.Commit(is_sync);
+    return shm_array_.Commit(is_sync);
   }
 
  private:
