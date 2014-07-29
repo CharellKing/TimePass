@@ -37,7 +37,7 @@ class ShmArray {
       return false;
     }
 
-    if (false == shm_block_.Create(sizeof(BlockHead) + sizeof(EXTEND) +
+    if (false == shm_block_.Create(sizeof(ArrayHead) + sizeof(EXTEND) +
                                   capacity * sizeof(T))) {
       return false;
     }

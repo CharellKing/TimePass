@@ -36,7 +36,7 @@ class ShmQueue {
   }
 
   bool Create(off_t capacity) {
-    if (false == shm_array_.Create(capacity * sizeof(T))) {
+    if (false == shm_array_.Create(capacity)) {
       return false;
     }
 
@@ -199,28 +199,29 @@ class ShmQueue {
   T* Front() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return false;
+      return ShmBase::ShmFailed<T>();
     }
 
-    if (p_head_->size > 0) {
-      return p_data_ + p_head_->front;
+    if (p_head_->size <= 0) {
+      Error::SetErrno(ErrorNo::SHM_QUEUE_EMPTY);
+      return ShmBase::ShmFailed<T>();
     }
 
-    return NULL;
+    return p_data_ + p_head_->front;
   }
 
-     /*获取队尾元素*/
   T* Back() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return false;
+      return ShmBase::ShmFailed<T>();
     }
 
-    if (p_head_->size > 0) {
-      return p_data_ + p_head_->back;
+    if (p_head_->size <= 0) {
+      Error::SetErrno(ErrorNo::SHM_QUEUE_EMPTY);
+      return ShmBase::ShmFailed<T>();
     }
 
-    return NULL;
+    return p_data_ + p_head_->back;
   }
 
   bool Clear() {
