@@ -6,7 +6,8 @@ then
 fi
 
 root=`pwd`
-opt="~/TimePass"
+#opt="/usr/local"
+opt=${root}
 if [ $# -eq 1 ]
 then
 	opt=${1}
