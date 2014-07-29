@@ -123,7 +123,7 @@ class ShmQueue {
   const QueueHead<EXTEND>* Head()const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return reinterpret_cast<QueueHead<EXTEND>*>(ShmArray<T, char*>());
+      return ShmBase::ShmFailed<QueueHead<EXTEND> >();
     }
     return p_head_;
   }
@@ -182,7 +182,7 @@ class ShmQueue {
       return false;
     }
 
-    *p_remove = (p_data_ + p_head_->front)->data;
+    *p_remove = *(p_data_ + p_head_->front);
     --p_head_->size;
     if (0 == p_head_->size) {
       p_head_->front = -1;
@@ -263,7 +263,6 @@ class ShmQueue {
     fclose(fp);
     return true;
   }
-
 
   bool Commit(bool is_sync) {
     if (NULL == p_head_) {

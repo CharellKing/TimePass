@@ -74,23 +74,24 @@ void Write() {
   unsigned int* p_seed = &seed;
   int count = rand_r(p_seed) % 100 + 1;
 
-  int number = 0, method = 0;
+  int method = 0;
   for (int i = 0; i < count; ++i) {
     method = rand_r(p_seed) % 2;
     if (0 == method) {
-      number = rand_r(p_seed) % 100;
+      int number = rand_r(p_seed) % 100;
       if (false == numbers.Push(number)) {
         printf("push full\n");
         return;
       }
       printf("push %d\n", number);
     } else {
-      if (0 == numbers.Size()) {
-        printf("pop 空\n");
-      } else if (numbers.Size() > 0) {
-        int elem = *numbers.Front();
-        printf("pop %d\n", elem);
-        numbers.Pop();
+      int data = 0;
+      if (numbers.Pop(&data)) {
+        printf("pop %d\n", data);
+      } else {
+        printf("errno=%d\n",
+            TimePass::Error::GetErrno());
+        return;
       }
     }
   }
@@ -127,6 +128,24 @@ void About() {
            "total_size = %ld, used_size = %ld\n",
            numbers.Name(), numbers.Capacity(),
            numbers.Size(), numbers.TotalBytes(), numbers.UsedBytes());
+}
+
+void AllFunc() {
+  TimePass::ShmQueue<int> numbers(SHM_FILE);
+  if (false == numbers.Open()) {
+      printf("errno=%d\n",
+          TimePass::Error::GetErrno());
+      return;
+  }
+
+  numbers.IsOpen();
+  numbers.Head();
+  numbers.SetExtend(0);
+  numbers.GetExtend();
+  numbers.Clear();
+  numbers.Front();
+  numbers.Back();
+  numbers.Commit(true);
 }
 
 void Usage() {

@@ -94,6 +94,25 @@ void About() {
     numbers.Close();
 }
 
+void AllFunc() {
+  TimePass::ShmArray<int> numbers(SHM_FILE);
+  if (false == numbers.Open()) {
+      printf("errno=%d\n",
+          TimePass::Error::GetErrno());
+      return;
+  }
+
+  numbers.IsOpen();
+  numbers.Head();
+  numbers.SetExtend(0);
+  numbers.GetExtend();
+  numbers.Index(numbers.At(1));
+  numbers.Write(10, 3);
+  int data = 0;
+  numbers.Read(&data, 3);
+  numbers.Resize(100);
+  numbers.Commit(true);
+}
 
 void Usage() {
     printf("usage:\n"

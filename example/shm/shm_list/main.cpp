@@ -100,16 +100,16 @@ void Remove() {
     unsigned int* p_seed = &seed;
     int count = rand_r(p_seed) % 5 + 1; /*产生1～3之间的随机数*/
     int pos = 0;
-    const TimePass::ListNode<int>* p_ret = NULL;
+    int elem = 0;
     for (int i = 0; i < count; ++i) {
         pos = rand_r(p_seed) % (numbers.Size() + 1);
-        if (false == numbers.Remove(pos)) {
+        if (false == numbers.Remove(pos, &elem)) {
             printf("errno=%d\n",
                 TimePass::Error::GetErrno());
             return;
         }
         printf("<remove %d>:", pos);
-        printf("number = %d size = %ld\n", p_ret->data, numbers.Size());
+        printf("size = %ld\n", numbers.Size());
     }
     printf("共删除数据的条数%d\n", count);
 }
@@ -130,13 +130,14 @@ void Read() {
 }
 
 void Show() {
-    TimePass::ShmList<int> numbers(SHM_FILE);
-    if (false == numbers.Open()) {
-        printf("errno=%d\n",
-            TimePass::Error::GetErrno());
-        return;
-    }
-    ToDotPs("list", &numbers);
+  TimePass::ShmList<int> numbers(SHM_FILE);
+  if (false == numbers.Open()) {
+      printf("errno=%d\n",
+          TimePass::Error::GetErrno());
+      return;
+  }
+  ToDotPs("list", &numbers);
+  numbers.Close();
 }
 
 void Clear() {
@@ -174,6 +175,26 @@ void About() {
 //    }
 //}
 
+void AllFunc() {
+  TimePass::ShmList<int> numbers(SHM_FILE);
+  if (false == numbers.Open()) {
+      printf("errno=%d\n",
+          TimePass::Error::GetErrno());
+      return;
+  }
+
+  numbers.IsOpen();
+  numbers.Head();
+  numbers.SetExtend(0);
+  numbers.GetExtend();
+  numbers.Index(numbers.At(1));
+  numbers.Offset(numbers.At(5));
+  numbers.Clear();
+  numbers.Front();
+  numbers.Back();
+  numbers.Commit(true);
+}
+
 void Usage() {
     printf("usage:\n"
              "-h for help\n"
@@ -188,7 +209,7 @@ void Usage() {
 }
 
 int main(int argc, char** argv) {
-    int result = getopt(argc, argv, "oabewrdsc:");
+    int result = getopt(argc, argv, "abewrdsc:");
     if (-1 == result) {
         Usage();
         return 0;

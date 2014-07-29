@@ -138,7 +138,7 @@ const char* TimePass::ShmBlock::Next(const char* p_cur)const {
   return p_cur + 1;
 }
 
-char* TimePass::ShmBlock::Offset(off_t offset) {
+char* TimePass::ShmBlock::At(off_t offset) {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
     return ShmBase::ShmFailed<char>();
@@ -166,7 +166,7 @@ off_t TimePass::ShmBlock::Index(const char* p_data)const {
   return index;
 }
 
-const char* TimePass::ShmBlock::Offset(off_t offset)const {
+const char* TimePass::ShmBlock::At(off_t offset)const {
   if (NULL == p_head_) {
     Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
     return ShmBase::ShmFailed<char>();

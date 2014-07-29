@@ -159,7 +159,7 @@ class ShmList {
       return ShmBase::ShmFailed<ListNode<T> >();
     }
 
-    return p_data_;
+    return p_data_ + p_head_->front;
   }
 
   const ListNode<T>* Begin()const {
@@ -168,7 +168,7 @@ class ShmList {
       return ShmBase::ShmFailed<ListNode<T> >();
     }
 
-    return p_data_;
+    return p_data_ + p_head_->front;
   }
 
   const ListNode<T>* End() {
@@ -220,12 +220,7 @@ class ShmList {
       return NULL;
     }
 
-    ListNode<T>* p_cur = p_data_->front;
-    while (index > 0) {
-      p_cur = p_data_ + p_cur->next;
-      --index;
-    }
-    return p_cur;
+    return p_data_ + RawAt(index);
   }
 
   const ListNode<T>* At(off_t index)const {
@@ -239,15 +234,10 @@ class ShmList {
       return NULL;
     }
 
-    const ListNode<T>* p_cur = p_data_ + p_head_->front;
-    while (index > 0) {
-      p_cur = p_data_ + p_cur->next;
-      --index;
-    }
-    return p_cur;
+    return p_data_ + RawAt(index);
   }
 
-  off_t Index(const T* p_data) {
+  off_t Index(const ListNode<T>* p_data)const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -258,7 +248,7 @@ class ShmList {
       return -1;
     }
 
-    const T* p_cur = p_data_ + p_head_->front;
+    const ListNode<T>* p_cur = p_data_ + p_head_->front;
     off_t index = 0;
     while (NULL == p_cur) {
       if (p_data == p_cur) {
@@ -274,6 +264,26 @@ class ShmList {
     }
 
     return index;
+  }
+
+  off_t Offset(const ListNode<T>* p_data)const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
+
+    if (NULL == p_data) {
+      Error::SetErrno(ErrorNo::PTR_NULL);
+      return -1;
+    }
+
+    off_t offset = p_data - p_data_;
+    if (offset < 0 || offset >= p_head_->size) {
+      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+      return -1;
+    }
+
+    return offset;
   }
 
   bool Clear() {
@@ -348,7 +358,7 @@ class ShmList {
 
     SetFree(p_head_->front);
     if (p_remove) {
-      *p_remove = *(p_data_ + p_head_->front);
+      *p_remove = (p_data_ + p_head_->front)->data;
     }
     if (p_head_->back == p_head_->front) {
       p_head_->back = p_head_->front = -1;
@@ -373,7 +383,7 @@ class ShmList {
 
     SetFree(p_head_->back);
     if (p_remove) {
-      *p_remove = *(p_data_ + p_head_->back);
+      *p_remove = (p_data_ + p_head_->back)->data;
     }
 
     if (p_head_->back == p_head_->front) {
@@ -397,7 +407,7 @@ class ShmList {
   ListNode<T>* Front() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<T>();
+      return ShmBase::ShmFailed<ListNode<T> >();
     }
 
     if (p_head_->size <= 0) {
@@ -411,7 +421,7 @@ class ShmList {
   ListNode<T>* Back() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<T>();
+      return ShmBase::ShmFailed<ListNode<T> >();
     }
 
     if (p_head_->size <= 0) {
@@ -448,15 +458,11 @@ class ShmList {
     }
 
 
-    ListNode<T>* p_cur = p_data_ + p_head_->front;
-    while (index > 1) {
-      p_cur = p_data_ + p_cur->next;
-      --index;
-    }
+    off_t prior = RawAt(index - 1);
 
     (p_data_ + free_offset)->data = data;
-    (p_data_ + free_offset)->next = p_cur->next;
-    p_cur->next = free_offset;
+    (p_data_ + free_offset)->next = (p_data_ + prior)->next;
+    (p_data_ + prior)->next = free_offset;
 
     ++p_head_->size;
     return p_data_ + free_offset;
@@ -481,17 +487,14 @@ class ShmList {
       return PopBack(p_remove);
     }
 
-    ListNode<T>* p_cur = p_data_ + p_head_->front;
-    while (index > 1) {
-      p_cur = p_data_ + p_cur->next;
-      --index;
-    }
+    off_t prior_offset = RawAt(index - 1);
 
-    SetFree(p_cur->next);
+    ListNode<T>* p_prior = p_data_ + prior_offset;
+    SetFree(p_prior->next);
     if (p_remove) {
-      *p_remove = *(p_data_ + p_cur->next);
+      *p_remove = (p_data_ + p_prior->next)->data;
     }
-    p_cur->next = (p_data_ + p_cur->next)->next;
+    p_prior->next = (p_data_ + p_prior->next)->next;
     --p_head_->size;
     return true;
   }
@@ -581,6 +584,17 @@ class ShmList {
       p_head_->capacity = capacity;
     }
     return ret;
+  }
+
+  off_t RawAt(off_t index)const {
+    ListNode<T>* p_cur = p_data_ + p_head_->front;
+    off_t cur_offset = p_head_->front;
+    while (index > 0) {
+      cur_offset = p_cur->next;
+      p_cur = p_data_ + p_cur->next;
+      --index;
+    }
+    return cur_offset;
   }
 
   ShmArray<ListNode<T>, ListHead<EXTEND> > shm_array_;

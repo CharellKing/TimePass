@@ -216,7 +216,7 @@ class ShmVector {
     return p_data_ + index;
   }
 
-  off_t Index(const T* p_data) {
+  off_t Index(const T* p_data)const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -321,7 +321,7 @@ class ShmVector {
       return false;
     }
 
-    *p_remove = p_data_->data;
+    *p_remove = *p_data_;
     if (p_head_->size > 0) {
       for (off_t i = 1; i < p_head_->size; ++i) {
         *(p_data_ + i - 1) = *(p_data_ + i);
@@ -342,7 +342,7 @@ class ShmVector {
       return false;
     }
 
-    *p_remove = (p_data_ + p_head_->size - 1)->data;
+    *p_remove = *(p_data_ + p_head_->size - 1);
 
     if (p_head_->size > 0) {
       --p_head_->size;

@@ -116,34 +116,28 @@ void Remove() {
   int count = rand_r(p_seed) % 5 + 1, pos = 0;
 
   char name[512];
+  int data = 0;
   for (int i = 0; i < count; ++i) {
     method = rand_r(p_seed) % 3;
     if (0 == method) {
       pos = rand_r(p_seed) % (numbers.Size());
-      if (false == numbers.Remove(pos)) {
+      if (false == numbers.Remove(pos, &data)) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
       }
-      snprintf(name, sizeof(name) - 1, "vector%d", i);
-      ToDotPs(name, &numbers);
-
-      printf("<remove %d>", pos);
+      printf("<remove (pos %d) %d>", pos, data);
     } else if (1 == method) {
-      if (false == numbers.PopBack()) {
+      if (false == numbers.PopBack(&data)) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
       }
-      snprintf(name, sizeof(name) - 1, "vector%d", i);
-      ToDotPs(name, &numbers);
-      printf("<pop_back>");
+      printf("<pop_back %d>", data);
     } else {
-      if (false == numbers.PopFront()) {
+      if (false == numbers.PopFront(&data)) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
       }
-      snprintf(name, sizeof(name) - 1, "vector%d", i);
-      ToDotPs(name, &numbers);
-      printf("<pop_front>");
+      printf("<pop_front %d>", data);
     }
   }
   printf("totally remove %d numbers\n", count);

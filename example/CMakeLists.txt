@@ -23,4 +23,4 @@ ADD_SUBDIRECTORY(shm/shm_array)
 ADD_SUBDIRECTORY(shm/shm_vector)
 ADD_SUBDIRECTORY(shm/shm_queue)
 ADD_SUBDIRECTORY(shm/shm_list)
-
+ADD_SUBDIRECTORY(shm/shm_doublylist)

@@ -128,7 +128,7 @@ class ShmArray {
     return p_ext_;
   }
 
-  off_t Index(T* p_data) {
+  off_t Index(const T* p_data)const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
       return -1;
