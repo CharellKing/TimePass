@@ -274,7 +274,7 @@ class ShmQueue {
   }
 
  private:
-  ShmArray<QueueHead<EXTEND> > shm_array_;
+  ShmArray<T, QueueHead<EXTEND> > shm_array_;
   QueueHead<EXTEND>* p_head_;
   EXTEND* p_ext_;
   T* p_data_;
