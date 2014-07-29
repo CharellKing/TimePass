@@ -581,7 +581,7 @@ class ShmDoublylist {
     }
 
     fprintf(fp, "}\n");
-    fclose(fp)
+    fclose(fp);
     return true;
   }
 
