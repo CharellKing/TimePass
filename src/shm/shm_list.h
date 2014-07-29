@@ -12,6 +12,8 @@
 
 #include <cstdio>
 
+#include <string>
+
 #include "shm/shm_array.h"
 
 namespace TimePass {
@@ -218,7 +220,7 @@ class ShmList {
       return NULL;
     }
 
-    ListNode<T>* p_cur = p_data_;
+    ListNode<T>* p_cur = p_data_->front;
     while (index > 0) {
       p_cur = p_data_ + p_cur->next;
       --index;
@@ -237,7 +239,7 @@ class ShmList {
       return NULL;
     }
 
-    ListNode<T>* p_cur = p_data_;
+    const ListNode<T>* p_cur = p_data_ + p_head_->front;
     while (index > 0) {
       p_cur = p_data_ + p_cur->next;
       --index;
@@ -256,7 +258,7 @@ class ShmList {
       return -1;
     }
 
-    const T* p_cur = p_data_;
+    const T* p_cur = p_data_ + p_head_->front;
     off_t index = 0;
     while (NULL == p_cur) {
       if (p_data == p_cur) {
@@ -502,6 +504,7 @@ class ShmList {
     const ListNode<T> *p_cur = p_data_ + p_head_->front;
     off_t cur = p_head_->front;
     off_t prior = -1;
+    fprintf(fp, "digraph G {\n");
     if (-1 != p_head_->front) {
         fprintf(fp, "rankdir=LR;\n");
         fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\n",
@@ -518,6 +521,8 @@ class ShmList {
         cur = p_cur->next;
         p_cur = p_data_ + cur;
     }
+
+    fprintf(fp, "}\n");
     fclose(fp);
     return true;
   }

@@ -251,10 +251,20 @@ class ShmDoublylist {
       return NULL;
     }
 
-    ListNode<T>* p_cur = p_data_;
-    while (index > 0) {
-      p_cur = p_data_ + p_cur->next;
-      --index;
+    ListNode<T>* p_cur = NULL;
+    if (index < (p_head_->size >> 1)) {
+      p_cur = p_data_ + p_head_->front;
+      while (index > 0) {
+        p_cur = p_data_ + p_cur->next;
+        --index;
+      }
+    } else {
+      index = p_head_->size - index - 1;
+      p_cur = p_data_ + p_head_->front;
+      while (index > 0) {
+        p_cur = p_data_ + p_cur->prior;
+        --index;
+      }
     }
     return p_cur;
   }
@@ -270,10 +280,20 @@ class ShmDoublylist {
       return NULL;
     }
 
-    ListNode<T>* p_cur = p_data_;
-    while (index > 0) {
-      p_cur = p_data_ + p_cur->next;
-      --index;
+    ListNode<T>* p_cur = NULL;
+    if (index < (p_head_->size >> 1)) {
+      p_cur = p_data_ + p_head_->front;
+      while (index > 0) {
+        p_cur = p_data_ + p_cur->next;
+        --index;
+      }
+    } else {
+      index = p_head_->size - index - 1;
+      p_cur = p_data_ + p_head_->front;
+      while (index > 0) {
+        p_cur = p_data_ + p_cur->prior;
+        --index;
+      }
     }
     return p_cur;
   }
@@ -289,7 +309,7 @@ class ShmDoublylist {
       return -1;
     }
 
-    const T* p_cur = p_data_;
+    const T* p_cur = p_data_ + p_head_->front;
     off_t index = 0;
     while (NULL == p_cur) {
       if (p_data == p_cur) {
@@ -332,11 +352,15 @@ class ShmDoublylist {
     }
 
 
-    *(p_data_ + free_offset)->data = data;
-    *(p_data_ + free_offset)->next = p_head_->front;
-    p_head_->front = free_offset;
+    (p_data_ + free_offset)->data = data;
+    (p_data_ + free_offset)->next = p_head_->front;
+    (p_data_ + free_offset)->prior = -1;
+
     if (-1 == p_head_->back) {
-      p_head_->back = p_head_->front;
+      p_head_->back = p_head_->front = free_offset;
+    } else {
+      (p_data_ + p_head_->front)->prior = free_offset;
+      p_head_->front = free_offset;
     }
     ++p_head_->size;
     return p_data_ + free_offset;
@@ -353,8 +377,9 @@ class ShmDoublylist {
       return ShmBase::ShmFailed<DoublylistNode<T> >();
     }
 
-    *(p_data_ + free_offset)->data = data;
-    *(p_data_ + free_offset)->next = -1;
+    (p_data_ + free_offset)->data = data;
+    (p_data_ + free_offset)->next = -1;
+    (p_data_ + free_offset)->prior = p_head_->back;
 
     if (-1 == p_head_->back) {
       p_head_->front = p_head_->back = free_offset;
@@ -535,6 +560,9 @@ class ShmDoublylist {
     const ListNode<T> *p_cur = p_data_ + p_head_->front;
     off_t cur = p_head_->front;
     off_t prior = -1;
+
+    fprintf(fp, "digraph G {\n");
+
     if (-1 != p_head_->front) {
       fprintf(fp, "rankdir=LR;\n");
       fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\n",
@@ -551,6 +579,9 @@ class ShmDoublylist {
       cur = p_cur->next;
       p_cur = p_data_ + cur;
     }
+
+    fprintf(fp, "}\n");
+    fclose(fp)
     return true;
   }
 
