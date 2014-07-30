@@ -61,22 +61,6 @@ T* ShmFailed() {
   return reinterpret_cast<T*>(-1);
 }
 
-template <typename T>
-T* At(T* p_data, off_t index, off_t capacity) {
-  if (index < 0 && index >= capacity) {
-    return NULL;
-  }
-  return p_data + index;
-}
-
-template <typename T>
-const T* At(const T* p_data, off_t index, off_t capacity) {
-  if (index < 0 && index >= capacity) {
-    return NULL;
-  }
-  return p_data + index;
-}
-
 }; /*namespace ShmBase*/
 }; /*namespace TimePass*/
 

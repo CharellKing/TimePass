@@ -256,17 +256,22 @@ class ShmList {
       return -1;
     }
 
-    const ListNode<T>* p_cur = p_data_ + p_head_->front;
+    if (p_data < p_data_ || p_data > (p_data_ + p_head_->capacity)) {
+      Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
+      return -1;
+    }
+
+    off_t cur_offset = p_head_->front;
     off_t index = 0;
-    while (NULL == p_cur) {
-      if (p_data == p_cur) {
+    while (cur_offset >= 0) {
+      if (p_data == (p_data_ + cur_offset)) {
         break;
       }
-      p_cur = ShmBase::At(p_data_, p_cur->next, p_head_->capacity);
+      cur_offset = (p_data_ + cur_offset)->next;
       ++index;
     }
 
-    if (NULL == p_cur) {
+    if (cur_offset < 0) {
       Error::SetErrno(ErrorNo::SHM_NOT_FOUND);
       return -1;
     }
