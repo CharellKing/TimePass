@@ -13,7 +13,7 @@
 #include "global/errno.h"
 
 
-TimePass::ShmBlock::ShmBlock(const char* name):p_data_(NULL) {
+TimePass::ShmBlock::ShmBlock(const char* name):p_head_(NULL), p_data_(NULL) {
   strncpy(name_, name, sizeof(name_) - 1);
 }
 
