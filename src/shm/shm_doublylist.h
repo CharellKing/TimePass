@@ -47,7 +47,7 @@ class ShmDoublylist {
   }
 
   bool Create(off_t capacity) {
-    if (false == shm_array_.Create(capacity * sizeof(T))) {
+    if (false == shm_array_.Create(capacity)) {
       return false;
     }
 
@@ -158,6 +158,10 @@ class ShmDoublylist {
       return ShmBase::ShmFailed<DoublylistNode<T> >();
     }
 
+    if (-1 == p_head_->front) {
+      return NULL;
+    }
+
     return p_data_ + p_head_->front;
   }
 
@@ -165,6 +169,10 @@ class ShmDoublylist {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<DoublylistNode<T> >();
+    }
+
+    if (-1 == p_head_->front) {
+      return NULL;
     }
 
     return p_data_ + p_head_->front;
@@ -214,6 +222,10 @@ class ShmDoublylist {
       return ShmBase::ShmFailed<DoublylistNode<T> >();
     }
 
+    if (-1 == p_head_->front) {
+      return NULL;
+    }
+
     return p_data_ + p_head_->back;
   }
 
@@ -221,6 +233,10 @@ class ShmDoublylist {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<DoublylistNode<T> >();
+    }
+
+    if (-1 == p_head_->front) {
+      return NULL;
     }
 
     return p_data_ + p_head_->back;
@@ -241,9 +257,9 @@ class ShmDoublylist {
        return NULL;
      }
      return p_data_ + p_cur->prior;
-   }
+  }
 
-   const DoublylistNode<T>* RNext(const DoublylistNode<T>* p_cur)const {
+  const DoublylistNode<T>* RNext(const DoublylistNode<T>* p_cur)const {
      if (NULL == p_head_) {
        Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
        return ShmBase::ShmFailed<DoublylistNode<T> >();
@@ -258,7 +274,7 @@ class ShmDoublylist {
        return NULL;
      }
      return p_data_ + p_cur->prior;
-   }
+  }
 
   DoublylistNode<T>* Prior(DoublylistNode<T>* p_cur) {
     if (NULL == p_head_) {
@@ -446,7 +462,7 @@ class ShmDoublylist {
       return false;
     }
 
-    SetFree(p_head_->front);
+    off_t remove_offset = p_head_->front;
     if (p_remove) {
       *p_remove = (p_data_ + p_head_->front)->data;
     }
@@ -457,6 +473,7 @@ class ShmDoublylist {
       (p_data_ + p_head_->front)->prior = -1;
     }
 
+    SetFree(remove_offset);
     --p_head_->size;
     return true;
   }
@@ -472,7 +489,7 @@ class ShmDoublylist {
       return false;
     }
 
-    SetFree(p_head_->back);
+    off_t remove_offset = p_head_->back;
     if (p_remove) {
       *p_remove = (p_data_ + p_head_->back)->data;
     }
@@ -484,6 +501,8 @@ class ShmDoublylist {
       (p_data_ + p_head_->back)->next = -1;
     }
     --p_head_->size;
+
+    SetFree(remove_offset);
     return true;
   }
 
@@ -580,8 +599,6 @@ class ShmDoublylist {
 
     off_t target_offset = RawAt(index);
 
-    SetFree(target_offset);
-
     DoublylistNode<T>* p_target = p_data_ + target_offset;
     DoublylistNode<T>* p_prior = p_data_ + p_target->prior;
     DoublylistNode<T>* p_next  = p_data_ + p_target->next;
@@ -592,6 +609,9 @@ class ShmDoublylist {
     if (p_remove) {
       *p_remove = p_target->data;
     }
+
+    SetFree(target_offset);
+
     --p_head_->size;
     return true;
   }

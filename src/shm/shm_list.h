@@ -48,7 +48,7 @@ class ShmList {
   }
 
   bool Create(off_t capacity) {
-    if (false == shm_array_.Create(capacity * sizeof(T))) {
+    if (false == shm_array_.Create(capacity)) {
       return false;
     }
 
@@ -159,6 +159,10 @@ class ShmList {
       return ShmBase::ShmFailed<ListNode<T> >();
     }
 
+    if (-1 == p_head_->front) {
+      return NULL;
+    }
+
     return p_data_ + p_head_->front;
   }
 
@@ -166,6 +170,10 @@ class ShmList {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<ListNode<T> >();
+    }
+
+    if (-1 == p_head_->front) {
+      return NULL;
     }
 
     return p_data_ + p_head_->front;

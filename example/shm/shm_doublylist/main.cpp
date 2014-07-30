@@ -20,155 +20,155 @@
 typedef TimePass::DoublylistNode<int> LIST_NODE;
 
 const std::string Label(const int& num) {
-    char t_num[128];
-    snprintf(t_num, sizeof(t_num) - 1, "%d", num);
-    return std::string(t_num);
+  char t_num[128];
+  snprintf(t_num, sizeof(t_num) - 1, "%d", num);
+  return std::string(t_num);
 }
 
 off_t Convert(const char* digit) {
-    int ret = -1;
-    if (sizeof(off_t) == sizeof(int)) {
-        ret = atol(digit);
-    } else if (sizeof(off_t) == sizeof(int64_t)) {
-        ret = atoll(digit);
-    }
-    return ret;
+  int ret = -1;
+  if (sizeof(off_t) == sizeof(int32_t)) {
+    ret = atol(digit);
+  } else if (sizeof(off_t) == sizeof(int64_t)) {
+    ret = atoll(digit);
+  }
+  return ret;
 }
 
 void ToDotPs(const char* name, const TimePass::ShmDoublylist<int>* p_l) {
-    char cmd[100];
-    char file[100];
-    snprintf(file, sizeof(file) - 1, "%s.dot", name);
-    if (false == p_l->ToDot(file, Label)) {
-        perror("can't open file:");
-    }
-    snprintf(cmd, sizeof(cmd) - 1,
-             "dot -Tps %s.dot -o %s.ps && rm %s", name, name, file);
-    system(cmd);
-    /*system("rm -rf rbtree.dot");*/
+  char cmd[100];
+  char file[100];
+  snprintf(file, sizeof(file) - 1, "%s.dot", name);
+  if (false == p_l->ToDot(file, Label)) {
+    perror("can't open file:");
+  }
+  snprintf(cmd, sizeof(cmd) - 1,
+           "dot -Tps %s.dot -o %s.ps && rm %s", name, name, file);
+  system(cmd);
+  /*system("rm -rf rbtree.dot");*/
 }
 
 
 void Create(off_t len) {
-    TimePass::ShmDoublylist<int> numbers(SHM_FILE);
-    if (false == numbers.Create(len)) {
-        printf("errno=%d\n", TimePass::Error::GetErrno());
-    }
+  TimePass::ShmDoublylist<int> numbers(SHM_FILE);
+  if (false == numbers.Create(len)) {
+    printf("errno=%d\n", TimePass::Error::GetErrno());
+  }
 }
 
 void Destroy() {
-    TimePass::ShmDoublylist<int> numbers(SHM_FILE);
-    if (false == numbers.Destroy()) {
-        printf("errno=%d\n",
-            TimePass::Error::GetErrno());
-    }
+  TimePass::ShmDoublylist<int> numbers(SHM_FILE);
+  if (false == numbers.Destroy()) {
+    printf("errno=%d\n",
+           TimePass::Error::GetErrno());
+  }
 }
 
 void Write() {
-    TimePass::ShmDoublylist<int> numbers(SHM_FILE);
-    if (false == numbers.Open()) {
-        printf("errno=%d\n",
-            TimePass::Error::GetErrno());
-        return;
-    }
+  TimePass::ShmDoublylist<int> numbers(SHM_FILE);
+  if (false == numbers.Open()) {
+    printf("errno=%d\n",
+           TimePass::Error::GetErrno());
+    return;
+  }
 
-    unsigned int seed = time(NULL);
-    unsigned int* p_seed = &seed;
-    int count = rand_r(p_seed) % 5 + 1; /*产生1～5之间的随机数*/
-    int number = 0, pos = 0;
-    for (int i = 0; i < count; ++i) {
-        pos =rand_r(p_seed) % (numbers.Size() + 1);
-        number = rand_r(p_seed) % 100;
-        if (NULL == numbers.Insert(number, pos)) {
-            printf("errno=%d\n", TimePass::Error::GetErrno());
-            return;
-        }
-        printf("<insert %d>:", pos);
-        printf("number = %d size = %ld ", number, numbers.Size());
+  unsigned int seed = time(NULL);
+  unsigned int* p_seed = &seed;
+  int count = rand_r(p_seed) % 5 + 1; /*产生1～5之间的随机数*/
+  int number = 0, pos = 0;
+  for (int i = 0; i < count; ++i) {
+    pos =rand_r(p_seed) % (numbers.Size() + 1);
+    number = rand_r(p_seed) % 100;
+    if (NULL == numbers.Insert(number, pos)) {
+      printf("errno=%d\n", TimePass::Error::GetErrno());
+      return;
     }
-    printf("共插入数据的条数%d\n", count);
+    printf("<insert %d>:", pos);
+    printf("number = %d size = %ld ", number, numbers.Size());
+  }
+  printf("共插入数据的条数%d\n", count);
 }
 
 void Remove() {
-    TimePass::ShmDoublylist<int> numbers(SHM_FILE);
-    if (false == numbers.Open()) {
-        printf("errno=%d\n", TimePass::Error::GetErrno());
-        return;
-    }
+  TimePass::ShmDoublylist<int> numbers(SHM_FILE);
+  if (false == numbers.Open()) {
+    printf("errno=%d\n", TimePass::Error::GetErrno());
+    return;
+  }
 
-    unsigned int seed = time(NULL);
-    unsigned int* p_seed = &seed;
-    int count = rand_r(p_seed) % 5 + 1; /*产生1～3之间的随机数*/
-    int pos = 0;
-    int elem = 0;
-    for (int i = 0; i < count; ++i) {
-        pos = rand_r(p_seed) % (numbers.Size() + 1);
-        if (false == numbers.Remove(pos, &elem)) {
-            printf("errno=%d\n",
-                TimePass::Error::GetErrno());
-            return;
-        }
-        printf("<remove %d>:", pos);
-        printf("size = %ld\n", numbers.Size());
+  unsigned int seed = time(NULL);
+  unsigned int* p_seed = &seed;
+  int count = rand_r(p_seed) % 5 + 1; /*产生1～3之间的随机数*/
+  int pos = 0;
+  int elem = 0;
+  for (int i = 0; i < count; ++i) {
+    pos = rand_r(p_seed) % (numbers.Size());
+    if (false == numbers.Remove(pos, &elem)) {
+      printf("errno=%d\n",
+             TimePass::Error::GetErrno());
+      return;
     }
-    printf("共删除数据的条数%d\n", count);
+    printf("<remove %d>%d:", pos, elem);
+    printf("size = %ld\n", numbers.Size());
+  }
+  printf("共删除数据的条数%d\n", count);
 }
 
 void Read() {
-    TimePass::ShmDoublylist<int> numbers(SHM_FILE);
-    if (false == numbers.Open()) {
-        printf("errno=%d\n",
-            TimePass::Error::GetErrno());
-        return;
-    }
-    printf("order:\n");
-    const TimePass::DoublylistNode<int>* p_beg = numbers.Begin();
-    while (numbers.End() != p_beg) {
-        printf("%d ", p_beg->data);
-        p_beg = numbers.Next(p_beg);
-    }
-    putchar('\n');
+  TimePass::ShmDoublylist<int> numbers(SHM_FILE);
+  if (false == numbers.Open()) {
+    printf("errno=%d\n",
+           TimePass::Error::GetErrno());
+    return;
+  }
+  printf("order:\n");
+  const TimePass::DoublylistNode<int>* p_beg = numbers.Begin();
+  while (numbers.End() != p_beg) {
+    printf("%d ", p_beg->data);
+    p_beg = numbers.Next(p_beg);
+  }
+  putchar('\n');
 
-    printf("reverse order:\n");
-    p_beg = numbers.RBegin();
-    while (numbers.End() != p_beg) {
-        printf("%d ", p_beg->data);
-        p_beg = numbers.RNext(p_beg);
-    }
-    putchar('\n');
+  printf("reverse order:\n");
+  p_beg = numbers.RBegin();
+  while (numbers.End() != p_beg) {
+    printf("%d ", p_beg->data);
+    p_beg = numbers.RNext(p_beg);
+  }
+  putchar('\n');
 }
 
 void Show() {
   TimePass::ShmDoublylist<int> numbers(SHM_FILE);
   if (false == numbers.Open()) {
-      printf("errno=%d\n",
-          TimePass::Error::GetErrno());
-      return;
+    printf("errno=%d\n",
+           TimePass::Error::GetErrno());
+    return;
   }
   ToDotPs("doublylist", &numbers);
   numbers.Close();
 }
 
 void Clear() {
-    TimePass::ShmDoublylist<int> numbers(SHM_FILE);
-    if (false == numbers.Open()) {
-        printf("errno=%d\n", TimePass::Error::GetErrno());
-        return;
-    }
-    numbers.Clear();
+  TimePass::ShmDoublylist<int> numbers(SHM_FILE);
+  if (false == numbers.Open()) {
+    printf("errno=%d\n", TimePass::Error::GetErrno());
+    return;
+  }
+  numbers.Clear();
 }
 
 
 void About() {
-    TimePass::ShmDoublylist<int> numbers(SHM_FILE);
-    if (false == numbers.Open()) {
-        printf("errno=%d\n", TimePass::Error::GetErrno());
-        return;
-    }
-    printf("name = %s capacity = %ld size = %ld"
-           "total_size = %ld, used_size = %ld\n",
-           numbers.Name(), numbers.Capacity(),
-           numbers.Size(), numbers.TotalBytes(), numbers.UsedBytes());
+  TimePass::ShmDoublylist<int> numbers(SHM_FILE);
+  if (false == numbers.Open()) {
+    printf("errno=%d\n", TimePass::Error::GetErrno());
+    return;
+  }
+  printf("name = %s capacity = %ld size = %ld"
+         "total_size = %ld, used_size = %ld\n",
+         numbers.Name(), numbers.Capacity(),
+         numbers.Size(), numbers.TotalBytes(), numbers.UsedBytes());
 }
 
 //void Optimize() {
@@ -187,9 +187,9 @@ void About() {
 void AllFunc() {
   TimePass::ShmDoublylist<int> numbers(SHM_FILE);
   if (false == numbers.Open()) {
-      printf("errno=%d\n",
-          TimePass::Error::GetErrno());
-      return;
+    printf("errno=%d\n",
+           TimePass::Error::GetErrno());
+    return;
   }
 
   numbers.IsOpen();
@@ -205,58 +205,57 @@ void AllFunc() {
 }
 
 void Usage() {
-    printf("usage:\n"
-             "-h for help\n"
-             "-c [capacity] for create\n"
-             "-d for destroy\n"
-//             "-o for optimize\n"
-             "-w for write\n"
-             "-r for read\n"
-             "-b for remove\n"
-             "-s for dot\n"
-             "-e for clear\n");
+  printf("usage:\n"
+         "-h for help\n"
+         "-a for info\n"
+         "-c [capacity] for create\n"
+         "-d for destroy\n"
+         //             "-o for optimize\n"
+         "-w for write\n"
+         "-r for read\n"
+         "-b for remove\n"
+         "-s for dot\n"
+         "-e for clear\n");
 }
 
 int main(int argc, char** argv) {
-    int result = getopt(argc, argv, "abewrdsc:");
-    if (-1 == result) {
-        Usage();
-        return 0;
-    }
-
-    switch (result) {
-        case 'a':
-            About();
-            break;
-        case 'b':
-            Remove();
-            break;
-//        case 'o':
-//            Optimize();
-//            break;
-        case 'c':
-            Create(Convert(optarg));
-            break;
-        case 'd':
-            Destroy();
-            break;
-        case 'w':
-            Write();
-            break;
-        case 'r':
-            Read();
-            break;
-        case 's':
-            Show();
-            break;
-        case 'e':
-            Clear();
-            break;
-        default:
-            Usage();
-            break;
-    }
+  int result = getopt(argc, argv, "abewrdsc:");
+  if (-1 == result) {
+    Usage();
     return 0;
+  }
+
+  switch (result) {
+    case 'a':
+      About();
+      break;
+    case 'b':
+      Remove();
+      break;
+      //        case 'o':
+      //            Optimize();
+      //            break;
+    case 'c':
+      Create(Convert(optarg));
+      break;
+    case 'd':
+      Destroy();
+      break;
+    case 'w':
+      Write();
+      break;
+    case 'r':
+      Read();
+      break;
+    case 's':
+      Show();
+      break;
+    case 'e':
+      Clear();
+      break;
+    default:
+      Usage();
+      break;
+  }
+  return 0;
 }
-
-
