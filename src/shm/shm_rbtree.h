@@ -62,7 +62,7 @@ struct RbtreeNode {
 
 template <typename T, int (*Compare)(const T& a, const T& b) = T::Compare,
           typename EXTEND = off_t>
-class Rbtree {
+class ShmRbtree {
  public:
   bool Create(off_t capacity) {
     if (false == shm_array_.Create(capacity)) {
@@ -173,10 +173,54 @@ class Rbtree {
     return p_ext_;
   }
 
-  off_t Begin()const {
+  RbtreeNode<T>* Offset(off_t offset) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+
+    if (offset < 0 || offset >= p_head_->capacity) {
+      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+
+    return p_data_ + offset;
+  }
+
+  const RbtreeNode<T>* Offset(off_t offset)const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+
+    if (offset < 0 || offset >= p_head_->capacity) {
+      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+
+    return p_data_ + offset;
+  }
+
+  off_t Offset(const RbtreeNode<T>* p_cur)const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return RbtreeFlag::OFFT_ERROR;
+    }
+
+    off_t offset = p_cur - p_data_;
+    if (offset < 0 || offset >= p_head_->capacity) {
+      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+      return RbtreeFlag::OFFT_ERROR;
+    }
+
+    return offset;
+  }
+
+
+  off_t Begin()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return RbtreeFlag::OFFT_ERROR;
     }
 
     return Minimum(p_head_->root);

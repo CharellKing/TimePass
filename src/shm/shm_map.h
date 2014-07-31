@@ -1,20 +1,20 @@
 /*
- * shm_set.h
+ * shm_map.h
  *
- *  Created on: Jul 30, 2014
- *      Author: ck
+ *  Created on: 2014年7月31日
+ *      Author: root
  */
 
-#ifndef _SHM_SHM_SET_H_
-#define _SHM_SHM_SET_H_
+#ifndef _SHM_SHM_MAP_H_
+#define _SHM_SHM_MAP_H_
 
 #include "shm/shm_rbtree.h"
 
 namespace TimePass {
 template <typename T, typename EXTEND>
-class ShmSet {
+class ShmMap {
  public:
-  ShmSet(const char* name):shm_rbtree_(name) {
+  ShmMap(const char* name):shm_rbtree_(name) {
   }
 
   bool Create(off_t capacity) {
@@ -167,4 +167,6 @@ class ShmSet {
 };
 };
 
-#endif /* SHM_SET_H_ */
+
+
+#endif /* SHM_MAP_H_ */
