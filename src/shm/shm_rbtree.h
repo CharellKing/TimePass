@@ -314,12 +314,13 @@ class Rbtree {
   }
 
   /*remove data*/
-  off_t Remove(const T& data) {
-    off_t target = FindNode(data);
-    if (-1 != target) {
-      target = RemoveNode(target);
+  bool Remove(const T& data, T* remove) {
+    off_t target_offset = FindNode(data);
+    if (RbtreeFlag::OFFT_ERROR == target_offset) {
+      return false;
     }
-    return target;
+
+    return RemoveNode(target_offset, T* remove);
   }
 
   /*find node with key data*/
@@ -349,118 +350,65 @@ class Rbtree {
     return target_offset;
   }
 
-  /*remove node*/
-  off_t RemoveNode(off_t target_offset) {
+  /*<data the first data not smaller than data*/
+  off_t LowerBound(const T& data)const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return RbtreeFlag::OFFT_ERROR;
     }
 
-    if (target_offset < 0 || target_offset >= p_head_->capacity) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+    off_t ceil_offset = -1, cur_offset = p_head_->root;
+    while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
+      if (Compare((p_data_ + cur_offset)->data, data) >= 0) {
+        ceil_offset = cur_offset;
+        cur_offset = (p_data_ + cur_offset)->left;
+      } else {
+        cur_offset = (p_data_ + cur_offset)->right;
+      }
+    }
+    return ceil_offset;
+  }
+
+  /*>data the first bigger than data*/
+  off_t UpperBound(const T& data)const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return RbtreeFlag::OFFT_ERROR;
     }
 
-    off_t remove_offset = -1, child_offset = -1, parent_offset = -1;
-    RbtreeNode<T>* p_target = p_data_ + target_offset;
-
-    if (-1 == p_target->left || -1 == p_target->right) {
-      /*
-       * if the remove-node's left tree or right tree is empty,
-       *  then directly remove the node
-       */
-      remove_offset = target_offset;
-      parent_offset = p_target->parent;
-      if (-1 == p_target->left) {
-        child_offset = p_target->right;
+    off_t floor_offset = -1, cur_offset = p_head_->root;
+    while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
+      if (Compare((p_data_ + cur_offset)->data, data) > 0) {
+        floor_offset = cur_offset;
+        cur_offset = (p_data_ + cur_offset)->left;
       } else {
-        child_offset = p_target->left;
-      }
-    } else {
-     /*
-      * find leaf-node's value to replace the removable-node's value,
-      * then remove the leaf-node.
-      */
-      remove_offset = Neighbor(target_offset);
-      ListNode<T>* p_remove = p_data_ + remove_offset;
-      p_target->data = p_remove->data;
-      child_offset = p_remove->left;
-      parent_offset = p_remove->parent;
-    }
-
-    if (parent_offset >= 0) {
-      /*the removable node isn't root*/
-      if ((p_data_ + remove_offset) == remove_offset) {
-          Connect(parent_offset, child_offset, RbtreeFlag::LEFT);
-      } else {
-          Connect(parent_offset, child_offset, RbtreeFlag::RIGHT);
-      }
-    } else {
-      /*the removable node is root*/
-      p_head_->root = child_offset;
-      if (child_offset >= 0) {
-        (p_data_ + child_offset)->parent = -1;
+        cur_offset = (p_data_ + cur_offset)->right;
       }
     }
-
-    if (-1 != p_head_->root &&
-        RbtreeFlag::BLACK == (p_data_ + remove_offset)->color) {
-        RemoveFixUp(parent_offset, child_offset);
-    }
-
-    --p_head_->size;
-
-    SefFree(remove_offset);
-
-    return remove_offset;
+    return floor_offset;
   }
 
+  /*=data the first equal to data*/
+  off_t EqualRange(const T& data)const {
+    if (NULL == p_head_) {
+       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+       return RbtreeFlag::OFFT_ERROR;
+     }
 
-  /*<data ceil*/
-  static off_t LowerBound(const T& data) {
-    off_t res = -1;
-    if (-1 != root) {
-      const RbtreeNode<T>* p_root = p_addr + root;
-      off_t res = -1;
-      int comp = Compare(data, p_root->data);
-      if (comp > 0) {
-        res = LowerBound(p_addr, p_root->right, data);
-        res = ((-1 == res) ? root : res);
-      } else {
-        res = LowerBound(p_addr, p_root->left, data);
-      }
-    }
-    return res;
-  }
-
-  /*>data floor*/
-  off_t UpperBound(const T& data) {
-    off_t res = -1;
-    if (-1 != root) {
-      const RbtreeNode<T>* p_root = p_addr + root;
-      int comp = Compare(data, p_root->data);
-      if (comp >= 0) {
-        res = LowerBound(p_addr, p_root->right, data);
-      } else {
-        res = LowerBound(p_addr, p_root->left, data);
-        res = ((-1 == res) ? root : res);
-      }
-    }
-    return res;
-  }
-
-  /*=data first data*/
-  off_t EqualRange(const T& data) {
-    off_t res = -1;
-    if (-1 != root) {
-      const RbtreeNode<T>* p_root = p_addr + root;
-      int comp = Compare(data, p_root->data);
-      if (0 == comp) {
-        res = LowerBound(p_addr, p_root->left, data);
-        res = ((-1 == res) ? root : res);
-      }
-    }
-    return res;
+     off_t floor_offset = -1, cur_offset = p_head_->root;
+     int cmp = 0;
+     while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
+       cmp = Compare((p_data_ + cur_offset)->data, data);
+       if (cmp > 0) {
+         cur_offset = (p_data_ + cur_offset)->left;
+       } else if (cmp < 0) {
+         cur_offset = (p_data_ + cur_offset)->right;
+       } else {
+         floor_offset = cur_offset;
+         break;
+       }
+     }
+     return floor_offset;
   }
 
   bool ToDot(const std::string& filename,
@@ -626,40 +574,40 @@ class Rbtree {
     return ret;
   }
 
-  /*modify node to balance the tree, rotate around d(z)*/
-  /*1.b is a's left child*/
-    /*(1) a(B)             d(R)       */
-    /*    /\               /\         */
-    /*(R)b  c(R) ====> (B)x  x(B)     */
-    /*   /                /           */
-    /*(z)d(R)          x(R)           */
+  /*modify node to balance the tree, rotate around d(z)
+  1.b is a's left child
+    (1) a(B)             d(R)
+        /\               /\
+    (R)b  c(R) ====> (B)x  x(B)
+       /                /
+    (z)d(R)          x(R)
 
-    /*(2) a(B)             d(B)       */
-    /*    /\               /\         */
-    /*(R)b  c(B) ====> (R)d c(R)      */
-    /*      \             /           */
-    /*      d(R)          b(R)        */
-    /*(3) a(B)             b(B)       */
-    /*    /\               /\         */
-    /*(R)b  c(B) ====>  (R)d a(R)     */
-    /*   /                  \         */
-    /* d(R)                  c(B)     */
-  /*2.b is a's right child*/
-    /*(1) a(B)            a(R)        */
-    /*    /\              /\          */
-    /* (R)c b(R) ====>(B)c b(B)       */
-    /*       \              \         */
-    /*        d(R)           d(R)     */
-    /*(2) a(B)            a(B)        */
-    /*    /\              /\          */
-    /* (B)c b(R) ====>(B)c  d(R)      */
-    /*      /               \         */
-    /*     d(R)              b(R)     */
-    /*(3) a(B)            b(B)        */
-    /*    /\              /\          */
-    /* (B)c b(R) =====>(R)a d(R)      */
-    /*       \              /         */
-    /*       d(R)          c(B)       */
+    (2) a(B)             d(B)
+        /\               /\
+    (R)b  c(B) ====> (R)d c(R)
+          \             /
+          d(R)          b(R)
+    (3) a(B)             b(B)
+        /\               /\
+    (R)b  c(B) ====>  (R)d a(R)
+       /                  \
+     d(R)                  c(B)
+  2.b is a's right child
+    (1) a(B)            a(R)
+        /\              /\
+     (R)c b(R) ====>(B)c b(B)
+           \              \
+            d(R)           d(R)
+    (2) a(B)            a(B)
+        /\              /\
+     (B)c b(R) ====>(B)c  d(R)
+          /               \
+         d(R)              b(R)
+    (3) a(B)            b(B)
+        /\              /\
+     (B)c b(R) =====>(R)a d(R)
+           \              /
+           d(R)          c(B)       */
   void InsertFixUp(off_t z) {
     RbtreeNode<T> *p_z = RawOffset(z), *p_parent = NULL;
     while ((p_parent = RawOffset(p_z->parent)) &&
@@ -708,40 +656,40 @@ class Rbtree {
     RawOffset(p_head_->root)->color = RbtreeFlag::BLACK;
   }
 
-  /*删除一个节点之后，维护红黑树平衡                */
-  /*1.x为其父亲节点的左节点                       */
-    /*case1: x的兄弟节点为红色                   */
-    /*       b(B)                 d(B)        */
-    /*       /\        case1      /\          */
-    /*(x)(B)a  d(R)(w) ====>   (R)b e(B)      */
-    /*         /\                /\           */
-    /*      (B)c e(B)     (x)(B)a c(B)(new w) */
-    /**/
-    /*case2: x的父亲节点为红色,其侄子节点为黑色*/
-    /*       b(R)                 b(R)(new x)*/
-    /*        /\       case2      /\         */
-    /* (x)(B)a d(B)(w) ====>   (B)a d(R)     */
-    /*         /\                   /\*/
-    /*      (B)c e(B)            (B)c e(B)   */
-    /**/
-    /*case 3:x的父亲节点为红色，其左侄子为红色，右侄子为黑色*/
-    /*        b(R)                b(R)       */
-    /*        /\        case3       /\       */
-    /*  (x)(B)a d(B)(w) ====> (x)(B)a c(B)   */
-    /*          /\                      \    */
-    /*       (R)c e(B)                   d(R)*/
-    /*                                    \  */
-    /*                                   e(E)*/
-    /*case 4:x的父亲节点为红色， 其右侄子都为红色*/
-    /*        b(R)                d(R)       */
-    /*        /\        case4      /\        */
-    /*  (x)(B)a d(B)(w) ====>(x)(B)b e(B)    */
-    /*          /\                /\         */
-    /*       (R)c e(R)         (B)a c(R) new x = root(T)*/
-    /**/
-  /*2.x为其父亲节点的右节点*/
-    /*与上面相同分四种情况，相反*/
-  /*在这里parent指b， child指a，及x， 树的平衡规则是围绕x进行的*/
+  /* 在这里parent指b， child指a，及x， 树的平衡规则是围绕x进行的
+   * 删除一个节点之后，维护红黑树平衡
+  1.x为其父亲节点的左节点
+    case1: x的兄弟节点为红色
+           b(B)                 d(B)
+           /\        case1      /\
+    (x)(B)a  d(R)(w) ====>   (R)b e(B)
+             /\                /\
+          (B)c e(B)     (x)(B)a c(B)(new w)
+
+    case2: x的父亲节点为红色,其侄子节点为黑色
+           b(R)                 b(R)(new x)
+            /\       case2      /\
+     (x)(B)a d(B)(w) ====>   (B)a d(R)
+             /\                   /\
+          (B)c e(B)            (B)c e(B)
+
+    case 3:x的父亲节点为红色，其左侄子为红色，右侄子为黑色
+            b(R)                b(R)
+            /\        case3       /\
+      (x)(B)a d(B)(w) ====> (x)(B)a c(B)
+              /\                      \
+           (R)c e(B)                   d(R)
+                                        \
+                                       e(E)
+    case 4:x的父亲节点为红色， 其右侄子都为红色
+            b(R)                d(R)
+            /\        case4      /\
+      (x)(B)a d(B)(w) ====>(x)(B)b e(B)
+              /\                /\
+           (R)c e(R)         (B)a c(R) new x = root(T)
+
+  2.x为其父亲节点的右节点
+    与上面相同分四种情况，相反*/
   void RemoveFixUp(off_t parent, off_t child) {
     RbtreeNode<T>* p_child = RawOffset(child);
     RbtreeNode<T>* p_parent = RawOffset(parent);
@@ -823,14 +771,14 @@ class Rbtree {
     }
   }
 
-  /*rotate left*/
-  /* c           c    */
-  /* |           |    */
-  /* x ========> y    */
-  /* /\         /\    */
-  /* a y        x r   */
-  /*   /\      /\     */
-  /*   b r     a b    */
+  /*rotate left
+   c           c
+   |           |
+   x ========> y
+   /\         /\
+   a y        x r
+     /\      /\
+     b r     a b    */
   bool LeftRotate(off_t x) {
     RbtreeNode<T>* p_x = RawOffset(x);
     if (NULL == p_x) {
@@ -869,14 +817,14 @@ class Rbtree {
     return true;
   }
 
-  /*rotate right*/
-  /* c           c    */
-  /* |           |    */
-  /* y ========> x    */
-  /* /\         /\    */
-  /* x r        a y   */
-  /* /\           /\  */
-  /* a b          b r */
+  /*rotate right
+   c           c
+   |           |
+   y ========> x
+   /\         /\
+   x r        a y
+   /\           /\
+   a b          b r */
   bool RightRotate(off_t y) {
     RbtreeNode<T>* p_y = RawOffset(y);
     if (NULL == p_y) {
@@ -953,7 +901,7 @@ class Rbtree {
   off_t Neighbor(off_t offset) {
     off_t ret = Maximum((p_data_ + offset)->left);
     if (-1 == ret) {
-      ret = Minimum((p_data + offset)->right);
+      ret = Minimum((p_data_ + offset)->right);
     }
     return ret;
   }
