@@ -136,8 +136,7 @@ class Rbtree {
       return -1;
     }
 
-    return sizeof(off_t) + sizeof(ArrayHead) +
-           sizeof(RbtreeHead<EXTEND>) + sizeof(RbtreeNode<T>) * p_head_->size;
+    return shm_array_.NonDataByteSize() + sizeof(RbtreeNode<T>) * p_head_->size;
   }
 
   const char* Name()const {
@@ -150,6 +149,10 @@ class Rbtree {
       return ShmBase::ShmFailed<RbtreeHead<EXTEND> >();
     }
     return p_head_;
+  }
+
+  ArrayBucket* Bucket() {
+    return shm_array_.Bucket();
   }
 
   bool SetExtend(const EXTEND& ext) {
