@@ -330,21 +330,23 @@ class Rbtree {
     }
 
     int comp = 0;
-    off_t target = p_head_->root;
-    RbtreeNode<T>* p_target = RawOffset(p_head_->root);
-    while (p_target) {
-      comp = Compare(p_target->data, data);
+    off_t target_offset = p_head_->root;
+    while (target_offset >= 0 && target_offset < p_head_->capacity) {
+      comp = Compare((p_data_ + target_offset)->data, data);
       if (comp > 0) {
-        target = p_target->left;
-        p_target = RawOffset(p_target->left);
+        target_offset = (p_data_ + target_offset)->left;
       } else if (comp < 0) {
-        target = p_target->right;
-        p_target = RawOffset(p_target->right);
+        target_offset = (p_data_ + target_offset)->right;
       } else {
-        return target;
+        break;
       }
-      return -1;
     }
+
+    if (target_offset < 0 || target_offset >= p_head_->capacity) {
+      Error::SetErrno(ErrorNo::SHM_NOT_FOUND);
+      return RbtreeFlag::OFFT_ERROR;
+    }
+    return target_offset;
   }
 
   /*remove node*/
