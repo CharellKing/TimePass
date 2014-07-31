@@ -7,13 +7,13 @@
 #ifndef _SHM_SHM_RBTREE_H_
 #define _SHM_SHM_RBTREE_H_
 
-#include <global/errno.h>
-#include <global/error.h>
-#include <shm/shm_array.h>
-#include <shm/shm_doublylist.h>
-#include <sys/stat.h>
+#include "global/errno.h"
+#include "global/error.h"
+#include "shm/shm_array.h"
+
 #include <cstdio>
 #include <string>
+#include <stack>
 
 namespace TimePass {
 namespace RbtreeFlag {
@@ -391,29 +391,24 @@ class Rbtree {
   /*=data the first equal to data*/
   off_t EqualRange(const T& data)const {
     if (NULL == p_head_) {
-       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-       return RbtreeFlag::OFFT_ERROR;
-     }
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return RbtreeFlag::OFFT_ERROR;
+    }
 
-     off_t floor_offset = -1, cur_offset = p_head_->root;
-     int cmp = 0;
-     while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
-       cmp = Compare((p_data_ + cur_offset)->data, data);
-       if (cmp > 0) {
-         cur_offset = (p_data_ + cur_offset)->left;
-       } else if (cmp < 0) {
-         cur_offset = (p_data_ + cur_offset)->right;
-       } else {
-         floor_offset = cur_offset;
-         break;
-       }
-     }
-     return floor_offset;
-  }
-
-  bool ToDot(const std::string& filename,
-            const std::string (*Label)(const T& value))const {
-    return true;
+    off_t floor_offset = -1, cur_offset = p_head_->root;
+    int cmp = 0;
+    while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
+      cmp = Compare((p_data_ + cur_offset)->data, data);
+      if (cmp > 0) {
+        cur_offset = (p_data_ + cur_offset)->left;
+      } else if (cmp < 0) {
+        cur_offset = (p_data_ + cur_offset)->right;
+      } else {
+        floor_offset = cur_offset;
+        break;
+      }
+    }
+    return floor_offset;
   }
 
   bool Commit(bool is_sync) {
@@ -904,6 +899,79 @@ class Rbtree {
       ret = Minimum((p_data_ + offset)->right);
     }
     return ret;
+  }
+
+  /* convert the data structure to dot language script*/
+  bool ToDot(const std::string& filename,
+             const std::string (*ToString)(const T& value))const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+    }
+
+    FILE* fp = fopen(filename.c_str(), "wb");
+    if (NULL == fp) {
+      Error::SetErrno(errno);
+      return false;
+    }
+
+    fprintf(fp, "digraph G {\n");
+    Traverse(fp, ToString);
+    fprintf(fp, "}\n");
+    fclose(fp);
+    return true;
+  }
+
+  /*traverse all the rb-tree in recursion*/
+  void Traverse(FILE* fp,
+                const std::string (*ToString)(const T& data))const {
+    std::stack<const RbtreeNode<T>*> s;
+
+    if (p_head_->root >= 0) {
+      const RbtreeNode<T>* p_cur = p_data_ + p_head_->root;
+      NodeToDot(fp, p_cur, ToString(p_cur->data));
+      s.push(p_cur);
+    }
+
+    while (false == s.empty()) {
+      const RbtreeNode<T>* p_parent = s.Top();
+      const RbtreeNode<T>* p_child  = p_data_ + p_parent->left;
+      if (p_parent->left > 0) {
+        p_child  = p_data_ + p_parent->left;
+        ConnectToDot(fp, p_parent, p_child, ToString);
+        s.push(p_child);
+      } else {
+        if (p_parent->right > 0) {
+          p_child  = p_data_ + p_parent->right;
+          ConnectToDot(fp, p_parent, p_child, ToString);
+          s.push(p_child);
+        } else {
+          p_child = p_parent;
+          s.Pop();
+          while (p_data_ + s.top()->right == p_child) {
+            p_child = s.top();
+            s.pop();
+          }
+        }
+      }
+    }
+  }
+
+  /*write node to file*/
+  void NodeToDot(FILE* fp, const RbtreeNode<T>* p_cur, const std::string& label)const {
+    fprintf(fp, "%s[color=%s,style=filled, fontcolor=green];\n",
+            label.c_str(), ('R' == p_cur->color ? "red":"black"));
+  }
+
+  /*connect parent node with child node*/
+  void ConnectToDot(FILE* fp,
+                    const RbtreeNode<T>* p_parent,
+                    const RbtreeNode<T>* p_child,
+                    const std::string (*ToString)(const T& data))const {
+    std::string child_label = ToString(p_child->data);
+    std::string parent_label = ToString(p_parent->data);
+    NodeToDot(fp, p_child, child_label);
+    fprintf(fp, "%s->%s;\n", parent_label.c_str(), child_label.c_str());
   }
 
  private:
