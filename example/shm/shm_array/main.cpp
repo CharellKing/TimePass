@@ -32,7 +32,7 @@ off_t Convert(const char* digit) {
 void Create(off_t len) {
   TimePass::ShmArray<int> numbers(SHM_FILE);
   if (false == numbers.Create(len)) {
-    printf("errno=%s\n", TimePass::Error::GetErrno());
+    printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
   numbers.Close();
@@ -41,12 +41,11 @@ void Create(off_t len) {
 void Destroy() {
   TimePass::ShmArray<int> numbers(SHM_FILE);
   if (false == numbers.Destroy()) {
-    printf("errno=%s\n", TimePass::Error::GetErrno());
+    printf("errno=%d\n", TimePass::Error::GetErrno());
   }
 }
 
 void Write() {
-  int method = 0;
   TimePass::ShmArray<int> numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());

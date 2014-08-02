@@ -1,6 +1,7 @@
 PROJECT (TIME_PASS)
 CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
 SET(CMAKE_BUILD_TYPE DEBUG)
+ADD_DEFINITIONS(-Wall)
 
 #must add "-lrt" flag to reference "shm_open" and "unlink"
 SET(CMAKE_EXE_LINKER_FLAGS "-lrt -pthread")
@@ -24,3 +25,4 @@ ADD_SUBDIRECTORY(shm/shm_vector)
 ADD_SUBDIRECTORY(shm/shm_queue)
 ADD_SUBDIRECTORY(shm/shm_list)
 ADD_SUBDIRECTORY(shm/shm_doublylist)
+ADD_SUBDIRECTORY(shm/shm_set)
