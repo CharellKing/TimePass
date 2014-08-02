@@ -19,7 +19,7 @@ TimePass::ShmBlock::ShmBlock(const char* name):p_head_(NULL), p_data_(NULL) {
 
 bool TimePass::ShmBlock::Create(off_t capacity) {
   if (capacity < 0) {
-    Error::SetErrno(ErrorNo::SHM_CAPACITY_NONNEGATIVE);
+    Error::SetErrno(ErrorNo::SHM_CAPACITY_NONPOSITIVE);
     return false;
   }
 
@@ -232,7 +232,7 @@ char* TimePass::ShmBlock::Read(char* p_data, off_t len, off_t offset)const {
 
 bool TimePass::ShmBlock::Resize(off_t capacity) {
   if (capacity < 0) {
-    Error::SetErrno(ErrorNo::SHM_CAPACITY_NONNEGATIVE);
+    Error::SetErrno(ErrorNo::SHM_CAPACITY_NONPOSITIVE);
     return false;
   }
 

@@ -483,7 +483,7 @@ class ShmVector {
  private:
   bool Resize(off_t capacity) {
     if (capacity < 0) {
-     Error::SetErrno(ErrorNo::SHM_CAPACITY_NONNEGATIVE);
+     Error::SetErrno(ErrorNo::SHM_CAPACITY_NONPOSITIVE);
      return false;
     }
 

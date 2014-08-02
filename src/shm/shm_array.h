@@ -19,7 +19,7 @@
 
 namespace TimePass {
 struct ArrayHead {
-  ArrayHead():capacity(0),bucket(0) {
+  ArrayHead():capacity(0), bucket(0) {
   }
   off_t capacity;
   off_t bucket;
@@ -33,8 +33,9 @@ struct ArrayBucket {
 template <typename T, typename EXTEND = off_t>
 class ShmArray {
  public:
-  explicit ShmArray(const char* name):shm_block_(name), p_head_(NULL), p_bucket_(NULL),
-                                      p_ext_(NULL), p_data_(NULL) {
+  explicit ShmArray(const char* name):shm_block_(name), p_head_(NULL),
+                                      p_bucket_(NULL), p_ext_(NULL),
+                                      p_data_(NULL) {
   }
 
   bool Create(off_t capacity) {
@@ -57,7 +58,7 @@ class ShmArray {
     if (p_head_->bucket <= 0) {
       p_bucket_ = NULL;
     } else {
-      p_bucket_ = p_tmp;
+      p_bucket_ = reinterpret_cast<ArrayBucket*>(p_tmp);
     }
 
     p_tmp += sizeof(ArrayBucket) * p_head_->bucket;
@@ -323,7 +324,7 @@ class ShmArray {
     if (p_head_->bucket <= 0) {
       p_bucket_ = NULL;
     } else {
-      p_bucket_ = p_tmp;
+      p_bucket_ = reinterpret_cast<ArrayBucket*>(p_tmp);
     }
 
     p_tmp += sizeof(ArrayBucket) * p_head_->bucket;

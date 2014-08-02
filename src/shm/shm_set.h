@@ -11,7 +11,8 @@
 #include "shm/shm_rbtree.h"
 
 namespace TimePass {
-template <typename T, typename EXTEND>
+template <typename T, int (*Compare)(const T& a, const T& b) = T::Compare,
+          typename EXTEND = off_t>
 class ShmSet {
  public:
   ShmSet(const char* name):shm_rbtree_(name) {
@@ -48,12 +49,12 @@ class ShmSet {
     return shm_rbtree_.Size();
   }
 
-  off_t TotalSize() {
-    return shm_rbtree_.TotalSize();
+  off_t TotalBytes() {
+    return shm_rbtree_.TotalBytes();
   }
 
-  off_t UsedSize() {
-    return shm_rbtree_.UsedSize();
+  off_t UsedBytes() {
+    return shm_rbtree_.UsedBytes();
   }
 
   const char* Name() {
@@ -61,15 +62,11 @@ class ShmSet {
   }
 
   const RbtreeHead<EXTEND>* Head()const {
-    return NULL;
-  }
-
-  ArrayBucket* Bucket() {
-    return shm_rbtree_.Bucket();
+    return shm_rbtree_.Head();
   }
 
   bool SetExtend(const EXTEND& ext) {
-    return shm_rbtree_.SetExtend();
+    return shm_rbtree_.SetExtend(ext);
   }
 
   const EXTEND* GetExtend() {
@@ -77,35 +74,71 @@ class ShmSet {
   }
 
   RbtreeNode<T>* Begin() {
-    return NULL;
+    return shm_rbtree_.Begin();
   }
 
   const RbtreeNode<T>* Begin()const {
-    return NULL;
+    return shm_rbtree_.Begin();
   }
 
   const RbtreeNode<T>* End()const {
-    return NULL;
+    return shm_rbtree_.End();
+  }
+
+  RbtreeNode<T>* Next(RbtreeNode<T>* p_cur) {
+    return shm_rbtree_.Next(p_cur);
   }
 
   const RbtreeNode<T>* Next(const RbtreeNode<T>* p_cur)const {
-    return NULL;
+    return shm_rbtree_.Next(p_cur);
   }
 
-  off_t RBegin()const {
-    return NULL;
+  RbtreeNode<T>* RBegin() {
+    return shm_rbtree_.RBegin();
   }
 
-  off_t RNext(off_t cur_offset)const {
-    return NULL;
+  const RbtreeNode<T>* RBegin()const {
+    return shm_rbtree_.RBegin();
   }
 
-  T* Minimum()const {
-    return NULL;
+  RbtreeNode<T>* RNext(RbtreeNode<T>* p_cur) {
+    return shm_rbtree_.RNext(p_cur);
   }
 
-  T* Maximum()const {
-    return NULL;
+  const RbtreeNode<T>* RNext(const RbtreeNode<T>* p_cur)const {
+    return shm_rbtree_.RNext(p_cur);
+  }
+
+  T* Minimum() {
+    off_t min_offset = shm_rbtree_.Minimum(shm_rbtree_.Head()->root);
+    if (RbtreeFlag::OFFT_ERROR == min_offset) {
+      return ShmBase::ShmFailed<T>();
+    }
+    return &shm_rbtree_.Offset(min_offset)->data;
+  }
+
+  const T* Minimum()const {
+    off_t min_offset = shm_rbtree_.Minimum(shm_rbtree_.Head()->root);
+    if (RbtreeFlag::OFFT_ERROR == min_offset) {
+      return ShmBase::ShmFailed<T>();
+    }
+    return &shm_rbtree_.Offset(min_offset)->data;
+  }
+
+  T* Maximum() {
+    off_t max_offset = shm_rbtree_.Maximum(shm_rbtree_.Head()->root);
+    if (RbtreeFlag::OFFT_ERROR == max_offset) {
+      return ShmBase::ShmFailed<T>();
+    }
+    return &shm_rbtree_.Offset(max_offset)->data;
+  }
+
+  const T* Maximum()const {
+    off_t max_offset = shm_rbtree_.Maximum(shm_rbtree_.Head()->root);
+    if (RbtreeFlag::OFFT_ERROR == max_offset) {
+      return ShmBase::ShmFailed<T>();
+    }
+    return &shm_rbtree_.Offset(max_offset)->data;
   }
 
   bool Clear() {
@@ -113,57 +146,89 @@ class ShmSet {
   }
 
   bool Insert(const T& data) {
-    return true;
+    return shm_rbtree_.InsertUnique(data);
   }
 
   /*remove data*/
-  bool Remove(const T& data, T* remove) {
-    return true;
+  bool Remove(const T& data, T* p_remove) {
+    return shm_rbtree_.Remove(data, p_remove);
   }
 
   T* Find(const T& data) {
-    return NULL;
+    off_t offset = shm_rbtree_.FindNode(data);
+    if (RbtreeFlag::OFFT_ERROR == offset) {
+      return ShmBase::ShmFailed<T>();
+    }
+    return &shm_rbtree_.Offset(offset)->data;
   }
 
   const T* Find(const T& data)const {
-    return NULL;
+    off_t offset = shm_rbtree_.FindNode(data);
+    if (RbtreeFlag::OFFT_ERROR == offset) {
+      return ShmBase::ShmFailed<T>();
+    }
+    return &shm_rbtree_.Offset(offset)->data;
   }
 
   RbtreeNode<T>* LowerBound(const T& data) {
-    return NULL;
+    off_t offset = shm_rbtree_.LowerBound(data);
+    if (RbtreeFlag::OFFT_ERROR == offset) {
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+    return shm_rbtree_.Offset(offset);
   }
 
   const RbtreeNode<T>* LowerBound(const T& data)const {
-    return NULL;
+    off_t offset = shm_rbtree_.LowerBound(data);
+    if (RbtreeFlag::OFFT_ERROR == offset) {
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+    return shm_rbtree_.Offset(offset);
   }
 
   RbtreeNode<T>* UpperBound(const T& data) {
-    return NULL;
+    off_t offset = shm_rbtree_.UpperBound(data);
+    if (RbtreeFlag::OFFT_ERROR == offset) {
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+    return shm_rbtree_.Offset(offset);
   }
 
   const RbtreeNode<T>* UpperBound(const T& data)const {
-    return NULL;
+    off_t offset = shm_rbtree_.UpperBound(data);
+    if (RbtreeFlag::OFFT_ERROR == offset) {
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+    return shm_rbtree_.Offset(offset);
   }
 
-  RbtreeNode<T>* EqualRanger(const T& data) {
-    return NULL;
+  RbtreeNode<T>* EqualRange(const T& data) {
+    off_t offset = shm_rbtree_.EqualRange(data);
+    if (RbtreeFlag::OFFT_ERROR == offset) {
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+    return shm_rbtree_.Offset(offset);
   }
 
-  const RbtreeNode<T>* EqualRanger(const T& data)const {
-    return NULL;
+  const RbtreeNode<T>* EqualRange(const T& data)const {
+    off_t offset = shm_rbtree_.EqualRange(data);
+    if (RbtreeFlag::OFFT_ERROR == offset) {
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+    return shm_rbtree_.Offset(offset);
   }
 
   bool ToDot(const std::string& filename,
              const std::string (*ToString)(const T& value))const {
-    return true;
+    return shm_rbtree_.ToDot(filename, ToString);
   }
 
   bool Commit(bool is_sync) {
-    return true;
+    return shm_rbtree_.Commit(is_sync);
   }
 
  private:
-  ShmRbtree<T, EXTEND>        shm_rbtree_;
+  ShmRbtree<T, Compare, EXTEND>        shm_rbtree_;
 };
 };
 
