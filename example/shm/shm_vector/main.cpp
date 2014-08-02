@@ -115,7 +115,6 @@ void Remove() {
   unsigned int* p_seed = &seed;
   int count = rand_r(p_seed) % 5 + 1, pos = 0;
 
-  char name[512];
   int data = 0;
   for (int i = 0; i < count; ++i) {
     method = rand_r(p_seed) % 3;

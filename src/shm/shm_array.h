@@ -305,12 +305,13 @@ class ShmArray {
       return false;
     }
 
-    if (bucket <= 0) {
-      Error::SetErrno(ErrorNo::SHM_BUCKET_NONPOSITIVE);
+    if (bucket < 0) {
+      Error::SetErrno(ErrorNo::SHM_BUCKET_NEGTIVE);
       return false;
     }
 
-    if (false == shm_block_.Create(sizeof(ArrayHead) + sizeof(ArrayBucket) * bucket +
+    if (false == shm_block_.Create(sizeof(ArrayHead) +
+                                   sizeof(ArrayBucket) * bucket +
                                    sizeof(EXTEND) + capacity * sizeof(T))) {
       return false;
     }
