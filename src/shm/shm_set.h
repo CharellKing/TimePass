@@ -8,6 +8,8 @@
 #ifndef _SHM_SHM_SET_H_
 #define _SHM_SHM_SET_H_
 
+#include <string>
+
 #include "shm/shm_rbtree.h"
 
 namespace TimePass {
@@ -15,7 +17,7 @@ template <typename T, int (*Compare)(const T& a, const T& b) = T::Compare,
           typename EXTEND = off_t>
 class ShmSet {
  public:
-  ShmSet(const char* name):shm_rbtree_(name) {
+  explicit ShmSet(const char* name):shm_rbtree_(name) {
   }
 
   bool Create(off_t capacity) {

@@ -9,13 +9,15 @@
 
 #include <errno.h>
 
+#include <cstdio>
+#include <string>
+#include <stack>
+
+
 #include "global/errno.h"
 #include "global/error.h"
 #include "shm/shm_array.h"
 
-#include <cstdio>
-#include <string>
-#include <stack>
 
 namespace TimePass {
 namespace RbtreeFlag {
@@ -67,7 +69,7 @@ template <typename T, int (*Compare)(const T& a, const T& b) = T::Compare,
           typename EXTEND = off_t>
 class ShmRbtree {
  public:
-  ShmRbtree(const char* name):shm_array_(name), p_head_(NULL),
+  explicit ShmRbtree(const char* name):shm_array_(name), p_head_(NULL),
                               p_ext_(NULL), p_data_(NULL) {
   }
 
@@ -1114,13 +1116,12 @@ class ShmRbtree {
       RbtreeNode<T>* p_remove = p_data_ + remove_offset;
       p_target->data = p_remove->data;
 
-      child_offset = p_remove->left;;
+      child_offset = p_remove->left;
       parent_offset = p_remove->parent;
     }
 
     /*the removable node is not root*/
     if (-1 != parent_offset) {
-
       if ((p_data_ + parent_offset)->left == remove_offset) {
         Connect(parent_offset, child_offset, RbtreeFlag::LEFT);
       } else {
