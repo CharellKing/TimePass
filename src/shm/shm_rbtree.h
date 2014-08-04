@@ -227,7 +227,11 @@ class ShmRbtree {
       return ShmBase::ShmFailed<RbtreeNode<T> >();
     }
 
-    return p_data_ + Next(p_cur - p_data_);
+    off_t next_offset = Next(p_cur - p_data_);
+    if (next_offset < 0) {
+      return NULL;
+    }
+    return p_data_ + next_offset;
   }
 
   const RbtreeNode<T>* Next(const RbtreeNode<T>* p_cur)const {
@@ -241,7 +245,11 @@ class ShmRbtree {
       return ShmBase::ShmFailed<RbtreeNode<T> >();
     }
 
-    return p_data_ + Next(p_cur - p_data_);
+    off_t next_offset = Next(p_cur - p_data_);
+    if (next_offset < 0) {
+      return NULL;
+    }
+    return p_data_ + next_offset;
   }
 
   RbtreeNode<T>* RBegin() {
@@ -285,7 +293,11 @@ class ShmRbtree {
       return ShmBase::ShmFailed<RbtreeNode<T> >();
     }
 
-    return p_data_ + RNext(p_cur - p_data_);
+    off_t next_offset = RNext(p_cur - p_data_);
+     if (next_offset < 0) {
+       return NULL;
+     }
+     return p_data_ + next_offset;
   }
 
   const RbtreeNode<T>* RNext(const RbtreeNode<T>* p_cur)const {
@@ -299,7 +311,11 @@ class ShmRbtree {
       return ShmBase::ShmFailed<RbtreeNode<T> >();
     }
 
-    return p_data_ + RNext(p_cur - p_data_);
+    off_t next_offset = RNext(p_cur - p_data_);
+    if (next_offset < 0) {
+      return NULL;
+    }
+    return p_data_ + next_offset;
   }
 
   RbtreeNode<T>* Offset(off_t offset) {
@@ -1045,51 +1061,33 @@ class ShmRbtree {
   }
 
   off_t Next(off_t cur_offset)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return RbtreeFlag::OFFT_ERROR;
+    if ((p_data_ + cur_offset)->right >= 0) {
+      return Minimum((p_data_ + cur_offset)->right);
     }
 
-    if (cur_offset < 0 || cur_offset >= p_head_->capacity) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return RbtreeFlag::OFFT_ERROR;
-    }
-
-    off_t next_offset = Minimum((p_data_ + cur_offset)->right);
-    if (-1 == next_offset) {
-      off_t child_offset = cur_offset;
-      off_t next_offset = (p_data_ + cur_offset)->parent;
-      while (next_offset >= 0 &&
-             next_offset < p_head_->capacity &&
-             (p_data_ + next_offset)->right == child_offset) {
-        child_offset = next_offset;
-        next_offset = (p_data_ + next_offset)->parent;
-      }
+    off_t child_offset = cur_offset;
+    off_t next_offset = (p_data_ + cur_offset)->parent;
+    while (next_offset >= 0 &&
+           next_offset < p_head_->capacity &&
+           (p_data_ + next_offset)->right == child_offset) {
+      child_offset = next_offset;
+      next_offset = (p_data_ + next_offset)->parent;
     }
     return next_offset;
   }
 
   off_t RNext(off_t cur_offset)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return RbtreeFlag::OFFT_ERROR;
+    if ((p_data_ + cur_offset)->left >= 0) {
+      return Maximum((p_data_ + cur_offset)->left);;
     }
 
-    if (cur_offset < 0 || cur_offset >= p_head_->capacity) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return RbtreeFlag::OFFT_ERROR;
-    }
-
-    off_t next_offset = Maximum((p_data_ + cur_offset)->left);
-    if (-1 == next_offset) {
-      off_t child_offset = cur_offset;
-      next_offset = (p_data_ + cur_offset)->parent;
-      while (next_offset >= 0 &&
-             next_offset < p_head_->capacity &&
-             (p_data_ + next_offset)->left == child_offset) {
-        child_offset = next_offset;
-        next_offset = (p_data_ + next_offset)->parent;
-      }
+    off_t child_offset = cur_offset;
+    off_t next_offset = (p_data_ + cur_offset)->parent;
+    while (next_offset >= 0 &&
+           next_offset < p_head_->capacity &&
+           (p_data_ + next_offset)->left == child_offset) {
+      child_offset = next_offset;
+      next_offset = (p_data_ + next_offset)->parent;
     }
     return next_offset;
   }
