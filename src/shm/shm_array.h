@@ -94,8 +94,8 @@ class ShmArray {
   }
 
   off_t NonDataBytes()const {
-    return sizeof(ArrayHead) + sizeof(ArrayBucket) * p_head_->bucket +
-                                       sizeof(EXTEND);
+    return sizeof(BlockHead) + sizeof(ArrayHead) +
+           sizeof(ArrayBucket) * p_head_->bucket + sizeof(EXTEND);
   }
 
   const char* Name()const {
@@ -280,9 +280,9 @@ class ShmArray {
       return false;
     }
 
-    bool ret = ShmBase::Resize(shm_block_.Name(),
-                               sizeof(ArrayHead) + sizeof(EXTEND) +
-                               sizeof(T) * p_head_->capacity);
+    bool ret = shm_block_.Resize(sizeof(ArrayHead) +
+                               sizeof(ArrayBucket) * p_head_->bucket +
+                               sizeof(EXTEND) + capacity * sizeof(T));
     if (true == ret) {
       p_head_->capacity = capacity;
     }

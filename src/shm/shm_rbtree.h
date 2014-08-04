@@ -720,6 +720,9 @@ class ShmRbtree {
     while ((p_parent = RawOffset(p_z->parent)) &&
             RbtreeFlag::RED == Color(p_z->parent)) {
       RbtreeNode<T>* p_grandpa = RawOffset(p_parent->parent);
+      if (NULL == p_grandpa) {
+        break;
+      }
       /*1.b(d's father) is a's left child.*/
       if (p_z->parent ==p_grandpa->left) {
         if (RbtreeFlag::RED == Color(p_grandpa->right)) {
