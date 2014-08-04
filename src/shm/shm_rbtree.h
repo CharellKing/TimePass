@@ -189,9 +189,8 @@ class ShmRbtree {
     }
 
     off_t begin_offset = Minimum(p_head_->root);
-    if (RbtreeFlag::OFFT_ERROR == begin_offset) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    if (begin_offset < 0) {
+      return NULL;
     }
 
     return p_data_ + begin_offset;
@@ -204,9 +203,8 @@ class ShmRbtree {
     }
 
     off_t begin_offset = Minimum(p_head_->root);
-    if (RbtreeFlag::OFFT_ERROR == begin_offset) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    if (begin_offset < 0) {
+      return NULL;
     }
 
     return p_data_ + begin_offset;
@@ -259,9 +257,8 @@ class ShmRbtree {
     }
 
     off_t begin_offset = Maximum(p_head_->root);
-    if (RbtreeFlag::OFFT_ERROR == begin_offset) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    if (begin_offset < 0) {
+      return NULL;
     }
 
     return p_data_ + begin_offset;
@@ -274,9 +271,8 @@ class ShmRbtree {
     }
 
     off_t begin_offset = Maximum(p_head_->root);
-    if (RbtreeFlag::OFFT_ERROR == begin_offset) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    if (begin_offset < 0) {
+      return NULL;
     }
 
     return p_data_ + begin_offset;
@@ -327,14 +323,8 @@ class ShmRbtree {
   }
 
   off_t Minimum(off_t root)const {
-    if (root < 0 || root >= p_head_->capacity) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return RbtreeFlag::OFFT_ERROR;
-    }
-
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return RbtreeFlag::OFFT_ERROR;
+    if (root < 0) {
+      return -1;
     }
 
     off_t parent = root;
@@ -347,14 +337,8 @@ class ShmRbtree {
   }
 
   off_t Maximum(off_t root)const {
-    if (root < 0 || root >= p_head_->capacity) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return RbtreeFlag::OFFT_ERROR;
-    }
-
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return RbtreeFlag::OFFT_ERROR;
+    if (root < 0) {
+      return -1;
     }
 
     off_t parent = root;
