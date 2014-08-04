@@ -1001,26 +1001,29 @@ class ShmRbtree {
       s.push(p_head_->root);
     }
 
-    off_t parent_offset = -1, child_offset = -1;
     while (false == s.empty()) {
-      parent_offset = s.top();
-      child_offset = (p_data_ + parent_offset)->left;
-      if (child_offset >= 0) {
-        ConnectToDot(fp, parent_offset, child_offset, ToString);
-        s.push(child_offset);
-      } else {
-        child_offset = (p_data_ + parent_offset)->right;
-        if (child_offset > 0) {
-          ConnectToDot(fp, parent_offset, child_offset, ToString);
-          s.push(child_offset);
-        } else {
-          child_offset = parent_offset;
+      /*left*/
+      off_t left_offset = (p_data_ + s.top())->left;
+      while (left_offset >= 0) {
+        ConnectToDot(fp, s.top(), left_offset, ToString);
+        s.push(left_offset);
+        left_offset = (p_data_ + s.top())->left;
+      }
+
+      /*right, pop right*/
+      off_t child = (p_data_ + s.top())->right;
+      if (child < 0) {
+        while (false == s.empty() && (
+                child == (p_data_ + s.top())->right ||
+                -1 == (p_data_ + s.top())->right)) {
+          child = s.top();
           s.pop();
-          while ((p_data_ + s.top())->right == child_offset) {
-            child_offset = s.top();
-            s.pop();
-          }
         }
+      }
+
+      if(false == s.empty()) {
+        ConnectToDot(fp, s.top(), (p_data_ + s.top())->right, ToString);
+        s.push((p_data_ + s.top())->right);
       }
     }
   }
@@ -1028,8 +1031,8 @@ class ShmRbtree {
   /*write node to file*/
   void NodeToDot(FILE* fp, off_t offset,
                  const std::string (*ToString)(const T& data))const {
-    fprintf(fp, "%ld[color=%s,style=filled, fontcolor=green label='%s'];\n",
-            offset, ('R' == (p_data_ + offset)->color ? "red":"black"),
+    fprintf(fp, "%ld[color=%s,style=filled, fontcolor=green label=\"%s\"];\n",
+            offset, (RbtreeFlag::RED == (p_data_ + offset)->color ? "red":"black"),
             ToString((p_data_ + offset)->data).c_str());
   }
 
