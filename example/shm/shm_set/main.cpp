@@ -94,8 +94,11 @@ void Remove() {
   unsigned int seed = time(NULL);
   unsigned int* p_seed = &seed;
   int len = rand_r(p_seed) % 10;
+  char name[10];
   for (int i = 0; i < len; ++i) {
     numbers.Remove(rand_r(p_seed) % 20, NULL);
+    snprintf(name, sizeof(name) - 1, "%02d", i);
+    ToDotPs(name, &numbers);
   }
 }
 
