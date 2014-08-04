@@ -393,7 +393,9 @@ class ShmRbtree {
       return false;
     }
 
-    *p_remove = (p_data_ + target_offset)->data;
+    if (p_remove) {
+      *p_remove = (p_data_ + target_offset)->data;
+    }
     RemoveNode(target_offset);
     return true;
   }
