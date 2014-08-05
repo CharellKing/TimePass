@@ -24,3 +24,4 @@ cd ${root}
 rm -rf bin
 rm -rf include
 rm -rf lib
+rm -rf ${root}/example/shm/*/Debug
