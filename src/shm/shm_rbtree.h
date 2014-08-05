@@ -210,7 +210,7 @@ class ShmRbtree {
     return p_data_ + begin_offset;
   }
 
-  const RbtreeNode<T>* End() {
+  const RbtreeNode<T>* End()const {
     return NULL;
   }
 
