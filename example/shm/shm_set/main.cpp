@@ -182,9 +182,9 @@ void Range1(int from, int to) {
 
   TimePass::RbtreeNode<int>* p_from = numbers.UpperBound(from);
   TimePass::RbtreeNode<int>* p_to = numbers.LowerBound(to);
-  while (p_from != p_to) {
+  while (p_from != numbers.End() && p_from != p_to) {
     printf("%d ", p_from->data);
-    numbers.Next(p_from);
+    p_from = numbers.Next(p_from);
   }
   putchar('\n');
 }
@@ -199,9 +199,9 @@ void Range2(int from, int to) {
 
   TimePass::RbtreeNode<int>* p_from = numbers.EqualRange(from);
   TimePass::RbtreeNode<int>* p_to = numbers.LowerBound(to);
-  while (p_from != p_to) {
+  while (p_from != numbers.End() && p_from != p_to) {
     printf("%d ", p_from->data);
-    numbers.Next(p_from);
+    p_from = numbers.Next(p_from);
   }
   putchar('\n');
 }
@@ -224,6 +224,21 @@ void AllFunc() {
   numbers.Commit(true);
 }
 
+void Range() {
+  unsigned int seed = time(NULL);
+  unsigned int* p_seed = &seed;
+  int from = rand_r(p_seed) % 10;
+  int to = rand_r(p_seed) % 10 + from + 1;
+  int method = rand_r(p_seed) % 2;
+  if (0 == method) {
+    printf("(%d, %d):", from, to);
+    Range1(from, to);
+  } else {
+    printf("[%d, %d):", from, to);
+    Range2(from, to);
+  }
+}
+
 void Usage() {
   printf("usage:\n"
          "-c [capacity] for create\n"
@@ -234,11 +249,12 @@ void Usage() {
          "-i for write\n"
          "-b for remove\n"
          "-s for dot\n"
+         "-f for ranger\n"
          "-e for clear\n");
 }
 
 int main(int argc, char** argv) {
-  int result = getopt(argc, argv, "baoeirdsc:");
+  int result = getopt(argc, argv, "baoeirdfsc:");
   if (-1 == result) {
     Usage();
     return 0;
@@ -271,6 +287,9 @@ int main(int argc, char** argv) {
       break;
     case 'e':
       Clear();
+      break;
+    case 'f':
+      Range();
       break;
     default:
       Usage();
