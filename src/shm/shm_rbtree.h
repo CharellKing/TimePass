@@ -382,7 +382,7 @@ class ShmRbtree {
 
   bool InsertMultiple(const T& data) {
     int which_child = RbtreeFlag::UNKNOWN;
-    off_t parent = FindMultipleInsertPoint(data, &which_child);
+    off_t parent = FindMultipleInsertPoint(data, which_child);
     return Insert(data, parent, which_child);
   }
 
