@@ -38,6 +38,23 @@ enum {
 };
 }; /*namespace RbtreeFlag*/
 
+template <typename KEY, typename VALUE,
+int (*Comp)(const KEY& a, const KEY& b)=KEY::Compare>
+struct ShmPair {
+    ShmPair(KEY key, VALUE value):first(key), second(value) {
+    }
+
+    ShmPair(KEY key):first(key) {
+    }
+
+    static int Compare(const ShmPair<KEY, VALUE, Comp>& a,
+                        const ShmPair<KEY, VALUE, Comp>& b) {
+        return Comp(a.first, b.first);
+    }
+    KEY first;
+    VALUE second;
+};
+
 template <typename EXTEND>
 struct RbtreeHead {
   RbtreeHead():root(-1), capacity(0), size(0), free_stack(-1) {

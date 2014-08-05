@@ -16,7 +16,7 @@
 
 #define SHM_FILE "shm_set"
 
-const int array[] = {12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14,
+const int array[] = {12, 1, 9, 2, 0, 11, 7, 0, 4, 15, 18, 5, 14,
                      13, 10, 16, 6, 3, 8, 17};
 const int len = sizeof(array) / sizeof(int);
 
@@ -138,7 +138,7 @@ void Read() {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
-  printf("升序: ");
+  printf("asc: ");
   TimePass::RbtreeNode<int>* p_beg = numbers.Begin();
   while (NULL != p_beg) {
     printf("%d ", p_beg->data);
@@ -146,7 +146,7 @@ void Read() {
   }
   putchar('\n');
 
-  printf("降序:");
+  printf("desc:");
   p_beg = numbers.RBegin();
   while (NULL != p_beg) {
     printf("%d ", p_beg->data);
