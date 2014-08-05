@@ -171,7 +171,7 @@ void About() {
          numbers.Size(), numbers.TotalBytes(), numbers.UsedBytes());
 }
 
-//void Optimize() {
+// void Optimize() {
 //    TimePass::ShmDoublylist<int> numbers(SHM_FILE);
 //    if (false == numbers.Open()) {
 //        printf("errno=%d\n",
@@ -182,7 +182,7 @@ void About() {
 //        printf("errno=%d\n", TimePass::Error::GetErrno());
 //        return;
 //    }
-//}
+// }
 
 void AllFunc() {
   TimePass::ShmDoublylist<int> numbers(SHM_FILE);

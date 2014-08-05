@@ -1,7 +1,7 @@
 /* COPYRIGHT: Copyright 2014 CharellkingQu
 * LICENSE: GPL
 * AUTHOR: CharellkingQu
-* DATE : 2014-04-19
+* DATE : 2014-08-05
 */
 
 #include <stdio.h>
@@ -11,19 +11,19 @@
 
 #include <string>
 
-#include"global/error.h"
-#include"shm/shm_map.h"
+#include "global/error.h"
+#include "shm/shm_multimap.h"
 
 
 int key[] = {12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5,
              14, 13, 10, 16, 6, 3, 8, 17};
 
-char value[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+char value[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '2',
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'G'};
 
 int len = sizeof(key) / sizeof(int);
 
-#define SHM_FILE "shm_map"
+#define SHM_FILE "shm_multimap"
 
 int Compare(const int& x, const int& y) {
     if (x > y) return 1;
@@ -32,7 +32,7 @@ int Compare(const int& x, const int& y) {
 }
 
 
-typedef TimePass::ShmMap<int, char, Compare>::MAP_NODE MAP_NODE;
+typedef TimePass::ShmMultimap<int, char, Compare>::MAP_NODE MAP_NODE;
 
 const std::string Label(const TimePass::ShmPair<int, char, Compare>& a) {
     char t_num[128];
@@ -51,7 +51,7 @@ off_t Convert(const char* digit) {
 }
 
 void ToDotPs(const char* name,
-             const TimePass::ShmMap<int, char, Compare>* p_l) {
+             const TimePass::ShmMultimap<int, char, Compare>* p_l) {
     char cmd[100];
     char file[100];
     snprintf(file, sizeof(file) - 1, "%s.dot", name);
@@ -64,21 +64,21 @@ void ToDotPs(const char* name,
 
 
 void Create(off_t len) {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
     if (false == numbers.Create(len)) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
     }
 }
 
 void Destroy() {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
     if (false == numbers.Destroy()) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
     }
 }
 
 void Insert() {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
     if (false == numbers.Open()) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
@@ -92,7 +92,7 @@ void Insert() {
 }
 
 void Remove() {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
     if (false == numbers.Open()) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
@@ -106,7 +106,7 @@ void Remove() {
 }
 
 void Show() {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
     if (false == numbers.Open()) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
@@ -115,7 +115,7 @@ void Show() {
 }
 
 void Clear() {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
     if (false == numbers.Open()) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
@@ -124,13 +124,13 @@ void Clear() {
 }
 
 void Read() {
-  TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+  TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
   printf("asc: ");
-  TimePass::ShmMap<int, char, Compare>::MAP_NODE* p_beg = numbers.Begin();
+  TimePass::ShmMultimap<int, char, Compare>::MAP_NODE* p_beg = numbers.Begin();
   while (NULL != p_beg) {
     printf("<%d, %c> ", p_beg->data.first, p_beg->data.second);
     p_beg = numbers.Next(p_beg);
@@ -147,7 +147,7 @@ void Read() {
 }
 
 void About() {
-  TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+  TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
@@ -165,7 +165,7 @@ void About() {
 
 /*(from, end)*/
 void Range1(int from, int to) {
-  TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+  TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
@@ -182,14 +182,14 @@ void Range1(int from, int to) {
 
 /*[from, end)*/
 void Range2(int from, int to) {
-  TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+  TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
 
-  TimePass::ShmMap<int, char, Compare>::MAP_NODE* p_from = numbers.EqualRange(from);
-  TimePass::ShmMap<int, char, Compare>::MAP_NODE* p_to = numbers.LowerBound(to);
+  TimePass::ShmMultimap<int, char, Compare>::MAP_NODE* p_from = numbers.EqualRange(from);
+  TimePass::ShmMultimap<int, char, Compare>::MAP_NODE* p_to = numbers.LowerBound(to);
   while (p_from != numbers.End() && p_from != p_to) {
     printf("<%d, %c> ", p_from->data.first, p_from->data.second);
     p_from = numbers.Next(p_from);
@@ -198,7 +198,7 @@ void Range2(int from, int to) {
 }
 
 void AllFunc() {
-  TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+  TimePass::ShmMultimap<int, char, Compare> numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;

@@ -1,12 +1,13 @@
-/*
- * shm_map.h
- *
- *  Created on: 2014年7月31日
- *      Author: root
+/* COPYRIGHT:   Copyright 2014 CharellkingQu
+ * LICENSE:     GPL
+ * AUTHOR:      CharellkingQu
+ * DATE :       2014-08-05
  */
 
 #ifndef _SHM_SHM_MAP_H_
 #define _SHM_SHM_MAP_H_
+
+#include <string>
 
 #include "shm/shm_rbtree.h"
 
@@ -171,56 +172,56 @@ class ShmMap {
     return &shm_rbtree_.Offset(offset)->data;
   }
 
-  const MAP_DATA* Find(const MAP_DATA& data)const {
-    off_t offset = shm_rbtree_.FindNode(data);
+  const MAP_DATA* Find(const KEY& key)const {
+    off_t offset = shm_rbtree_.FindNode(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_DATA>();
     }
     return &shm_rbtree_.Offset(offset)->data;
   }
 
-  MAP_NODE* LowerBound(const MAP_DATA& data) {
-    off_t offset = shm_rbtree_.LowerBound(data);
+  MAP_NODE* LowerBound(const KEY& key) {
+    off_t offset = shm_rbtree_.LowerBound(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE>();
     }
     return shm_rbtree_.Offset(offset);
   }
 
-  const MAP_NODE* LowerBound(const MAP_DATA& data)const {
-    off_t offset = shm_rbtree_.LowerBound(data);
+  const MAP_NODE* LowerBound(const KEY& key)const {
+    off_t offset = shm_rbtree_.LowerBound(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE >();
     }
     return shm_rbtree_.Offset(offset);
   }
 
-  MAP_NODE* UpperBound(const MAP_DATA& data) {
-    off_t offset = shm_rbtree_.UpperBound(data);
+  MAP_NODE* UpperBound(const KEY& key) {
+    off_t offset = shm_rbtree_.UpperBound(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE >();
     }
     return shm_rbtree_.Offset(offset);
   }
 
-  const MAP_NODE* UpperBound(const MAP_DATA& data)const {
-    off_t offset = shm_rbtree_.UpperBound(data);
+  const MAP_NODE* UpperBound(const KEY& key)const {
+    off_t offset = shm_rbtree_.UpperBound(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE >();
     }
     return shm_rbtree_.Offset(offset);
   }
 
-  MAP_NODE* EqualRange(const MAP_DATA& data) {
-    off_t offset = shm_rbtree_.EqualRange(data);
+  MAP_NODE* EqualRange(const KEY& key) {
+    off_t offset = shm_rbtree_.EqualRange(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE >();
     }
     return shm_rbtree_.Offset(offset);
   }
 
-  const MAP_NODE* EqualRange(const MAP_DATA& data)const {
-    off_t offset = shm_rbtree_.EqualRange(data);
+  const MAP_NODE* EqualRange(const KEY& key)const {
+    off_t offset = shm_rbtree_.EqualRange(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE >();
     }

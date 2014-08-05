@@ -1,19 +1,20 @@
-/*
- * shm_multimap.h
- *
- *  Created on: 2014年7月31日
- *      Author: root
+/* COPYRIGHT:   Copyright 2014 CharellkingQu
+ * LICENSE:     GPL
+ * AUTHOR:      CharellkingQu
+ * DATE :       2014-08-05
  */
 
-#ifndef SHM_MULTIMAP_H_
-#define SHM_MULTIMAP_H_
+#ifndef _SHM_SHM_MULTIMAP_H_
+#define _SHM_SHM_MULTIMAP_H_
+
+#include <string>
 
 #include "shm/shm_rbtree.h"
 
 namespace TimePass {
 template <typename KEY, typename VALUE,
           int (*Compare)(const KEY& a, const KEY& b) = KEY::Compare,
-          typename EXTEND>
+          typename EXTEND = off_t>
 class ShmMultimap {
  public:
   typedef ShmPair<KEY, VALUE, Compare> MAP_DATA;
@@ -54,12 +55,12 @@ class ShmMultimap {
     return shm_rbtree_.Size();
   }
 
-  off_t TotalSize() {
-    return shm_rbtree_.TotalSize();
+  off_t TotalBytes() {
+    return shm_rbtree_.TotalBytes();
   }
 
-  off_t UsedSize() {
-    return shm_rbtree_.UsedSize();
+  off_t UsedBytes() {
+    return shm_rbtree_.UsedBytes();
   }
 
   const char* Name() {
@@ -71,7 +72,7 @@ class ShmMultimap {
   }
 
   bool SetExtend(const EXTEND& ext) {
-    return shm_rbtree_.SetExtend();
+    return shm_rbtree_.SetExtend(ext);
   }
 
   const EXTEND* GetExtend() {
@@ -155,7 +156,7 @@ class ShmMultimap {
   }
 
   bool Insert(const KEY& key, const VALUE& val) {
-    return shm_rbtree_.InsertMultiple(MAP_DATA(key, val));
+    return shm_rbtree_.InsertUnique(MAP_DATA(key, val));
   }
 
   /*remove data*/
@@ -171,56 +172,56 @@ class ShmMultimap {
     return &shm_rbtree_.Offset(offset)->data;
   }
 
-  const MAP_DATA* Find(const MAP_DATA& data)const {
-    off_t offset = shm_rbtree_.FindNode(data);
+  const MAP_DATA* Find(const KEY& key)const {
+    off_t offset = shm_rbtree_.FindNode(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_DATA>();
     }
     return &shm_rbtree_.Offset(offset)->data;
   }
 
-  MAP_NODE* LowerBound(const MAP_DATA& data) {
-    off_t offset = shm_rbtree_.LowerBound(data);
+  MAP_NODE* LowerBound(const KEY& key) {
+    off_t offset = shm_rbtree_.LowerBound(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE>();
     }
     return shm_rbtree_.Offset(offset);
   }
 
-  const MAP_NODE* LowerBound(const MAP_DATA& data)const {
-    off_t offset = shm_rbtree_.LowerBound(data);
+  const MAP_NODE* LowerBound(const KEY& key)const {
+    off_t offset = shm_rbtree_.LowerBound(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE >();
     }
     return shm_rbtree_.Offset(offset);
   }
 
-  MAP_NODE* UpperBound(const MAP_DATA& data) {
-    off_t offset = shm_rbtree_.UpperBound(data);
+  MAP_NODE* UpperBound(const KEY& key) {
+    off_t offset = shm_rbtree_.UpperBound(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE >();
     }
     return shm_rbtree_.Offset(offset);
   }
 
-  const MAP_NODE* UpperBound(const MAP_DATA& data)const {
-    off_t offset = shm_rbtree_.UpperBound(data);
+  const MAP_NODE* UpperBound(const KEY& key)const {
+    off_t offset = shm_rbtree_.UpperBound(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE >();
     }
     return shm_rbtree_.Offset(offset);
   }
 
-  MAP_NODE* EqualRange(const MAP_DATA& data) {
-    off_t offset = shm_rbtree_.EqualRange(data);
+  MAP_NODE* EqualRange(const KEY& key) {
+    off_t offset = shm_rbtree_.EqualRange(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE >();
     }
     return shm_rbtree_.Offset(offset);
   }
 
-  const MAP_NODE* EqualRange(const MAP_DATA& data)const {
-    off_t offset = shm_rbtree_.EqualRange(data);
+  const MAP_NODE* EqualRange(const KEY& key)const {
+    off_t offset = shm_rbtree_.EqualRange(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_NODE >();
     }
@@ -244,4 +245,4 @@ class ShmMultimap {
 
 
 
-#endif /* SHM_MULTIMAP_H_ */
+#endif /* SHM_MAP_H_ */

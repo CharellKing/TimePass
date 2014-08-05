@@ -18,6 +18,7 @@
 
 const int array[] = {12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14,
                      13, 10, 16, 6, 10, 8, 17};
+
 const int len = sizeof(array) / sizeof(int);
 
 int Compare(const int& x, const int& y) {
@@ -297,5 +298,3 @@ int main(int argc, char** argv) {
   }
   return 0;
 }
-
-

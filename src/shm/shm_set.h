@@ -1,8 +1,7 @@
-/*
- * shm_set.h
- *
- *  Created on: Jul 30, 2014
- *      Author: ck
+/* COPYRIGHT:   Copyright 2014 CharellkingQu
+ * LICENSE:     GPL
+ * AUTHOR:      CharellkingQu
+ * DATE :       2014-08-05
  */
 
 #ifndef _SHM_SHM_SET_H_

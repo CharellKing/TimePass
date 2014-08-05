@@ -41,18 +41,18 @@ enum {
 template <typename KEY, typename VALUE,
 int (*Comp)(const KEY& a, const KEY& b)=KEY::Compare>
 struct ShmPair {
-    ShmPair(KEY key, VALUE value):first(key), second(value) {
-    }
+  ShmPair(KEY key, VALUE value):first(key), second(value) {
+  }
 
-    ShmPair(KEY key):first(key) {
-    }
+  explicit ShmPair(KEY key):first(key) {
+  }
 
-    static int Compare(const ShmPair<KEY, VALUE, Comp>& a,
-                        const ShmPair<KEY, VALUE, Comp>& b) {
-        return Comp(a.first, b.first);
-    }
-    KEY first;
-    VALUE second;
+  static int Compare(const ShmPair<KEY, VALUE, Comp>& a,
+                     const ShmPair<KEY, VALUE, Comp>& b) {
+    return Comp(a.first, b.first);
+  }
+  KEY first;
+  VALUE second;
 };
 
 template <typename EXTEND>
@@ -1043,7 +1043,7 @@ class ShmRbtree {
         }
       }
 
-      if(false == s.empty()) {
+      if (false == s.empty()) {
         ConnectToDot(fp, s.top(), (p_data_ + s.top())->right, ToString);
         s.push((p_data_ + s.top())->right);
       }
@@ -1053,9 +1053,19 @@ class ShmRbtree {
   /*write node to file*/
   void NodeToDot(FILE* fp, off_t offset,
                  const std::string (*ToString)(const T& data))const {
+    char color[8];
     fprintf(fp, "%ld[color=%s,style=filled, fontcolor=green label=\"%s\"];\n",
-            offset, (RbtreeFlag::RED == (p_data_ + offset)->color ? "red":"black"),
+            offset, Color(offset, color, sizeof(color)),
             ToString((p_data_ + offset)->data).c_str());
+  }
+
+  const char* Color(off_t offset, char* color, int size)const {
+    if (RbtreeFlag::RED == (p_data_ + offset)->color) {
+      strncpy(color, "red", size - 1);
+    } else {
+      strncpy(color, "black", size - 1);
+    }
+    return color;
   }
 
   /*connect parent node with child node*/
@@ -1084,7 +1094,7 @@ class ShmRbtree {
 
   off_t RNext(off_t cur_offset)const {
     if ((p_data_ + cur_offset)->left >= 0) {
-      return Maximum((p_data_ + cur_offset)->left);;
+      return Maximum((p_data_ + cur_offset)->left);
     }
 
     off_t child_offset = cur_offset;
