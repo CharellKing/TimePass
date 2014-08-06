@@ -326,6 +326,10 @@ class ShmArray {
       p_bucket_ = NULL;
     } else {
       p_bucket_ = reinterpret_cast<ArrayBucket*>(p_tmp);
+      for (off_t i = 0; i < p_head_->bucket; ++i) {
+        (p_bucket_ + i)->front = -1;
+        (p_bucket_ + i)->size = 0;
+      }
     }
 
     p_tmp += sizeof(ArrayBucket) * p_head_->bucket;

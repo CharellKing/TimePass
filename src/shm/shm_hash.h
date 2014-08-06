@@ -9,6 +9,8 @@
 
 namespace TimePass {
 namespace Hash {
+double factor = 1.0;
+
 off_t HashFunc(const char* s) {
   off_t h = 0;
   while (*s) {

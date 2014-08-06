@@ -1,3 +1,14 @@
+/*
+ * shm_hashlist.h
+ *
+ *  Created on: 2014年8月6日
+ *      Author: root
+ */
+
+#ifndef _SHM_SHM_HASHLIST_H_
+#define _SHM_SHM_HASHLIST_H_
+
+
 /* COPYRIGHT:   Copyright 2014 CharellkingQu
  * LICENCE:     GPL
  * AUTHOR:      CharellkingQu
@@ -18,49 +29,55 @@
 
 namespace TimePass {
 template <typename EXTEND>
-struct ListHead {
-  ListHead():front(-1), back(-1), free_stack(-1), capacity(0), size(0) {
+struct HashListHead {
+  HashListHead(): capacity(0), size(0), bucket_size(0), free_stack(-1) {
   }
 
-  off_t front;
-  off_t back;
-  off_t free_stack;
   off_t capacity;
   off_t size;
+  off_t bucket_size;
+  off_t free_stack;
 
   EXTEND extend;
 };
 
 template <typename T>
-struct ListNode {
-  ListNode(const T& data, off_t next = -1):data(data), next(-1) {
-  }
-
-  T     data;
-  off_t next;
+struct HashlistNode {
+  off_t bucket;
+  ListNode<T>* p_data;
 };
 
 template <typename T, typename EXTEND = off_t>
-class ShmList {
+class ShmHashlist {
  public:
-  explicit ShmList(const char* name):shm_array_(name), p_head_(NULL),
-                                     p_ext_(NULL), p_data_(NULL) {
+  explicit ShmHashlist(const char* name):shm_array_(name), p_head_(NULL),
+                                         p_bucket_(NULL), p_ext_(NULL), p_data_(NULL){
   }
 
   bool Create(off_t capacity) {
-    if (false == shm_array_.Create(capacity)) {
+    off_t tmp = (off_t)capacity / Hash::factor;
+    off_t bucket_size = 1;
+
+    while (bucket_size < tmp) { /*保证bucket_size为2^n*/
+        bucket_size <<= 1;
+    }
+
+    if (false == shm_array_.RawCreate(capacity, bucket_size)) {
       return false;
     }
 
     p_head_ = shm_array_.GetExtend();
-    p_head_->front = -1;
-    p_head_->back = -1;
-    p_head_->free_stack = -1;
+
     p_head_->capacity = capacity;
     p_head_->size = 0;
+    p_head_->bucket_size = bucket_size;
+    p_head_->free_stack = -1;
+
+    p_bucket_ = shm_array_.Bucket();
 
     p_ext_ = &p_head_->extend;
     p_data_ = shm_array_.Begin();
+
     return true;
   }
 
@@ -74,6 +91,7 @@ class ShmList {
     }
 
     p_head_ = shm_array_.GetExtend();
+    p_bucket_ = shm_array_.Bucket();
     p_ext_  = &p_head_->extend;
     p_data_ = shm_array_.Begin();
     return true;
@@ -152,16 +170,25 @@ class ShmList {
     return p_ext_;
   }
 
-  ListNode<T>* Begin() {
+  HashlistNode<T> Begin() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<ListNode<T> >();
     }
 
-    if (-1 == p_head_->front) {
+    off_t i = 0;
+    for(; i < p_head_->bucket_size; ++i) {
+      if ((p_bucket_ + i)->size > 0) {
+        break;
+      }
+    }
+
+    if (i == p_head_->bucket_size) {
       return NULL;
     }
 
+    HashlistNode<T> node();
+    p_bucket_[i]->front;
     return p_data_ + p_head_->front;
   }
 
@@ -559,6 +586,7 @@ class ShmList {
     return shm_array_.Commit(is_sync);
   }
 
+
  private:
   off_t GetFree() {
     if (-1 != p_head_->free_stack) {
@@ -583,20 +611,6 @@ class ShmList {
     p_head_->free_stack = offset;
   }
 
-  bool Resize(off_t capacity) {
-    if (capacity < 0) {
-     Error::SetErrno(ErrorNo::SHM_CAPACITY_NONPOSITIVE);
-     return false;
-    }
-
-    bool ret = shm_array_.Resize(capacity);
-
-    if (true == ret) {
-      p_head_->capacity = capacity;
-    }
-    return ret;
-  }
-
   off_t RawAt(off_t index)const {
     ListNode<T>* p_cur = p_data_ + p_head_->front;
     off_t cur_offset = p_head_->front;
@@ -608,12 +622,13 @@ class ShmList {
     return cur_offset;
   }
 
-  ShmArray<ListNode<T>, ListHead<EXTEND> > shm_array_;
-  ListHead<EXTEND>* p_head_;
+  ShmArray<ListNode<T>, HashListHead<EXTEND> > shm_array_;
+  HashListHead<EXTEND>* p_head_;
+  ArrayBucket*      p_bucket_;
   EXTEND*   p_ext_;
   ListNode<T>* p_data_;
 };
 };
 
 
-#endif
+#endif /* _SHM_SHM_HASHLIST_H_ */
