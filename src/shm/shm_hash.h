@@ -1,22 +1,11 @@
-/*
- * shm_hash.h
- *
- *  Created on: 2014年8月6日
- *      Author: root
- */
-
-#ifndef _SHM_SHM_HASH_H_
-#define _SHM_SHM_HASH_H_
-
 /* COPYRIGHT: Copyright 2014 CharellkingQu
  * LICENSE: GPL
  * AUTHOR: CharellkingQu
  * DATE : 2014-04-15
  */
 
-#ifndef _SHM_HASH_H_
-
-#define _SHM_HASH_H_
+#ifndef _SHM_SHM_HASH_H_
+#define _SHM_SHM_HASH_H_
 
 namespace TimePass {
 namespace Hash {
