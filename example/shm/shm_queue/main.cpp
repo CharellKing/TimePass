@@ -23,13 +23,7 @@ const std::string Label(const int& num) {
 }
 
 off_t Convert(const char* digit) {
-  int ret = -1;
-  if (sizeof(off_t) == sizeof(int)) {
-    ret = atol(digit);
-  } else if (sizeof(off_t) == sizeof(int64_t)) {
-    ret = atoll(digit);
-  }
-  return ret;
+  return atoll(digit);
 }
 
 void ToDotPs(const char* name, const TimePass::ShmQueue<int>* p_l) {

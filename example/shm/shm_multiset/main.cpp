@@ -19,7 +19,7 @@
 const int array[] = {12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14,
                      13, 10, 16, 6, 10, 8, 17};
 
-const int len = sizeof(array) / sizeof(int);
+const int len = sizeof(array) / sizeof(array[0]);
 
 int Compare(const int& x, const int& y) {
   if (x > y) return 1;
@@ -120,18 +120,6 @@ void Clear() {
   }
   numbers.Clear();
 }
-
-//void Optimize() {
-//  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
-//  if (false == numbers.Open()) {
-//    printf("errno=%d\n", TimePass::Error::GetErrno());
-//    return;
-//  }
-//  if (false == numbers.Optimize()) {
-//    printf("errno=%d\n", TimePass::Error::GetErrno());
-//    return;
-//  }
-//}
 
 void Read() {
   TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
@@ -245,7 +233,6 @@ void Usage() {
          "-c [capacity] for create\n"
          "-a for about\n"
          "-r for read\n"
-         //"-o for optimize\n"
          "-d for destroy\n"
          "-i for write\n"
          "-b for remove\n"
@@ -268,9 +255,6 @@ int main(int argc, char** argv) {
     case 'r':
       Read();
       break;
-//    case 'o':
-//      Optimize();
-//      break;
     case 'c':
       Create(Convert(optarg));
       break;

@@ -26,13 +26,7 @@ const std::string Label(const int& num) {
 }
 
 off_t Convert(const char* digit) {
-    int ret = -1;
-    if (sizeof(off_t) == sizeof(int)) {
-        ret = atol(digit);
-    } else if (sizeof(off_t) == sizeof(int64_t)) {
-        ret = atoll(digit);
-    }
-    return ret;
+    return atoll(digit);
 }
 
 void ToDotPs(const char* name, const TimePass::ShmList<int>* p_l) {
@@ -162,19 +156,6 @@ void About() {
            numbers.Size(), numbers.TotalBytes(), numbers.UsedBytes());
 }
 
-//void Optimize() {
-//    TimePass::ShmList<int> numbers(SHM_FILE);
-//    if (false == numbers.Open()) {
-//        printf("errno=%d\n",
-//            TimePass::Error::GetErrno());
-//        return;
-//    }
-//    if (false == numbers.Optimize()) {
-//        printf("errno=%d\n", TimePass::Error::GetErrno());
-//        return;
-//    }
-//}
-
 void AllFunc() {
   TimePass::ShmList<int> numbers(SHM_FILE);
   if (false == numbers.Open()) {
@@ -200,7 +181,6 @@ void Usage() {
              "-h for help\n"
              "-c [capacity] for create\n"
              "-d for destroy\n"
-//             "-o for optimize\n"
              "-w for write\n"
              "-r for read\n"
              "-b for remove\n"
@@ -222,9 +202,6 @@ int main(int argc, char** argv) {
         case 'b':
             Remove();
             break;
-//        case 'o':
-//            Optimize();
-//            break;
         case 'c':
             Create(Convert(optarg));
             break;

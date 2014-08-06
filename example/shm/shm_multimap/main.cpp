@@ -21,7 +21,7 @@ int key[] = {12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5,
 char value[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '2',
                 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'G'};
 
-int len = sizeof(key) / sizeof(int);
+int len = sizeof(key) / sizeof(key[0]);
 
 #define SHM_FILE "shm_multimap"
 
@@ -188,8 +188,8 @@ void Range2(int from, int to) {
     return;
   }
 
-  TimePass::ShmMultimap<int, char, Compare>::MAP_NODE* p_from = numbers.EqualRange(from);
-  TimePass::ShmMultimap<int, char, Compare>::MAP_NODE* p_to = numbers.LowerBound(to);
+  MAP_NODE* p_from = numbers.EqualRange(from);
+  MAP_NODE* p_to = numbers.LowerBound(to);
   while (p_from != numbers.End() && p_from != p_to) {
     printf("<%d, %c> ", p_from->data.first, p_from->data.second);
     p_from = numbers.Next(p_from);

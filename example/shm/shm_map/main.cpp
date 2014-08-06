@@ -21,7 +21,7 @@ int key[] = {12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5,
 char value[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
 
-int len = sizeof(key) / sizeof(int);
+int len = sizeof(key) / sizeof(key[0]);
 
 #define SHM_FILE "shm_map"
 
@@ -188,8 +188,8 @@ void Range2(int from, int to) {
     return;
   }
 
-  TimePass::ShmMap<int, char, Compare>::MAP_NODE* p_from = numbers.EqualRange(from);
-  TimePass::ShmMap<int, char, Compare>::MAP_NODE* p_to = numbers.LowerBound(to);
+  MAP_NODE* p_from = numbers.EqualRange(from);
+  MAP_NODE* p_to = numbers.LowerBound(to);
   while (p_from != numbers.End() && p_from != p_to) {
     printf("<%d, %c> ", p_from->data.first, p_from->data.second);
     p_from = numbers.Next(p_from);
@@ -235,7 +235,6 @@ void Usage() {
         "-c [capacity] for create\n"
         "-a for about\n"
         "-r for read\n"
-        // "-o for optimize\n"
         "-d for destroy\n"
         "-i for write\n"
         "-b for remove\n"
@@ -258,9 +257,6 @@ int main(int argc, char** argv) {
     case 'r':
       Read();
       break;
-//    case 'o':
-//      Optimize();
-//      break;
     case 'c':
       Create(Convert(optarg));
       break;
