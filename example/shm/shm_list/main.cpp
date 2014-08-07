@@ -115,10 +115,10 @@ void Read() {
             TimePass::Error::GetErrno());
         return;
     }
-    const TimePass::ListNode<int>* p_beg = numbers.Begin();
-    while (p_beg) {
-        printf("%d ", p_beg->data);
-        p_beg = numbers.Next(p_beg);
+
+    TimePass::ShmList<int>::Iterator iter = numbers.Begin();
+    while (numbers.End() != iter) {
+      printf("%d ", *(iter++));
     }
     putchar('\n');
 }
@@ -169,7 +169,7 @@ void AllFunc() {
   numbers.SetExtend(0);
   numbers.GetExtend();
   numbers.Index(numbers.At(1));
-  numbers.Offset(numbers.At(5));
+  numbers.ExtOffset(numbers.At(5));
   numbers.Clear();
   numbers.Front();
   numbers.Back();

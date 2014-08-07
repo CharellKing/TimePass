@@ -31,6 +31,145 @@ struct VectorHead {
 template <typename T, typename EXTEND = off_t>
 class ShmVector {
  public:
+  class Iterator;
+  class ConstIterator;
+  class Iterator {
+   public:
+    friend class ShmVector;
+    Iterator():p_vector_(NULL), cur_offset_(-1){
+    }
+
+    //prefix
+    Iterator& operator ++() {
+      if (p_vector_ && cur_offset_ < p_vector_->Size()) {
+        ++cur_offset_;
+      }
+      return *this;
+    }
+
+    Iterator operator ++(int) {
+      Iterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    Iterator& operator --() {
+      if (p_vector_ && cur_offset_ >= 0) {
+        --cur_offset_;
+      }
+      return *this;
+    }
+
+    Iterator& operator --(int) {
+      Iterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    T& operator*()throw(int) {
+      if (NULL == p_vector_ || cur_offset_ < 0 || cur_offset_ >= p_vector_->Size()) {
+        throw ErrorNo::PTR_NULL;
+      }
+
+      return *p_vector_->At(cur_offset_);
+    }
+
+    bool operator != (const Iterator& iter)const {
+      return p_vector_ != iter.GetArray() || cur_offset_ != iter.GetOffset();
+    }
+
+    bool operator != (const ConstIterator& iter)const {
+      return p_vector_ != iter.GetArray() || cur_offset_ != iter.GetOffset();
+    }
+
+    const ShmArray<T, EXTEND>* GetArray()const {
+      return p_vector_;
+    }
+
+    off_t GetOffset()const {
+      return cur_offset_;
+    }
+
+   private:
+    Iterator(ShmVector<T, EXTEND>* p_vector, off_t cur_offset)
+    :p_vector_(p_vector), cur_offset_(cur_offset) {
+    }
+
+    ShmVector<T, EXTEND>* p_vector_;
+    off_t cur_offset_;
+  };
+
+  class ConstIterator {
+   public:
+    friend class ShmVector;
+    ConstIterator():p_vector_(NULL), cur_offset_(-1) {
+    }
+
+    ConstIterator(const Iterator& iter):p_vector_(NULL), cur_offset_(-1) {
+      p_vector_ = iter.GetArray();
+      cur_offset_ = iter.GetOffset();
+    }
+
+    //prefix
+    ConstIterator& operator ++() {
+      if (p_vector_ && cur_offset_ < p_vector_->Size()) {
+        ++cur_offset_;
+      }
+      return *this;
+    }
+
+    ConstIterator operator ++(int) {
+      ConstIterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    ConstIterator& operator --() {
+      if (p_vector_ && cur_offset_ >= 0) {
+        --cur_offset_;
+      }
+      return *this;
+    }
+
+    ConstIterator& operator --(int) {
+      Iterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    const T& operator*()const throw(int) {
+      if (NULL == p_vector_ || cur_offset_ < 0 || cur_offset_ >= p_vector_->Size()) {
+        throw ErrorNo::PTR_NULL;
+      }
+
+      return *p_vector_->At(cur_offset_);
+    }
+
+    bool operator != (const Iterator& iter)const {
+      return p_vector_ != iter.GetArray() || cur_offset_ != iter.GetOffset();
+    }
+
+    bool operator != (const ConstIterator& iter)const {
+      return p_vector_ != iter.GetArray() || cur_offset_ != iter.GetOffset();
+    }
+
+    const ShmArray<T, EXTEND>* GetArray()const {
+      return p_vector_;
+    }
+
+    off_t GetOffset()const {
+      return cur_offset_;
+    }
+
+   private:
+    ConstIterator(const ShmArray<T, EXTEND>* p_vector, off_t cur_offset)
+    :p_vector_(p_vector), cur_offset_(cur_offset) {
+    }
+
+    const ShmVector<T, EXTEND>* p_vector_;
+    off_t cur_offset_;
+  };
+
   explicit ShmVector(const char* name):shm_array_(name), p_head_(NULL),
                                        p_ext_(NULL), p_data_(NULL) {
   }
@@ -63,7 +202,7 @@ class ShmVector {
 
     p_ext_ = &p_head_->extend;
 
-    p_data_ = shm_array_.Begin();
+    p_data_ = &(*shm_array_.Begin());
     return true;
   }
 
@@ -142,54 +281,44 @@ class ShmVector {
     return p_ext_;
   }
 
-  T* Begin() {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<T>();
+  Iterator Begin() {
+    if (NULL == p_head_ || p_head_->size <= 0) {
+      return Iterator(this, p_head_->size);
     }
 
-    if (-1 == p_head_->front) {
-      return NULL;
-    }
-
-    return p_data_;
+    return Iterator(this, 0);
   }
 
-  const T* Begin()const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<T>();
+  const Iterator Begin()const {
+    if (NULL == p_head_ || p_head_->size <= 0) {
+      return Iterator(this, p_head_->size);
     }
 
-    return p_data_;
+    return Iterator(this, 0);
   }
 
-  const T* End() {
-    return NULL;
+  Iterator RBegin() {
+    if (NULL == p_head_ || p_head_->size <= 0) {
+      return Iterator(this, -1);
+    }
+
+    return Iterator(this, p_head_->size - 1);
   }
 
-  T* Next(T* p_cur) {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<T>();
+  const Iterator RBegin()const {
+    if (NULL == p_head_ || p_head_->size <= 0) {
+      return Iterator(this, -1);
     }
 
-    if (p_cur  - p_data_ >= p_head_->size - 1) {
-      return NULL;
-    }
-    return p_cur + 1;
+    return Iterator(this, p_head_->size - 1);
   }
 
-  const T* Next(const T* p_cur)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<T>();
-    }
+  const ConstIterator End()const {
+    return ConstIterator(this, p_head_->size);
+  }
 
-    if (p_cur  - p_data_ >= p_head_->size - 1) {
-      return NULL;
-    }
-    return p_cur + 1;
+  const ConstIterator REnd()const {
+    return Iterator(this, -1);
   }
 
   T* At(off_t index) {
@@ -495,7 +624,6 @@ class ShmVector {
     return ret;
   }
 
- private:
   ShmArray<T, VectorHead<EXTEND> > shm_array_;
 
   VectorHead<EXTEND>* p_head_;

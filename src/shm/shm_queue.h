@@ -48,7 +48,7 @@ class ShmQueue {
 
     p_ext_ = &p_head_->extend;
 
-    p_data_ = shm_array_.Begin();
+    p_data_ = &(*shm_array_.Begin());
 
     return true;
   }
@@ -67,7 +67,7 @@ class ShmQueue {
 
     p_ext_ = &p_head_->extend;
 
-    p_data_ = shm_array_.Begin();
+    p_data_ = &(*shm_array_.Begin());
     return true;
   }
 

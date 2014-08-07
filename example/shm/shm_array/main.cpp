@@ -71,8 +71,9 @@ void Read() {
       return;
     }
 
-    for (off_t i = 0; i < numbers.Capacity(); ++i) {
-        printf("%d ", *numbers.At(i));
+    TimePass::ShmArray<int>::Iterator iter = numbers.Begin();
+    while (numbers.End() != iter) {
+        printf("%d ", *(iter++));
     }
 
     printf("\n");

@@ -17,9 +17,14 @@
 #include "shm/shm_array.h"
 
 namespace TimePass {
-template <typename EXTEND>
+template<typename EXTEND>
 struct ListHead {
-  ListHead():front(-1), back(-1), free_stack(-1), capacity(0), size(0) {
+  ListHead()
+      : front(-1),
+        back(-1),
+        free_stack(-1),
+        capacity(0),
+        size(0) {
   }
 
   off_t front;
@@ -31,20 +36,149 @@ struct ListHead {
   EXTEND extend;
 };
 
-template <typename T>
+template<typename T>
 struct ListNode {
-  ListNode(const T& data, off_t next = -1):data(data), next(-1) {
+  ListNode(const T& data, off_t next = -1)
+      : data(data),
+        next(-1) {
   }
 
-  T     data;
+  T data;
   off_t next;
 };
 
-template <typename T, typename EXTEND = off_t>
+template<typename T, typename EXTEND = off_t>
 class ShmList {
  public:
-  explicit ShmList(const char* name):shm_array_(name), p_head_(NULL),
-                                     p_ext_(NULL), p_data_(NULL) {
+  class Iterator;
+  class ConstIterator;
+  class Iterator {
+   public:
+    friend class ShmList;
+    Iterator()
+        : p_list_(NULL),
+          cur_offset_(-1) {
+    }
+
+    Iterator& operator ++() {
+      ListNode<T>* p_node = p_list_->ExtOffset(cur_offset_);
+      if (p_list_ && cur_offset_ >= 0 && cur_offset_ < p_list_->Capacity()) {
+        cur_offset_ = p_node->next;
+      }
+      return *this;
+    }
+
+    Iterator operator ++(int) {
+      Iterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    T& operator*() throw (int) {
+      if (NULL == p_list_ || cur_offset_ < 0
+          || cur_offset_ >= p_list_->Size()) {
+        throw ErrorNo::PTR_NULL;
+      }
+
+      return p_list_->ExtOffset(cur_offset_)->data;
+    }
+
+    bool operator !=(const Iterator& iter) const {
+      return p_list_ != iter.GetList() || cur_offset_ != iter.GetOffset();
+    }
+
+    bool operator !=(const ConstIterator& iter) const {
+      return p_list_ != iter.GetList() || cur_offset_ != iter.GetOffset();
+    }
+
+    const ShmList<T, EXTEND>* GetList() const {
+      return p_list_;
+    }
+
+    off_t GetOffset() const {
+      return cur_offset_;
+    }
+
+   private:
+    Iterator(ShmList<T, EXTEND>* p_list, off_t cur_offset)
+        : p_list_(p_list),
+          cur_offset_(cur_offset) {
+    }
+
+    ShmList<T, EXTEND>* p_list_;
+    off_t cur_offset_;
+  };
+
+  class ConstIterator {
+   public:
+    friend class ShmList;
+    ConstIterator()
+        : p_list_(NULL),
+          cur_offset_(-1) {
+    }
+
+    ConstIterator(const Iterator& iter)
+        : p_list_(NULL),
+          cur_offset_(-1) {
+      p_list_ = iter.GetList();
+      cur_offset_ = iter.GetOffset();
+    }
+
+    //prefix
+    ConstIterator& operator ++() {
+      ListNode<T>* p_node = p_list_->Offset(cur_offset_);
+      if (p_list_ && p_node) {
+        cur_offset_ = p_node->next;
+      }
+      return *this;
+    }
+
+    ConstIterator operator ++(int) {
+      ConstIterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    const T& operator*() const throw (int) {
+      if (NULL == p_list_ || cur_offset_ < 0
+          || cur_offset_ >= p_list_->Size()) {
+        throw ErrorNo::PTR_NULL;
+      }
+
+      return *p_list_->Offset(cur_offset_);
+    }
+
+    bool operator !=(const Iterator& iter) const {
+      return p_list_ != iter.GetList() || cur_offset_ != iter.GetOffset();
+    }
+
+    bool operator !=(const ConstIterator& iter) const {
+      return p_list_ != iter.GetList() || cur_offset_ != iter.GetOffset();
+    }
+
+    const ShmList<T, EXTEND>* GetList() const {
+      return p_list_;
+    }
+
+    off_t GetOffset() const {
+      return cur_offset_;
+    }
+
+   private:
+    ConstIterator(const ShmList<T, EXTEND>* p_list, off_t cur_offset)
+        : p_list_(p_list),
+          cur_offset_(cur_offset) {
+    }
+
+    const ShmList<T, EXTEND>* p_list_;
+    off_t cur_offset_;
+  };
+
+  explicit ShmList(const char* name)
+      : shm_array_(name),
+        p_head_(NULL),
+        p_ext_(NULL),
+        p_data_(NULL) {
   }
 
   bool Create(off_t capacity) {
@@ -60,7 +194,7 @@ class ShmList {
     p_head_->size = 0;
 
     p_ext_ = &p_head_->extend;
-    p_data_ = shm_array_.Begin();
+    p_data_ = &(*shm_array_.Begin());
     return true;
   }
 
@@ -74,8 +208,8 @@ class ShmList {
     }
 
     p_head_ = shm_array_.GetExtend();
-    p_ext_  = &p_head_->extend;
-    p_data_ = shm_array_.Begin();
+    p_ext_ = &p_head_->extend;
+    p_data_ = &(*shm_array_.Begin());
     return true;
   }
 
@@ -83,11 +217,11 @@ class ShmList {
     return shm_array_.Close();
   }
 
-  bool IsOpen()const {
+  bool IsOpen() const {
     return NULL != p_head_;
   }
 
-  off_t Capacity()const  {
+  off_t Capacity() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -95,7 +229,7 @@ class ShmList {
     return p_head_->capacity;
   }
 
-  off_t Size()const {
+  off_t Size() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -104,7 +238,7 @@ class ShmList {
     return p_head_->size;
   }
 
-  off_t TotalBytes()const {
+  off_t TotalBytes() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -113,20 +247,20 @@ class ShmList {
     return shm_array_.TotalBytes();
   }
 
-  off_t UsedBytes()const {
+  off_t UsedBytes() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
     }
 
-    return shm_array_.NonDataBytes() + sizeof(ListNode<T>) * p_head_->size;
+    return shm_array_.ExtHeadBytes() + sizeof(ListNode<T> ) * p_head_->size;
   }
 
-  const char* Name()const {
+  const char* Name() const {
     return shm_array_.Name();
   }
 
-  const ListHead<EXTEND>* Head()const {
+  const ListHead<EXTEND>* Head() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<ListHead<EXTEND> >();
@@ -152,68 +286,24 @@ class ShmList {
     return p_ext_;
   }
 
-  ListNode<T>* Begin() {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
+  Iterator Begin() {
+    if (NULL == p_head_ || p_head_->front < 0 || p_head_->front >= p_head_->capacity) {
+      return Iterator(this, -1);
     }
 
-    if (-1 == p_head_->front) {
-      return NULL;
-    }
-
-    return p_data_ + p_head_->front;
+    return Iterator(this, p_head_->front);
   }
 
-  const ListNode<T>* Begin()const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
+  ConstIterator Begin() const {
+    if (NULL == p_head_ || p_head_->front < 0 || p_head_->front >= p_head_->capacity) {
+      return End();
     }
 
-    if (-1 == p_head_->front) {
-      return NULL;
-    }
-
-    return p_data_ + p_head_->front;
+    return ConstIterator(this, p_head_->front);
   }
 
-  const ListNode<T>* End() {
-    return NULL;
-  }
-
-  ListNode<T>* Next(ListNode<T>* p_cur) {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (NULL == p_cur) {
-      Error::SetErrno(ErrorNo::PTR_NULL);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (-1 == p_cur->next) {
-      return NULL;
-    }
-    return p_data_ + p_cur->next;
-  }
-
-  const ListNode<T>* Next(const ListNode<T>* p_cur)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (NULL == p_cur) {
-      Error::SetErrno(ErrorNo::PTR_NULL);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (-1 == p_cur->next) {
-      return NULL;
-    }
-    return p_data_ + p_cur->next;
+  ConstIterator End()const {
+    return ConstIterator(this, -1);
   }
 
   ListNode<T>* At(off_t index) {
@@ -227,10 +317,10 @@ class ShmList {
       return NULL;
     }
 
-    return p_data_ + RawAt(index);
+    return p_data_ + InnerAt(index);
   }
 
-  const ListNode<T>* At(off_t index)const {
+  const ListNode<T>* At(off_t index) const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<ListNode<T> >();
@@ -241,10 +331,10 @@ class ShmList {
       return NULL;
     }
 
-    return p_data_ + RawAt(index);
+    return p_data_ + InnerAt(index);
   }
 
-  off_t Index(const ListNode<T>* p_data)const {
+  off_t Index(const ListNode<T>* p_data) const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -278,26 +368,6 @@ class ShmList {
     return index;
   }
 
-  off_t Offset(const ListNode<T>* p_data)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return -1;
-    }
-
-    if (NULL == p_data) {
-      Error::SetErrno(ErrorNo::PTR_NULL);
-      return -1;
-    }
-
-    off_t offset = p_data - p_data_;
-    if (offset < 0 || offset >= p_head_->size) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return -1;
-    }
-
-    return offset;
-  }
-
   bool Clear() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
@@ -321,7 +391,6 @@ class ShmList {
     if (-1 == free_offset) {
       return ShmBase::ShmFailed<ListNode<T> >();
     }
-
 
     (p_data_ + free_offset)->data = data;
     (p_data_ + free_offset)->next = p_head_->front;
@@ -462,14 +531,12 @@ class ShmList {
       return PushBack(data);
     }
 
-
     off_t free_offset = GetFree();
     if (-1 == free_offset) {
       return ShmBase::ShmFailed<ListNode<T> >();
     }
 
-
-    off_t prior = RawAt(index - 1);
+    off_t prior = InnerAt(index - 1);
 
     (p_data_ + free_offset)->data = data;
     (p_data_ + free_offset)->next = (p_data_ + prior)->next;
@@ -485,7 +552,7 @@ class ShmList {
       return false;
     }
 
-    if (index <0 || index >= p_head_->size) {
+    if (index < 0 || index >= p_head_->size) {
       Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
       return false;
     }
@@ -498,7 +565,7 @@ class ShmList {
       return PopBack(p_remove);
     }
 
-    off_t prior_offset = RawAt(index - 1);
+    off_t prior_offset = InnerAt(index - 1);
 
     ListNode<T>* p_prior = p_data_ + prior_offset;
     SetFree(p_prior->next);
@@ -511,7 +578,7 @@ class ShmList {
   }
 
   bool ToDot(const std::string& filename,
-            const std::string (*Label)(const T& value))const {
+             const std::string (*Label)(const T& value)) const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
@@ -529,20 +596,20 @@ class ShmList {
     off_t prior = -1;
     fprintf(fp, "digraph G {\n");
     if (-1 != p_head_->front) {
-        fprintf(fp, "rankdir=LR;\n");
-        fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\n",
-                p_head_->front, Label(p_cur->data).c_str());
-        prior = cur;
-        cur = p_cur->next;
-        p_cur = p_data_ + cur;
+      fprintf(fp, "rankdir=LR;\n");
+      fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\n", p_head_->front,
+              Label(p_cur->data).c_str());
+      prior = cur;
+      cur = p_cur->next;
+      p_cur = p_data_ + cur;
     }
 
     while (-1 != cur) {
-        fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\nNode%ld->Node%ld\n",
-                cur, Label(p_cur->data).c_str(), prior, cur);
-        prior = cur;
-        cur = p_cur->next;
-        p_cur = p_data_ + cur;
+      fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\nNode%ld->Node%ld\n", cur,
+              Label(p_cur->data).c_str(), prior, cur);
+      prior = cur;
+      cur = p_cur->next;
+      p_cur = p_data_ + cur;
     }
 
     fprintf(fp, "}\n");
@@ -557,6 +624,54 @@ class ShmList {
     }
 
     return shm_array_.Commit(is_sync);
+  }
+
+  off_t ExtOffset(const ListNode<T>* p_data) const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
+
+    if (NULL == p_data) {
+      Error::SetErrno(ErrorNo::PTR_NULL);
+      return -1;
+    }
+
+    off_t offset = p_data - p_data_;
+    if (offset < 0 || offset >= p_head_->size) {
+      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+      return -1;
+    }
+
+    return offset;
+  }
+
+  ListNode<T>* ExtOffset(off_t offset) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmBase::ShmFailed<ListNode<T> >();
+    }
+
+    if (offset < 0 || offset >= p_head_->size) {
+      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+      return ShmBase::ShmFailed<ListNode<T> >();
+    }
+
+    return p_data_ + offset;
+  }
+
+  const ListNode<T>* ExtOffset(off_t offset)const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return -1;
+    }
+
+    if (offset < 0 || offset >= p_head_->size) {
+      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+      return -1;
+    }
+
+    return p_data_ + offset;
   }
 
  private:
@@ -585,8 +700,8 @@ class ShmList {
 
   bool Resize(off_t capacity) {
     if (capacity < 0) {
-     Error::SetErrno(ErrorNo::SHM_CAPACITY_NONPOSITIVE);
-     return false;
+      Error::SetErrno(ErrorNo::SHM_CAPACITY_NONPOSITIVE);
+      return false;
     }
 
     bool ret = shm_array_.Resize(capacity);
@@ -597,7 +712,7 @@ class ShmList {
     return ret;
   }
 
-  off_t RawAt(off_t index)const {
+  off_t InnerAt(off_t index) const {
     ListNode<T>* p_cur = p_data_ + p_head_->front;
     off_t cur_offset = p_head_->front;
     while (index > 0) {
@@ -610,10 +725,10 @@ class ShmList {
 
   ShmArray<ListNode<T>, ListHead<EXTEND> > shm_array_;
   ListHead<EXTEND>* p_head_;
-  EXTEND*   p_ext_;
+  EXTEND* p_ext_;
   ListNode<T>* p_data_;
 };
-};
-
+}
+;
 
 #endif
