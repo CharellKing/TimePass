@@ -663,12 +663,12 @@ class ShmList {
   const ListNode<T>* ExtOffset(off_t offset)const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return -1;
+      return ShmBase::ShmFailed<ListNode<T> >();
     }
 
-    if (offset < 0 || offset >= p_head_->size) {
+    if (offset < 0 || offset >= p_head_->capacity) {
       Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return -1;
+      return ShmBase::ShmFailed<ListNode<T> >();
     }
 
     return p_data_ + offset;

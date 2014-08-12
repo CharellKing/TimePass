@@ -13,38 +13,41 @@
 #include <string>
 #include <stack>
 
-
 #include "global/errno.h"
 #include "global/error.h"
 #include "shm/shm_array.h"
 
-
 namespace TimePass {
 namespace RbtreeFlag {
 enum {
-  LEFT    = 0,
-  RIGHT   = 1,
-  PARENT  = 2,
+  LEFT = 0,
+  RIGHT = 1,
+  PARENT = 2,
   UNKNOWN = 3,
 };
 
 enum {
-  RED     = 0,
-  BLACK   = 1,
+  RED = 0,
+  BLACK = 1,
 };
 
 enum {
   OFFT_ERROR = -2,
 };
-}; /*namespace RbtreeFlag*/
+}
+;
+/*namespace RbtreeFlag*/
 
-template <typename KEY, typename VALUE,
-int (*Comp)(const KEY& a, const KEY& b)=KEY::Compare>
+template<typename KEY, typename VALUE, int (*Comp)(const KEY& a,
+                                                   const KEY& b)=KEY::Compare>
 struct ShmPair {
-  ShmPair(KEY key, VALUE value):first(key), second(value) {
+  ShmPair(KEY key, VALUE value)
+      : first(key),
+        second(value) {
   }
 
-  explicit ShmPair(KEY key):first(key) {
+  explicit ShmPair(KEY key)
+      : first(key) {
   }
 
   static int Compare(const ShmPair<KEY, VALUE, Comp>& a,
@@ -55,39 +58,201 @@ struct ShmPair {
   VALUE second;
 };
 
-template <typename EXTEND>
+template<typename EXTEND>
 struct RbtreeHead {
-  RbtreeHead():root(-1), capacity(0), size(0), free_stack(-1) {
+  RbtreeHead()
+      : root(-1),
+        capacity(0),
+        size(0),
+        free_stack(-1) {
   }
 
-  off_t   root;
-  off_t   capacity;
-  off_t   size;
-  off_t   free_stack;
-  EXTEND  extend;
+  off_t root;
+  off_t capacity;
+  off_t size;
+  off_t free_stack;
+  EXTEND extend;
 };
 
-template <typename T>
+template<typename T>
 struct RbtreeNode {
-  RbtreeNode():parent(-1), left(-1), right(-1), color(0) {
+  RbtreeNode()
+      : parent(-1),
+        left(-1),
+        right(-1),
+        color(0) {
   }
 
-  T       data;
-  off_t   parent;
+  T data;
+  off_t parent;
   union {
-    off_t   left;
-    off_t   next;
+    off_t left;
+    off_t next;
   };
-  off_t   right;
-  off_t   color;
+  off_t right;
+  off_t color;
 };
 
-template <typename T, int (*Compare)(const T& a, const T& b) = T::Compare,
-          typename EXTEND = off_t>
+template<typename T, int (*Compare)(const T& a, const T& b) = T::Compare,
+    typename EXTEND = off_t>
 class ShmRbtree {
  public:
-  explicit ShmRbtree(const char* name):shm_array_(name), p_head_(NULL),
-                              p_ext_(NULL), p_data_(NULL) {
+  class Iterator;
+  class ConstIterator;
+  class Iterator {
+   public:
+    friend class ShmRbtree;
+    Iterator()
+        : p_rbtree_(NULL),
+          cur_offset_(-1) {
+    }
+
+    //prefix
+    Iterator& operator ++() {
+      RbtreeNode<T>* p_node = p_rbtree_->ExtOffset(cur_offset_);
+      if (p_rbtree_ && cur_offset_ >= 0 && cur_offset_ < p_rbtree_->Capacity()) {
+        cur_offset_ = ExtNext(cur_offset_);
+      }
+      return *this;
+    }
+
+    Iterator operator ++(int) {
+      Iterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    Iterator& operator --() {
+      RbtreeNode<T>* p_node = p_rbtree_->ExtOffset(cur_offset_);
+      if (p_rbtree_ && cur_offset_ >= 0 && cur_offset_ < p_rbtree_->Capacity()) {
+        cur_offset_ = ExtRNext(cur_offset_);
+      }
+      return *this;
+    }
+
+    Iterator& operator --(int) {
+      Iterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    T& operator*() throw (int) {
+      if (NULL == p_rbtree_ || cur_offset_ < 0
+          || cur_offset_ >= p_rbtree_->Capacity()) {
+        throw ErrorNo::PTR_NULL;
+      }
+
+      return p_rbtree_->ExtOffset(cur_offset_)->data;
+    }
+
+    bool operator !=(const Iterator& iter) const {
+      return p_rbtree_ != iter.GetRbtree() || cur_offset_ != iter.GetOffset();
+    }
+
+    bool operator !=(const ConstIterator& iter) const {
+      return p_rbtree_ != iter.GetRbtree() || cur_offset_ != iter.GetOffset();
+    }
+
+    const ShmRbtree<T, Compare, EXTEND>* GetRbtree() const {
+      return p_rbtree_;
+    }
+
+    off_t GetOffset() const {
+      return cur_offset_;
+    }
+
+   private:
+    Iterator(ShmRbtree<T, Compare, EXTEND>* p_array, off_t cur_offset)
+        : p_rbtree_(p_array),
+          cur_offset_(cur_offset) {
+    }
+
+    ShmRbtree<T, Compare, EXTEND>* p_rbtree_;
+    off_t cur_offset_;
+  };
+
+  class ConstIterator {
+   public:
+    friend class ShmRbtree;
+    ConstIterator()
+        : p_rbtree_(NULL),
+          cur_offset_(-1) {
+    }
+
+    ConstIterator(const Iterator& iter)
+        : p_rbtree_(NULL),
+          cur_offset_(-1) {
+      p_rbtree_ = iter.GetRbtree();
+      cur_offset_ = iter.GetOffset();
+    }
+
+    //prefix
+    ConstIterator& operator ++() {
+      if (p_rbtree_ && cur_offset_ < p_rbtree_->Capacity()) {
+        ++cur_offset_;
+      }
+      return *this;
+    }
+
+    ConstIterator operator ++(int) {
+      ConstIterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    ConstIterator& operator --() {
+      if (p_rbtree_ && cur_offset_ >= 0) {
+        --cur_offset_;
+      }
+      return *this;
+    }
+
+    ConstIterator& operator --(int) {
+      Iterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    const T& operator*() const throw (int) {
+      if (NULL == p_rbtree_ || cur_offset_ < 0
+          || cur_offset_ >= p_rbtree_->Capacity()) {
+        throw ErrorNo::PTR_NULL;
+      }
+
+      return p_rbtree_->ExtOffset(cur_offset_)->data;
+    }
+
+    bool operator !=(const Iterator& iter) const {
+      return p_rbtree_ != iter.GetRbtree() || cur_offset_ != iter.GetOffset();
+    }
+
+    bool operator !=(const ConstIterator& iter) const {
+      return p_rbtree_ != iter.GetRbtree() || cur_offset_ != iter.GetOffset();
+    }
+
+    const ShmRbtree<T, Compare, EXTEND>* GetRbtree() const {
+      return p_rbtree_;
+    }
+
+    off_t GetOffset() const {
+      return cur_offset_;
+    }
+
+   private:
+    ConstIterator(const ShmArray<T, EXTEND>* p_array, off_t cur_offset)
+        : p_rbtree_(p_array),
+          cur_offset_(cur_offset) {
+    }
+
+    const ShmRbtree<T, Compare, EXTEND>* p_rbtree_;
+    off_t cur_offset_;
+  };
+
+  explicit ShmRbtree(const char* name)
+      : shm_array_(name),
+        p_head_(NULL),
+        p_ext_(NULL),
+        p_data_(NULL) {
   }
 
   bool Create(off_t capacity) {
@@ -103,7 +268,7 @@ class ShmRbtree {
     p_head_->free_stack = -1;
 
     p_ext_ = &p_head_->extend;
-    p_data_ = shm_array_.Begin();
+    p_data_ = &(*shm_array_.Begin());
     return true;
   }
 
@@ -117,8 +282,8 @@ class ShmRbtree {
     }
 
     p_head_ = shm_array_.GetExtend();
-    p_ext_  = &p_head_->extend;
-    p_data_ = shm_array_.Begin();
+    p_ext_ = &p_head_->extend;
+    p_data_ = &(*shm_array_.Begin());
     return true;
   }
 
@@ -126,11 +291,11 @@ class ShmRbtree {
     return shm_array_.Close();
   }
 
-  bool IsOpen()const {
+  bool IsOpen() const {
     return NULL != p_head_;
   }
 
-  off_t Capacity()const  {
+  off_t Capacity() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -138,7 +303,7 @@ class ShmRbtree {
     return p_head_->capacity;
   }
 
-  off_t Size()const {
+  off_t Size() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -147,7 +312,7 @@ class ShmRbtree {
     return p_head_->size;
   }
 
-  off_t TotalBytes()const {
+  off_t TotalBytes() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -156,20 +321,20 @@ class ShmRbtree {
     return shm_array_.TotalBytes();
   }
 
-  off_t UsedBytes()const {
+  off_t UsedBytes() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
     }
 
-    return shm_array_.NonDataBytes() + sizeof(RbtreeNode<T>) * p_head_->size;
+    return shm_array_.ExtHeadBytes() + sizeof(RbtreeNode<T> ) * p_head_->size;
   }
 
-  const char* Name()const {
+  const char* Name() const {
     return shm_array_.Name();
   }
 
-  const RbtreeHead<EXTEND>* Head()const {
+  const RbtreeHead<EXTEND>* Head() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<RbtreeHead<EXTEND> >();
@@ -199,147 +364,43 @@ class ShmRbtree {
     return p_ext_;
   }
 
-  RbtreeNode<T>* Begin() {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
+  Iterator Begin() {
+    if (NULL == p_head_ || p_head_->root < 0 || p_head_->root >= p_head_->capacity) {
+      return Iterator(this, -1);
     }
 
-    off_t begin_offset = Minimum(p_head_->root);
-    if (begin_offset < 0) {
-      return NULL;
-    }
-
-    return p_data_ + begin_offset;
+    return Iterator(this, Minimum(p_head_->root));
   }
 
-  const RbtreeNode<T>* Begin()const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
+  ConstIterator Begin() const {
+    if (NULL == p_head_ || p_head_->root < 0 || p_head_->root >= p_head_->capacity) {
+      return Iterator(this, -1);
     }
 
-    off_t begin_offset = Minimum(p_head_->root);
-    if (begin_offset < 0) {
-      return NULL;
-    }
-
-    return p_data_ + begin_offset;
+    return ConstIterator(this, Minimum(p_head_->root));
   }
 
-  const RbtreeNode<T>* End()const {
+  const RbtreeNode<T>* End() const {
     return NULL;
   }
 
-  RbtreeNode<T>* Next(RbtreeNode<T>* p_cur) {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
+  Iterator RBegin() {
+    if (NULL == p_head_ || p_head_->root < 0 || p_head_->root >= p_head_->capacity) {
+      return Iterator(this, -1);
     }
 
-    if (p_cur < p_data_ || p_cur >= p_data_ + p_head_->capacity) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-
-    off_t next_offset = Next(p_cur - p_data_);
-    if (next_offset < 0) {
-      return NULL;
-    }
-    return p_data_ + next_offset;
+    return Iterator(this, Maximum(p_head_->root));
   }
 
-  const RbtreeNode<T>* Next(const RbtreeNode<T>* p_cur)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
+  ConstIterator RBegin() const {
+    if (NULL == p_head_ || p_head_->root < 0 || p_head_->root >= p_head_->capacity) {
+      return Iterator(this, -1);
     }
 
-    if (p_cur < p_data_ || p_cur >= p_data_ + p_head_->capacity) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-
-    off_t next_offset = Next(p_cur - p_data_);
-    if (next_offset < 0) {
-      return NULL;
-    }
-    return p_data_ + next_offset;
+    return ConstIterator(this, Maximum(p_head_->root));
   }
 
-  RbtreeNode<T>* RBegin() {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-
-    off_t begin_offset = Maximum(p_head_->root);
-    if (begin_offset < 0) {
-      return NULL;
-    }
-
-    return p_data_ + begin_offset;
-  }
-
-  const RbtreeNode<T>* RBegin()const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-
-    off_t begin_offset = Maximum(p_head_->root);
-    if (begin_offset < 0) {
-      return NULL;
-    }
-
-    return p_data_ + begin_offset;
-  }
-
-  RbtreeNode<T>* RNext(RbtreeNode<T>* p_cur) {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-
-    if (p_cur < p_data_ || p_cur >= p_data_ + p_head_->capacity) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-
-    off_t next_offset = RNext(p_cur - p_data_);
-     if (next_offset < 0) {
-       return NULL;
-     }
-     return p_data_ + next_offset;
-  }
-
-  const RbtreeNode<T>* RNext(const RbtreeNode<T>* p_cur)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-
-    if (p_cur < p_data_ || p_cur >= p_data_ + p_head_->capacity) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-
-    off_t next_offset = RNext(p_cur - p_data_);
-    if (next_offset < 0) {
-      return NULL;
-    }
-    return p_data_ + next_offset;
-  }
-
-  RbtreeNode<T>* Offset(off_t offset) {
-    return p_data_ + offset;
-  }
-
-  const RbtreeNode<T>* Offset(off_t offset)const {
-    return p_data_ + offset;
-  }
-
-  off_t Minimum(off_t root)const {
+  off_t Minimum(off_t root) const {
     if (root < 0) {
       return -1;
     }
@@ -353,7 +414,7 @@ class ShmRbtree {
     return parent;
   }
 
-  off_t Maximum(off_t root)const {
+  off_t Maximum(off_t root) const {
     if (root < 0) {
       return -1;
     }
@@ -361,7 +422,7 @@ class ShmRbtree {
     off_t parent = root;
     off_t right = (p_data_ + parent)->right;
     while (right >= 0 && right < p_head_->capacity) {
-      parent =right;
+      parent = right;
       right = (p_data_ + parent)->right;
     }
     return parent;
@@ -445,7 +506,7 @@ class ShmRbtree {
   }
 
   /*<data the first data not smaller than data*/
-  off_t LowerBound(const T& data)const {
+  off_t LowerBound(const T& data) const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return RbtreeFlag::OFFT_ERROR;
@@ -464,7 +525,7 @@ class ShmRbtree {
   }
 
   /*>data the first bigger than data*/
-  off_t UpperBound(const T& data)const {
+  off_t UpperBound(const T& data) const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return RbtreeFlag::OFFT_ERROR;
@@ -483,7 +544,7 @@ class ShmRbtree {
   }
 
   /*=data the first equal to data*/
-  off_t EqualRange(const T& data)const {
+  off_t EqualRange(const T& data) const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return RbtreeFlag::OFFT_ERROR;
@@ -507,7 +568,7 @@ class ShmRbtree {
 
   /* convert the data structure to dot language script*/
   bool ToDot(const std::string& filename,
-             const std::string (*ToString)(const T& value))const {
+             const std::string (*ToString)(const T& value)) const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
@@ -533,6 +594,34 @@ class ShmRbtree {
     }
 
     return shm_array_.Commit(is_sync);
+  }
+
+  RbtreeNode<T>* ExtOffset(off_t offset) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+
+    if (offset < 0 || offset >= p_head_->size) {
+      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+
+    return p_data_ + offset;
+  }
+
+  const RbtreeNode<T>* ExtOffset(off_t offset)const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+
+    if (offset < 0 || offset >= p_head_->capacity) {
+      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+      return ShmBase::ShmFailed<RbtreeNode<T> >();
+    }
+
+    return p_data_ + offset;
   }
 
  private:
@@ -565,7 +654,7 @@ class ShmRbtree {
           parent_offset = p_parent->right;
           p_parent = p_data_ + parent_offset;
         }
-      } else {  /*key existed*/
+      } else { /*key existed*/
         which_child = RbtreeFlag::UNKNOWN;
         break;
       }
@@ -610,7 +699,7 @@ class ShmRbtree {
   /*insert data*/
   bool Insert(const T& data, off_t parent_offset, int which_child) {
     /*get free node*/
-    off_t free_offset  = GetFree();
+    off_t free_offset = GetFree();
     if (-1 == free_offset) {/*获取新节点失败*/
       return false;
     }
@@ -664,7 +753,7 @@ class ShmRbtree {
 
   void SetFree(off_t offset) {
     if (offset < 0 || offset > p_head_->capacity) {
-     return;
+      return;
     }
     (p_data_ + offset)->next = p_head_->free_stack;
     p_head_->free_stack = offset;
@@ -685,82 +774,82 @@ class ShmRbtree {
   }
 
   /*modify node to balance the tree, rotate around d(z)
-  1.b is a's left child
-    (1) a(B)             d(R)
-        /\               /\
+   1.b is a's left child
+   (1) a(B)             d(R)
+   /\               /\
     (R)b  c(R) ====> (B)x  x(B)
-       /                /
-    (z)d(R)          x(R)
+   /                /
+   (z)d(R)          x(R)
 
-    (2) a(B)             d(B)
-        /\               /\
+   (2) a(B)             d(B)
+   /\               /\
     (R)b  c(B) ====> (R)d c(R)
-          \             /
-          d(R)          b(R)
-    (3) a(B)             b(B)
-        /\               /\
+   \             /
+   d(R)          b(R)
+   (3) a(B)             b(B)
+   /\               /\
     (R)b  c(B) ====>  (R)d a(R)
-       /                  \
+   /                  \
      d(R)                  c(B)
-  2.b is a's right child
-    (1) a(B)            a(R)
-        /\              /\
+   2.b is a's right child
+   (1) a(B)            a(R)
+   /\              /\
      (R)c b(R) ====>(B)c b(B)
-           \              \
+   \              \
             d(R)           d(R)
-    (2) a(B)            a(B)
-        /\              /\
+   (2) a(B)            a(B)
+   /\              /\
      (B)c b(R) ====>(B)c  d(R)
-          /               \
+   /               \
          d(R)              b(R)
-    (3) a(B)            b(B)
-        /\              /\
+   (3) a(B)            b(B)
+   /\              /\
      (B)c b(R) =====>(R)a d(R)
-           \              /
-           d(R)          c(B)       */
+   \              /
+   d(R)          c(B)       */
   void InsertFixUp(off_t z) {
     RbtreeNode<T> *p_z = RawOffset(z), *p_parent = NULL;
-    while ((p_parent = RawOffset(p_z->parent)) &&
-            RbtreeFlag::RED == Color(p_z->parent)) {
+    while ((p_parent = RawOffset(p_z->parent))
+        && RbtreeFlag::RED == Color(p_z->parent)) {
       RbtreeNode<T>* p_grandpa = RawOffset(p_parent->parent);
       if (NULL == p_grandpa) {
         break;
       }
       /*1.b(d's father) is a's left child.*/
-      if (p_z->parent ==p_grandpa->left) {
+      if (p_z->parent == p_grandpa->left) {
         if (RbtreeFlag::RED == Color(p_grandpa->right)) {
-            /*case 1: uncle node is red*/
-            p_parent->color = RbtreeFlag::BLACK;
-            (p_data_ + p_grandpa->right)->color = RbtreeFlag::BLACK;
-            p_grandpa->color = RbtreeFlag::RED;
-            p_z = p_grandpa;
-            z = p_parent->parent;
+          /*case 1: uncle node is red*/
+          p_parent->color = RbtreeFlag::BLACK;
+          (p_data_ + p_grandpa->right)->color = RbtreeFlag::BLACK;
+          p_grandpa->color = RbtreeFlag::RED;
+          p_z = p_grandpa;
+          z = p_parent->parent;
         } else if (z == p_parent->right) {
-            /*case 2:z is right child, uncle is black*/
-            z = p_z->parent;
-            p_z = p_parent;
-            LeftRotate(z);
+          /*case 2:z is right child, uncle is black*/
+          z = p_z->parent;
+          p_z = p_parent;
+          LeftRotate(z);
         } else {
-            /*case 3：z is left child， uncle is black*/
-            p_parent->color = RbtreeFlag::BLACK;
-            p_grandpa->color = RbtreeFlag::RED;
-            RightRotate(p_parent->parent);
+          /*case 3：z is left child， uncle is black*/
+          p_parent->color = RbtreeFlag::BLACK;
+          p_grandpa->color = RbtreeFlag::RED;
+          RightRotate(p_parent->parent);
         }
       } else {
         if (RbtreeFlag::RED == Color(p_grandpa->left)) {
-            p_parent->color = RbtreeFlag::BLACK;
-            (p_data_ + p_grandpa->left)->color = RbtreeFlag::BLACK;
-            p_grandpa->color = RbtreeFlag::RED;
-            p_z = p_grandpa;
-            z = p_parent->parent;
+          p_parent->color = RbtreeFlag::BLACK;
+          (p_data_ + p_grandpa->left)->color = RbtreeFlag::BLACK;
+          p_grandpa->color = RbtreeFlag::RED;
+          p_z = p_grandpa;
+          z = p_parent->parent;
         } else if (z == p_parent->left) {
-            z = p_z->parent;
-            p_z = p_parent;
-            RightRotate(z);
+          z = p_z->parent;
+          p_z = p_parent;
+          RightRotate(z);
         } else {
-            p_parent->color = RbtreeFlag::BLACK;
-            p_grandpa->color = RbtreeFlag::RED;
-            LeftRotate(p_parent->parent);
+          p_parent->color = RbtreeFlag::BLACK;
+          p_grandpa->color = RbtreeFlag::RED;
+          LeftRotate(p_parent->parent);
         }
       }
     }
@@ -769,38 +858,37 @@ class ShmRbtree {
 
   /* 在这里parent指b， child指a，及x， 树的平衡规则是围绕x进行的
    * 删除一个节点之后，维护红黑树平衡
-  1.x为其父亲节点的左节点
-    case1: x的兄弟节点为红色
-           b(B)                 d(B)
-           /\        case1      /\
+   1.x为其父亲节点的左节点
+   case1: x的兄弟节点为红色
+   b(B)                 d(B)
+   /\        case1      /\
     (x)(B)a  d(R)(w) ====>   (R)b e(B)
-             /\                /\
+   /\                /\
           (B)c e(B)     (x)(B)a c(B)(new w)
 
-    case2: x的父亲节点为红色,其侄子节点为黑色
-           b(R)                 b(R)(new x)
-            /\       case2      /\
+   case2: x的父亲节点为红色,其侄子节点为黑色
+   b(R)                 b(R)(new x)
+   /\       case2      /\
      (x)(B)a d(B)(w) ====>   (B)a d(R)
-             /\                   /\
+   /\                   /\
           (B)c e(B)            (B)c e(B)
 
-    case 3:x的父亲节点为红色，其左侄子为红色，右侄子为黑色
-            b(R)                b(R)
-            /\        case3       /\
+   case 3:x的父亲节点为红色，其左侄子为红色，右侄子为黑色
+   b(R)                b(R)
+   /\        case3       /\
       (x)(B)a d(B)(w) ====> (x)(B)a c(B)
-              /\                      \
+   /\                      \
            (R)c e(B)                   d(R)
-                                        \
-                                       e(E)
-    case 4:x的父亲节点为红色， 其右侄子都为红色
-            b(R)                d(R)
-            /\        case4      /\
+   e(E)
+   case 4:x的父亲节点为红色， 其右侄子都为红色
+   b(R)                d(R)
+   /\        case4      /\
       (x)(B)a d(B)(w) ====>(x)(B)b e(B)
-              /\                /\
+   /\                /\
            (R)c e(R)         (B)a c(R) new x = root(T)
 
-  2.x为其父亲节点的右节点
-    与上面相同分四种情况，相反*/
+   2.x为其父亲节点的右节点
+   与上面相同分四种情况，相反*/
   void RemoveFixUp(off_t parent, off_t child) {
     RbtreeNode<T>* p_child = RawOffset(child);
     RbtreeNode<T>* p_parent = RawOffset(parent);
@@ -815,16 +903,16 @@ class ShmRbtree {
           p_parent->color = RbtreeFlag::BLACK;
           LeftRotate(parent);
         } else if (p_sibling) {
-          if (RbtreeFlag::BLACK == Color(p_sibling->left) &&
-              RbtreeFlag::BLACK == Color(p_sibling->right)) {
+          if (RbtreeFlag::BLACK == Color(p_sibling->left)
+              && RbtreeFlag::BLACK == Color(p_sibling->right)) {
             /*case 2:x的左侄子和右侄子都为黑色*/
             p_sibling->color = RbtreeFlag::RED;
             p_child = p_parent;
             child = parent;
             p_parent = RawOffset(p_child->parent);
             parent = p_child->parent;
-          } else if (RbtreeFlag::RED == Color(p_sibling->left) &&
-                     RbtreeFlag::BLACK == Color(p_sibling->right)) {
+          } else if (RbtreeFlag::RED == Color(p_sibling->left)
+              && RbtreeFlag::BLACK == Color(p_sibling->right)) {
             /*case 3:x的左侄子为红色，右侄子为黑色*/
             (p_data_ + p_sibling->left)->color = RbtreeFlag::BLACK;
             p_sibling->color = RbtreeFlag::RED;
@@ -847,16 +935,16 @@ class ShmRbtree {
           p_parent->color = RbtreeFlag::BLACK;
           RightRotate(parent);
         } else if (p_sibling) {
-          if (RbtreeFlag::BLACK == Color(p_sibling->left) &&
-              RbtreeFlag::BLACK == Color(p_sibling->right)) {
+          if (RbtreeFlag::BLACK == Color(p_sibling->left)
+              && RbtreeFlag::BLACK == Color(p_sibling->right)) {
             /*case 2：x's left nephew and right nephew is black*/
             p_sibling->color = RbtreeFlag::RED;
             p_child = p_parent;
             child = parent;
             p_parent = Offset(p_child->parent);
             parent = p_child->parent;
-          } else if (RbtreeFlag::RED == Color(p_sibling->right) &&
-                     RbtreeFlag::BLACK == Color(p_sibling->left)) {
+          } else if (RbtreeFlag::RED == Color(p_sibling->right)
+              && RbtreeFlag::BLACK == Color(p_sibling->left)) {
             /*case 3: x's right nephew is red, x's left nephew is black*/
             p_sibling->color = RbtreeFlag::RED;
             (p_data_ + p_sibling->right)->color = RbtreeFlag::BLACK;
@@ -884,7 +972,7 @@ class ShmRbtree {
    x ========> y
    /\         /\
    a y        x r
-     /\      /\
+   /\      /\
      b r     a b    */
   bool LeftRotate(off_t x) {
     RbtreeNode<T>* p_x = RawOffset(x);
@@ -960,7 +1048,7 @@ class ShmRbtree {
         p_c->right = x;
       }
     } else {
-       p_head_->root = x;
+      p_head_->root = x;
     }
     p_x->parent = p_y->parent;
 
@@ -990,17 +1078,17 @@ class ShmRbtree {
   /*connect parent with child each other*/
   void Connect(off_t parent, off_t child, int which_child) {
     if (RbtreeFlag::LEFT == which_child) {
-        if (parent >= 0 && parent < p_head_->capacity) {
-            (p_data_ + parent)->left = child;
-        }
+      if (parent >= 0 && parent < p_head_->capacity) {
+        (p_data_ + parent)->left = child;
+      }
     } else if (RbtreeFlag::RIGHT == which_child) {
-        if (parent >= 0 && parent < p_head_->capacity) {
-          (p_data_ + parent)->right = child;
-        }
+      if (parent >= 0 && parent < p_head_->capacity) {
+        (p_data_ + parent)->right = child;
+      }
     }
 
     if (child >= 0 && child < p_head_->capacity) {
-        (p_data_ + child)->parent = parent;
+      (p_data_ + child)->parent = parent;
     }
   }
 
@@ -1014,8 +1102,7 @@ class ShmRbtree {
   }
 
   /*traverse all the rb-tree in recursion*/
-  void Traverse(FILE* fp,
-                const std::string (*ToString)(const T& data))const {
+  void Traverse(FILE* fp, const std::string (*ToString)(const T& data)) const {
     std::stack<off_t> s;
 
     if (p_head_->root >= 0) {
@@ -1035,9 +1122,9 @@ class ShmRbtree {
       /*right, pop right*/
       off_t child = (p_data_ + s.top())->right;
       if (child < 0) {
-        while (false == s.empty() && (
-                child == (p_data_ + s.top())->right ||
-                -1 == (p_data_ + s.top())->right)) {
+        while (false == s.empty()
+            && (child == (p_data_ + s.top())->right
+                || -1 == (p_data_ + s.top())->right)) {
           child = s.top();
           s.pop();
         }
@@ -1052,14 +1139,14 @@ class ShmRbtree {
 
   /*write node to file*/
   void NodeToDot(FILE* fp, off_t offset,
-                 const std::string (*ToString)(const T& data))const {
+                 const std::string (*ToString)(const T& data)) const {
     char color[8];
     fprintf(fp, "%ld[color=%s,style=filled, fontcolor=green label=\"%s\"];\n",
             offset, Color(offset, color, sizeof(color)),
             ToString((p_data_ + offset)->data).c_str());
   }
 
-  const char* Color(off_t offset, char* color, int size)const {
+  const char* Color(off_t offset, char* color, int size) const {
     if (RbtreeFlag::RED == (p_data_ + offset)->color) {
       strncpy(color, "red", size - 1);
     } else {
@@ -1070,38 +1157,36 @@ class ShmRbtree {
 
   /*connect parent node with child node*/
   void ConnectToDot(FILE* fp, off_t parent_offset, off_t child_offset,
-                    const std::string (*ToString)(const T& data))const {
+                    const std::string (*ToString)(const T& data)) const {
     std::string child_label = ToString((p_data_ + child_offset)->data);
     NodeToDot(fp, child_offset, ToString);
     fprintf(fp, "%ld->%ld;\n", parent_offset, child_offset);
   }
 
-  off_t Next(off_t cur_offset)const {
+  off_t ExtNext(off_t cur_offset) const {
     if ((p_data_ + cur_offset)->right >= 0) {
       return Minimum((p_data_ + cur_offset)->right);
     }
 
     off_t child_offset = cur_offset;
     off_t next_offset = (p_data_ + cur_offset)->parent;
-    while (next_offset >= 0 &&
-           next_offset < p_head_->capacity &&
-           (p_data_ + next_offset)->right == child_offset) {
+    while (next_offset >= 0 && next_offset < p_head_->capacity
+        && (p_data_ + next_offset)->right == child_offset) {
       child_offset = next_offset;
       next_offset = (p_data_ + next_offset)->parent;
     }
     return next_offset;
   }
 
-  off_t RNext(off_t cur_offset)const {
+  off_t ExtRNext(off_t cur_offset) const {
     if ((p_data_ + cur_offset)->left >= 0) {
       return Maximum((p_data_ + cur_offset)->left);
     }
 
     off_t child_offset = cur_offset;
     off_t next_offset = (p_data_ + cur_offset)->parent;
-    while (next_offset >= 0 &&
-           next_offset < p_head_->capacity &&
-           (p_data_ + next_offset)->left == child_offset) {
+    while (next_offset >= 0 && next_offset < p_head_->capacity
+        && (p_data_ + next_offset)->left == child_offset) {
       child_offset = next_offset;
       next_offset = (p_data_ + next_offset)->parent;
     }
@@ -1159,10 +1244,12 @@ class ShmRbtree {
 
  private:
   ShmArray<RbtreeNode<T>, RbtreeHead<EXTEND> > shm_array_;
-  RbtreeHead<EXTEND>*                          p_head_;
-  EXTEND*                                      p_ext_;
-  RbtreeNode<T>*                               p_data_;
+  RbtreeHead<EXTEND>* p_head_;
+  EXTEND* p_ext_;
+  RbtreeNode<T>* p_data_;
 };
-}; /*namespace TimePass*/
+}
+;
+/*namespace TimePass*/
 
 #endif /* _SHM_SHM_RBTREE_H_ */
