@@ -126,7 +126,7 @@ class ShmList {
 
     //prefix
     ConstIterator& operator ++() {
-      ListNode<T>* p_node = p_list_->Offset(cur_offset_);
+      ListNode<T>* p_node = p_list_->ExtOffset(cur_offset_);
       if (p_list_ && p_node) {
         cur_offset_ = p_node->next;
       }
@@ -145,7 +145,7 @@ class ShmList {
         throw ErrorNo::PTR_NULL;
       }
 
-      return *p_list_->Offset(cur_offset_);
+      return p_list_->ExtOffset(cur_offset_)->data;
     }
 
     bool operator !=(const Iterator& iter) const {
