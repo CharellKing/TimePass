@@ -128,18 +128,16 @@ void Read() {
     return;
   }
   printf("升序: ");
-  TimePass::RbtreeNode<int>* p_beg = numbers.Begin();
-  while (NULL != p_beg) {
-    printf("%d ", p_beg->data);
-    p_beg = numbers.Next(p_beg);
+  TimePass::ShmMultiset<int, Compare>::Iterator beg = numbers.Begin();
+  while (numbers.End() != beg) {
+    printf("%d ", *(beg++));
   }
   putchar('\n');
 
   printf("降序:");
-  p_beg = numbers.RBegin();
-  while (NULL != p_beg) {
-    printf("%d ", p_beg->data);
-    p_beg = numbers.RNext(p_beg);
+  beg = numbers.RBegin();
+  while (numbers.REnd() != beg) {
+    printf("%d ", *(beg++));
   }
   putchar('\n');
 }
@@ -169,11 +167,10 @@ void Range1(int from, int to) {
     return;
   }
 
-  TimePass::RbtreeNode<int>* p_from = numbers.UpperBound(from);
-  TimePass::RbtreeNode<int>* p_to = numbers.LowerBound(to);
-  while (p_from != numbers.End() && p_from != p_to) {
-    printf("%d ", p_from->data);
-    p_from = numbers.Next(p_from);
+  TimePass::ShmMultiset<int, Compare>::Iterator from_iter = numbers.UpperBound(from);
+  TimePass::ShmMultiset<int, Compare>::Iterator to_iter = numbers.LowerBound(to);
+  while (from_iter != numbers.End() && from_iter != to_iter) {
+    printf("%d ", *(from_iter++));
   }
   putchar('\n');
 }
@@ -186,15 +183,13 @@ void Range2(int from, int to) {
     return;
   }
 
-  TimePass::RbtreeNode<int>* p_from = numbers.EqualRange(from);
-  TimePass::RbtreeNode<int>* p_to = numbers.LowerBound(to);
-  while (p_from != numbers.End() && p_from != p_to) {
-    printf("%d ", p_from->data);
-    p_from = numbers.Next(p_from);
+  TimePass::ShmMultiset<int, Compare>::Iterator from_iter = numbers.EqualRange(from);
+  TimePass::ShmMultiset<int, Compare>::Iterator to_iter = numbers.LowerBound(to);
+  while (from_iter != numbers.End() && from_iter != to_iter) {
+    printf("%d ", *(from_iter++));
   }
   putchar('\n');
 }
-
 void AllFunc() {
   TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
   if (false == numbers.Open()) {

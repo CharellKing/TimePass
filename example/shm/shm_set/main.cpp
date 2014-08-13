@@ -16,13 +16,15 @@
 
 #define SHM_FILE "shm_set"
 
-const int array[] = {12, 1, 9, 2, 0, 11, 7, 0, 4, 15, 18, 5, 14,
-                     13, 10, 16, 6, 3, 8, 17};
+const int array[] = { 12, 1, 9, 2, 0, 11, 7, 0, 4, 15, 18, 5, 14, 13, 10, 16, 6,
+    3, 8, 17 };
 const int len = sizeof(array) / sizeof(array[0]);
 
 int Compare(const int& x, const int& y) {
-  if (x > y) return 1;
-  if (x < y) return -1;
+  if (x > y)
+    return 1;
+  if (x < y)
+    return -1;
   return 0;
 }
 
@@ -47,19 +49,16 @@ void ToDotPs(const char* name, const TimePass::ShmSet<int, Compare>* p_l) {
   char file[100];
   snprintf(file, sizeof(file) - 1, "%s.dot", name);
   p_l->ToDot(file, Label);
-  snprintf(cmd, sizeof(cmd) - 1,
-           "dot -Tps %s.dot -o %s.ps && rm %s",
-           name, name, file);
+  snprintf(cmd, sizeof(cmd) - 1, "dot -Tps %s.dot -o %s.ps && rm %s", name,
+           name, file);
   system(cmd);
   /*system("rm -rf rbtree.dot");*/
 }
 
-
 void Create(off_t len) {
   TimePass::ShmSet<int, Compare> numbers(SHM_FILE);
   if (false == numbers.Create(len)) {
-    printf("errno=%d\n",
-           TimePass::Error::GetErrno());
+    printf("errno=%d\n", TimePass::Error::GetErrno());
   }
 }
 
@@ -127,19 +126,18 @@ void Read() {
     return;
   }
   printf("asc: ");
-  TimePass::RbtreeNode<int>* p_beg = numbers.Begin();
-  while (NULL != p_beg) {
-    printf("%d ", p_beg->data);
-    p_beg = numbers.Next(p_beg);
+  TimePass::ShmSet<int, Compare>::Iterator beg = numbers.Begin();
+  while (numbers.End() != beg) {
+    printf("%d ", *(beg++));
   }
   putchar('\n');
 
   printf("desc:");
-  p_beg = numbers.RBegin();
-  while (NULL != p_beg) {
-    printf("%d ", p_beg->data);
-    p_beg = numbers.RNext(p_beg);
+  beg = numbers.RBegin();
+  while (numbers.REnd() != beg) {
+    printf("%d ", *(beg--));
   }
+  putchar('\n');
   putchar('\n');
 }
 
@@ -151,8 +149,8 @@ void About() {
   }
 
   printf("capacity = %ld size = %ld, total_size = %ld used_size = %ld",
-         numbers.Capacity(), numbers.Size(),
-         numbers.TotalBytes(), numbers.UsedBytes());
+         numbers.Capacity(), numbers.Size(), numbers.TotalBytes(),
+         numbers.UsedBytes());
 
   if (false == numbers.Close()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
@@ -168,11 +166,10 @@ void Range1(int from, int to) {
     return;
   }
 
-  TimePass::RbtreeNode<int>* p_from = numbers.UpperBound(from);
-  TimePass::RbtreeNode<int>* p_to = numbers.LowerBound(to);
-  while (p_from != numbers.End() && p_from != p_to) {
-    printf("%d ", p_from->data);
-    p_from = numbers.Next(p_from);
+  TimePass::ShmSet<int, Compare>::Iterator from_iter = numbers.UpperBound(from);
+  TimePass::ShmSet<int, Compare>::Iterator to_iter = numbers.LowerBound(to);
+  while (from_iter != numbers.End() && from_iter != to_iter) {
+    printf("%d ", *(from_iter++));
   }
   putchar('\n');
 }
@@ -185,11 +182,10 @@ void Range2(int from, int to) {
     return;
   }
 
-  TimePass::RbtreeNode<int>* p_from = numbers.EqualRange(from);
-  TimePass::RbtreeNode<int>* p_to = numbers.LowerBound(to);
-  while (p_from != numbers.End() && p_from != p_to) {
-    printf("%d ", p_from->data);
-    p_from = numbers.Next(p_from);
+  TimePass::ShmSet<int, Compare>::Iterator from_iter = numbers.EqualRange(from);
+  TimePass::ShmSet<int, Compare>::Iterator to_iter = numbers.LowerBound(to);
+  while (from_iter != numbers.End() && from_iter != to_iter) {
+    printf("%d ", *(from_iter++));
   }
   putchar('\n');
 }
@@ -281,5 +277,4 @@ int main(int argc, char** argv) {
   }
   return 0;
 }
-
 

@@ -130,18 +130,18 @@ void Read() {
     return;
   }
   printf("asc: ");
-  TimePass::ShmMultimap<int, char, Compare>::MAP_NODE* p_beg = numbers.Begin();
-  while (NULL != p_beg) {
-    printf("<%d, %c> ", p_beg->data.first, p_beg->data.second);
-    p_beg = numbers.Next(p_beg);
+  TimePass::ShmMultimap<int, char, Compare>::Iterator beg = numbers.Begin();
+  while (numbers.End() != beg) {
+    printf("<%d %c>", beg->first, beg->second);
+    ++beg;
   }
   putchar('\n');
 
   printf("desc:");
-  p_beg = numbers.RBegin();
-  while (NULL != p_beg) {
-    printf("<%d, %c> ", p_beg->data.first, p_beg->data.second);
-    p_beg = numbers.RNext(p_beg);
+  beg = numbers.RBegin();
+  while (numbers.REnd() != beg) {
+    printf("<%d, %c> ", beg->first, beg->second);
+    --beg;
   }
   putchar('\n');
 }
@@ -171,11 +171,11 @@ void Range1(int from, int to) {
     return;
   }
 
-  MAP_NODE* p_from = numbers.UpperBound(from);
-  MAP_NODE* p_to = numbers.LowerBound(to);
-  while (p_from != numbers.End() && p_from != p_to) {
-    printf("<%d, %c> ", p_from->data.first, p_from->data.second);
-    p_from = numbers.Next(p_from);
+  TimePass::ShmMultimap<int, char, Compare>::Iterator from_iter = numbers.UpperBound(from);
+  TimePass::ShmMultimap<int, char, Compare>::Iterator to_iter = numbers.LowerBound(to);
+  while (from_iter != numbers.End() && from_iter != to_iter) {
+    printf("<%d %c>", from_iter->first, from_iter->second);
+    ++from_iter;
   }
   putchar('\n');
 }
@@ -188,11 +188,12 @@ void Range2(int from, int to) {
     return;
   }
 
-  MAP_NODE* p_from = numbers.EqualRange(from);
-  MAP_NODE* p_to = numbers.LowerBound(to);
-  while (p_from != numbers.End() && p_from != p_to) {
-    printf("<%d, %c> ", p_from->data.first, p_from->data.second);
-    p_from = numbers.Next(p_from);
+  TimePass::ShmMultimap<int, char, Compare>::Iterator from_iter = numbers.EqualRange(from);
+  TimePass::ShmMultimap<int, char, Compare>::Iterator to_iter = numbers.LowerBound(to);
+
+  while (from_iter != numbers.End() && from_iter != to_iter) {
+    printf("<%d, %c> ", from_iter->first, from_iter->second);
+    ++from_iter;
   }
   putchar('\n');
 }

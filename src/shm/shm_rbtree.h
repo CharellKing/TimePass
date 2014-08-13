@@ -109,9 +109,9 @@ class ShmRbtree {
 
     //prefix
     Iterator& operator ++() {
-      RbtreeNode<T>* p_node = p_rbtree_->ExtOffset(cur_offset_);
-      if (p_rbtree_ && cur_offset_ >= 0 && cur_offset_ < p_rbtree_->Capacity()) {
-        cur_offset_ = ExtNext(cur_offset_);
+      if (p_rbtree_ && cur_offset_ >= 0
+          && cur_offset_ < p_rbtree_->Capacity()) {
+        cur_offset_ = p_rbtree_->ExtNext(cur_offset_);
       }
       return *this;
     }
@@ -123,9 +123,9 @@ class ShmRbtree {
     }
 
     Iterator& operator --() {
-      RbtreeNode<T>* p_node = p_rbtree_->ExtOffset(cur_offset_);
-      if (p_rbtree_ && cur_offset_ >= 0 && cur_offset_ < p_rbtree_->Capacity()) {
-        cur_offset_ = ExtRNext(cur_offset_);
+      if (p_rbtree_ && cur_offset_ >= 0
+          && cur_offset_ < p_rbtree_->Capacity()) {
+        cur_offset_ = p_rbtree_->ExtRNext(cur_offset_);
       }
       return *this;
     }
@@ -179,30 +179,25 @@ class ShmRbtree {
           cur_offset_(-1) {
     }
 
-    ConstIterator(const Iterator& iter)
-        : p_rbtree_(NULL),
-          cur_offset_(-1) {
-      p_rbtree_ = iter.GetRbtree();
-      cur_offset_ = iter.GetOffset();
-    }
-
     //prefix
     ConstIterator& operator ++() {
-      if (p_rbtree_ && cur_offset_ < p_rbtree_->Capacity()) {
-        ++cur_offset_;
+      if (p_rbtree_ && cur_offset_ >= 0
+          && cur_offset_ < p_rbtree_->Capacity()) {
+        cur_offset_ = p_rbtree_->ExtNext(cur_offset_);
       }
       return *this;
     }
 
     ConstIterator operator ++(int) {
-      ConstIterator iter(*this);
+      Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
     ConstIterator& operator --() {
-      if (p_rbtree_ && cur_offset_ >= 0) {
-        --cur_offset_;
+      if (p_rbtree_ && cur_offset_ >= 0
+          && cur_offset_ < p_rbtree_->Capacity()) {
+        cur_offset_ = p_rbtree_->ExtRNext(cur_offset_);
       }
       return *this;
     }
@@ -213,7 +208,7 @@ class ShmRbtree {
       return iter;
     }
 
-    const T& operator*() const throw (int) {
+    const T& operator*()const throw (int) {
       if (NULL == p_rbtree_ || cur_offset_ < 0
           || cur_offset_ >= p_rbtree_->Capacity()) {
         throw ErrorNo::PTR_NULL;
@@ -239,7 +234,8 @@ class ShmRbtree {
     }
 
    private:
-    ConstIterator(const ShmArray<T, EXTEND>* p_array, off_t cur_offset)
+    ConstIterator(const ShmRbtree<T, Compare, EXTEND>* p_array,
+                  off_t cur_offset)
         : p_rbtree_(p_array),
           cur_offset_(cur_offset) {
     }
@@ -365,7 +361,8 @@ class ShmRbtree {
   }
 
   Iterator Begin() {
-    if (NULL == p_head_ || p_head_->root < 0 || p_head_->root >= p_head_->capacity) {
+    if (NULL == p_head_ || p_head_->root < 0
+        || p_head_->root >= p_head_->capacity) {
       return Iterator(this, -1);
     }
 
@@ -373,19 +370,21 @@ class ShmRbtree {
   }
 
   ConstIterator Begin() const {
-    if (NULL == p_head_ || p_head_->root < 0 || p_head_->root >= p_head_->capacity) {
+    if (NULL == p_head_ || p_head_->root < 0
+        || p_head_->root >= p_head_->capacity) {
       return Iterator(this, -1);
     }
 
     return ConstIterator(this, Minimum(p_head_->root));
   }
 
-  const RbtreeNode<T>* End() const {
-    return NULL;
+  ConstIterator End() const {
+    return ConstIterator(this, -1);
   }
 
   Iterator RBegin() {
-    if (NULL == p_head_ || p_head_->root < 0 || p_head_->root >= p_head_->capacity) {
+    if (NULL == p_head_ || p_head_->root < 0
+        || p_head_->root >= p_head_->capacity) {
       return Iterator(this, -1);
     }
 
@@ -393,11 +392,16 @@ class ShmRbtree {
   }
 
   ConstIterator RBegin() const {
-    if (NULL == p_head_ || p_head_->root < 0 || p_head_->root >= p_head_->capacity) {
+    if (NULL == p_head_ || p_head_->root < 0
+        || p_head_->root >= p_head_->capacity) {
       return Iterator(this, -1);
     }
 
     return ConstIterator(this, Maximum(p_head_->root));
+  }
+
+  const ConstIterator REnd() const {
+    return ConstIterator(this, -1);
   }
 
   off_t Minimum(off_t root) const {
@@ -505,65 +509,53 @@ class ShmRbtree {
     return target_offset;
   }
 
-  /*<data the first data not smaller than data*/
-  off_t LowerBound(const T& data) const {
+  Iterator LowerBound(const T& data) {
     if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return RbtreeFlag::OFFT_ERROR;
+      return Iterator(this, -1);
     }
-
-    off_t ceil_offset = -1, cur_offset = p_head_->root;
-    while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
-      if (Compare((p_data_ + cur_offset)->data, data) >= 0) {
-        ceil_offset = cur_offset;
-        cur_offset = (p_data_ + cur_offset)->left;
-      } else {
-        cur_offset = (p_data_ + cur_offset)->right;
-      }
-    }
-    return ceil_offset;
+    off_t offset = InnerLowerBound(data);
+    return Iterator(this, offset);
   }
 
-  /*>data the first bigger than data*/
-  off_t UpperBound(const T& data) const {
+  ConstIterator LowerBound(const T& data) const {
     if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return RbtreeFlag::OFFT_ERROR;
+      return ConstIterator(this, -1);
     }
-
-    off_t floor_offset = -1, cur_offset = p_head_->root;
-    while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
-      if (Compare((p_data_ + cur_offset)->data, data) > 0) {
-        floor_offset = cur_offset;
-        cur_offset = (p_data_ + cur_offset)->left;
-      } else {
-        cur_offset = (p_data_ + cur_offset)->right;
-      }
-    }
-    return floor_offset;
+    off_t offset = InnerLowerBound(data);
+    return ConstIterator(this, offset);
   }
 
-  /*=data the first equal to data*/
-  off_t EqualRange(const T& data) const {
+  Iterator UpperBound(const T& data) {
     if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return RbtreeFlag::OFFT_ERROR;
+      return Iterator(this, -1);
+    }
+    off_t offset = InnerUpperBound(data);
+    return Iterator(this, offset);
+  }
+
+  ConstIterator UpperBound(const T& data) const {
+    if (NULL == p_head_) {
+      return ConstIterator(this, -1);
+    }
+    off_t offset = InnerUpperBound(data);
+    return ConstIterator(this, offset);
+  }
+
+  Iterator EqualRange(const T& data) {
+    if (NULL == p_head_) {
+      return Iterator(this, -1);
+    }
+    off_t offset = InnerEqualRange(data);
+    return Iterator(this, offset);
+  }
+
+  ConstIterator EqualRange(const T& data) const {
+    if (NULL == p_head_) {
+      return ConstIterator(this, -1);
     }
 
-    off_t floor_offset = -1, cur_offset = p_head_->root;
-    int cmp = 0;
-    while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
-      cmp = Compare((p_data_ + cur_offset)->data, data);
-      if (cmp > 0) {
-        cur_offset = (p_data_ + cur_offset)->left;
-      } else if (cmp < 0) {
-        cur_offset = (p_data_ + cur_offset)->right;
-      } else {
-        floor_offset = cur_offset;
-        break;
-      }
-    }
-    return floor_offset;
+    off_t offset = InnerEqualRange(data);
+    return ConstIterator(this, offset);
   }
 
   /* convert the data structure to dot language script*/
@@ -610,7 +602,7 @@ class ShmRbtree {
     return p_data_ + offset;
   }
 
-  const RbtreeNode<T>* ExtOffset(off_t offset)const {
+  const RbtreeNode<T>* ExtOffset(off_t offset) const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<RbtreeNode<T> >();
@@ -622,6 +614,36 @@ class ShmRbtree {
     }
 
     return p_data_ + offset;
+  }
+
+  off_t ExtNext(off_t cur_offset) const {
+    if ((p_data_ + cur_offset)->right >= 0) {
+      return Minimum((p_data_ + cur_offset)->right);
+    }
+
+    off_t child_offset = cur_offset;
+    off_t next_offset = (p_data_ + cur_offset)->parent;
+    while (next_offset >= 0 && next_offset < p_head_->capacity
+        && (p_data_ + next_offset)->right == child_offset) {
+      child_offset = next_offset;
+      next_offset = (p_data_ + next_offset)->parent;
+    }
+    return next_offset;
+  }
+
+  off_t ExtRNext(off_t cur_offset) const {
+    if ((p_data_ + cur_offset)->left >= 0) {
+      return Maximum((p_data_ + cur_offset)->left);
+    }
+
+    off_t child_offset = cur_offset;
+    off_t next_offset = (p_data_ + cur_offset)->parent;
+    while (next_offset >= 0 && next_offset < p_head_->capacity
+        && (p_data_ + next_offset)->left == child_offset) {
+      child_offset = next_offset;
+      next_offset = (p_data_ + next_offset)->parent;
+    }
+    return next_offset;
   }
 
  private:
@@ -808,10 +830,10 @@ class ShmRbtree {
    \              /
    d(R)          c(B)       */
   void InsertFixUp(off_t z) {
-    RbtreeNode<T> *p_z = RawOffset(z), *p_parent = NULL;
-    while ((p_parent = RawOffset(p_z->parent))
+    RbtreeNode<T> *p_z = InnerOffset(z), *p_parent = NULL;
+    while ((p_parent = InnerOffset(p_z->parent))
         && RbtreeFlag::RED == Color(p_z->parent)) {
-      RbtreeNode<T>* p_grandpa = RawOffset(p_parent->parent);
+      RbtreeNode<T>* p_grandpa = InnerOffset(p_parent->parent);
       if (NULL == p_grandpa) {
         break;
       }
@@ -853,7 +875,7 @@ class ShmRbtree {
         }
       }
     }
-    RawOffset(p_head_->root)->color = RbtreeFlag::BLACK;
+    InnerOffset(p_head_->root)->color = RbtreeFlag::BLACK;
   }
 
   /* 在这里parent指b， child指a，及x， 树的平衡规则是围绕x进行的
@@ -890,12 +912,12 @@ class ShmRbtree {
    2.x为其父亲节点的右节点
    与上面相同分四种情况，相反*/
   void RemoveFixUp(off_t parent, off_t child) {
-    RbtreeNode<T>* p_child = RawOffset(child);
-    RbtreeNode<T>* p_parent = RawOffset(parent);
+    RbtreeNode<T>* p_child = InnerOffset(child);
+    RbtreeNode<T>* p_parent = InnerOffset(parent);
     while (p_head_->root != child && RbtreeFlag::BLACK == Color(child)) {
       /*1:x-node is left child*/
       if (child == p_parent->left) {
-        RbtreeNode<T>* p_sibling = RawOffset(p_parent->right);
+        RbtreeNode<T>* p_sibling = InnerOffset(p_parent->right);
         off_t sibling = p_parent->right;
         /*case 1: sibling is red*/
         if (RbtreeFlag::RED == Color(sibling)) {
@@ -909,7 +931,7 @@ class ShmRbtree {
             p_sibling->color = RbtreeFlag::RED;
             p_child = p_parent;
             child = parent;
-            p_parent = RawOffset(p_child->parent);
+            p_parent = InnerOffset(p_child->parent);
             parent = p_child->parent;
           } else if (RbtreeFlag::RED == Color(p_sibling->left)
               && RbtreeFlag::BLACK == Color(p_sibling->right)) {
@@ -923,12 +945,12 @@ class ShmRbtree {
             p_parent->color = RbtreeFlag::BLACK;
             (p_data_ + p_sibling->right)->color = RbtreeFlag::BLACK;
             LeftRotate(parent);
-            p_child = RawOffset(p_head_->root);
+            p_child = InnerOffset(p_head_->root);
             child = p_head_->root;
           }
         }
       } else {/*2:x-node is right child*/
-        RbtreeNode<T>* p_sibling = RawOffset(p_parent->left);
+        RbtreeNode<T>* p_sibling = InnerOffset(p_parent->left);
         off_t sibling = p_parent->left;
         if (RbtreeFlag::RED == Color(p_parent->left)) {/*case1：sibling is red*/
           p_parent->color = RbtreeFlag::RED;
@@ -941,7 +963,7 @@ class ShmRbtree {
             p_sibling->color = RbtreeFlag::RED;
             p_child = p_parent;
             child = parent;
-            p_parent = Offset(p_child->parent);
+            p_parent = InnerOffset(p_child->parent);
             parent = p_child->parent;
           } else if (RbtreeFlag::RED == Color(p_sibling->right)
               && RbtreeFlag::BLACK == Color(p_sibling->left)) {
@@ -955,7 +977,7 @@ class ShmRbtree {
             p_parent->color = RbtreeFlag::BLACK;
             (p_data_ + p_sibling->left)->color = RbtreeFlag::BLACK;
             RightRotate(parent);
-            p_child = RawOffset(p_head_->root);
+            p_child = InnerOffset(p_head_->root);
             child = p_head_->root;
           }
         }
@@ -975,12 +997,12 @@ class ShmRbtree {
    /\      /\
      b r     a b    */
   bool LeftRotate(off_t x) {
-    RbtreeNode<T>* p_x = RawOffset(x);
+    RbtreeNode<T>* p_x = InnerOffset(x);
     if (NULL == p_x) {
       return false;
     }
 
-    RbtreeNode<T>* p_y = RawOffset(p_x->right);
+    RbtreeNode<T>* p_y = InnerOffset(p_x->right);
     off_t y = p_x->right;
     if (NULL == p_y) {
       return false;
@@ -988,13 +1010,13 @@ class ShmRbtree {
 
     /*connect x to b*/
     p_x->right = p_y->left;
-    RbtreeNode<T>* p_b = RawOffset(p_y->left);
+    RbtreeNode<T>* p_b = InnerOffset(p_y->left);
     if (p_b) {
       p_b->parent = x;
     }
 
     /*connect y to c*/
-    RbtreeNode<T>* p_c = RawOffset(p_x->parent);
+    RbtreeNode<T>* p_c = InnerOffset(p_x->parent);
     if (p_c) {
       if (x == p_c->left) {
         p_c->left = y;
@@ -1021,12 +1043,12 @@ class ShmRbtree {
    /\           /\
    a b          b r */
   bool RightRotate(off_t y) {
-    RbtreeNode<T>* p_y = RawOffset(y);
+    RbtreeNode<T>* p_y = InnerOffset(y);
     if (NULL == p_y) {
       return false;
     }
 
-    RbtreeNode<T>* p_x = RawOffset(p_y->left);
+    RbtreeNode<T>* p_x = InnerOffset(p_y->left);
     off_t x = p_y->left;
     if (NULL == p_x) {
       return false;
@@ -1034,13 +1056,13 @@ class ShmRbtree {
 
     /*connect y with b*/
     p_y->left = p_x->right;
-    RbtreeNode<T>* p_b = RawOffset(p_x->right);
+    RbtreeNode<T>* p_b = InnerOffset(p_x->right);
     if (p_b) {
       p_b->parent = y;
     }
 
     /*connect x with c*/
-    RbtreeNode<T>* p_c = RawOffset(p_y->parent);
+    RbtreeNode<T>* p_c = InnerOffset(p_y->parent);
     if (p_c) {
       if (p_c->left == y) {
         p_c->left = x;
@@ -1059,7 +1081,7 @@ class ShmRbtree {
     return true;
   }
 
-  RbtreeNode<T>* RawOffset(off_t offset) {
+  RbtreeNode<T>* InnerOffset(off_t offset) {
     if (offset < 0 || offset > p_head_->capacity) {
       return NULL;
     }
@@ -1163,36 +1185,6 @@ class ShmRbtree {
     fprintf(fp, "%ld->%ld;\n", parent_offset, child_offset);
   }
 
-  off_t ExtNext(off_t cur_offset) const {
-    if ((p_data_ + cur_offset)->right >= 0) {
-      return Minimum((p_data_ + cur_offset)->right);
-    }
-
-    off_t child_offset = cur_offset;
-    off_t next_offset = (p_data_ + cur_offset)->parent;
-    while (next_offset >= 0 && next_offset < p_head_->capacity
-        && (p_data_ + next_offset)->right == child_offset) {
-      child_offset = next_offset;
-      next_offset = (p_data_ + next_offset)->parent;
-    }
-    return next_offset;
-  }
-
-  off_t ExtRNext(off_t cur_offset) const {
-    if ((p_data_ + cur_offset)->left >= 0) {
-      return Maximum((p_data_ + cur_offset)->left);
-    }
-
-    off_t child_offset = cur_offset;
-    off_t next_offset = (p_data_ + cur_offset)->parent;
-    while (next_offset >= 0 && next_offset < p_head_->capacity
-        && (p_data_ + next_offset)->left == child_offset) {
-      child_offset = next_offset;
-      next_offset = (p_data_ + next_offset)->parent;
-    }
-    return next_offset;
-  }
-
   /*remove node*/
   off_t RemoveNode(off_t target_offset) {
     off_t remove_offset = -1, child_offset = -1, parent_offset = -1;
@@ -1240,6 +1232,52 @@ class ShmRbtree {
 
     --p_head_->size;
     return remove_offset;
+  }
+
+  /*<data the first data not smaller than data*/
+  off_t InnerLowerBound(const T& data) const {
+    off_t ceil_offset = -1, cur_offset = p_head_->root;
+    while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
+      if (Compare((p_data_ + cur_offset)->data, data) >= 0) {
+        ceil_offset = cur_offset;
+        cur_offset = (p_data_ + cur_offset)->left;
+      } else {
+        cur_offset = (p_data_ + cur_offset)->right;
+      }
+    }
+    return ceil_offset;
+  }
+
+  /*>data the first bigger than data*/
+  off_t InnerUpperBound(const T& data) const {
+    off_t floor_offset = -1, cur_offset = p_head_->root;
+    while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
+      if (Compare((p_data_ + cur_offset)->data, data) > 0) {
+        floor_offset = cur_offset;
+        cur_offset = (p_data_ + cur_offset)->left;
+      } else {
+        cur_offset = (p_data_ + cur_offset)->right;
+      }
+    }
+    return floor_offset;
+  }
+
+  /*=data the first equal to data*/
+  off_t InnerEqualRange(const T& data) const {
+    off_t floor_offset = -1, cur_offset = p_head_->root;
+    int cmp = 0;
+    while (cur_offset >= 0 && cur_offset < p_head_->capacity) {
+      cmp = Compare((p_data_ + cur_offset)->data, data);
+      if (cmp > 0) {
+        cur_offset = (p_data_ + cur_offset)->left;
+      } else if (cmp < 0) {
+        cur_offset = (p_data_ + cur_offset)->right;
+      } else {
+        floor_offset = cur_offset;
+        break;
+      }
+    }
+    return floor_offset;
   }
 
  private:

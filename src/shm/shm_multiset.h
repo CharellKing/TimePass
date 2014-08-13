@@ -16,6 +16,124 @@ template <typename T, int (*Compare)(const T& a, const T& b) = T::Compare,
           typename EXTEND = off_t>
 class ShmMultiset {
  public:
+  class Iterator;
+  class ConstIterator;
+
+  typedef typename ShmRbtree<T, Compare, EXTEND>::Iterator RAW_ITER;
+  typedef typename ShmRbtree<T, Compare, EXTEND>::ConstIterator RAW_CONSTITER;
+
+  class Iterator {
+   public:
+    friend class ShmMultiset;
+    Iterator() {
+    }
+
+    //prefix
+    Iterator& operator ++() {
+      ++iter_;
+      return *this;
+    }
+
+    Iterator operator ++(int) {
+      Iterator copy_iter(*this);
+      ++iter_;
+      return copy_iter;
+    }
+
+    Iterator& operator --() {
+      --iter_;
+      return *this;
+    }
+
+    Iterator operator --(int) {
+      Iterator copy_iter(*this);
+      ++iter_;
+      return copy_iter;
+    }
+
+    T& operator*() throw (int) {
+      return *iter_;
+    }
+
+    T* operator->() throw (int) {
+      return &(*iter_);
+    }
+
+    bool operator !=(const Iterator& other) const {
+      return iter_ != other.GetIter();
+    }
+
+    bool operator !=(const ConstIterator& other) const {
+      return iter_ != other.GetIter();
+    }
+
+    const RAW_ITER& GetIter() const {
+      return iter_;
+    }
+
+   private:
+    Iterator(RAW_ITER iter):iter_(iter){
+    }
+
+    RAW_ITER iter_;
+  };
+
+  class ConstIterator {
+   public:
+    friend class ShmMultiset;
+    ConstIterator() {
+    }
+
+    //prefix
+    ConstIterator& operator ++() {
+      ++iter_;
+      return *this;
+    }
+
+    ConstIterator operator ++(int) {
+      Iterator copy_iter(*this);
+      ++iter_;
+      return copy_iter;
+    }
+
+    ConstIterator& operator --() {
+      --iter_;
+      return *this;
+    }
+
+    ConstIterator operator --(int) {
+      Iterator copy_iter(*this);
+      --iter_;
+      return copy_iter;
+    }
+
+    const T& operator*() const throw (int) {
+      return *iter_;
+    }
+
+    const T* operator->()const throw (int) {
+      return &(*iter_);
+    }
+
+    bool operator !=(const Iterator& other) const {
+      return iter_ != other.GetIter();
+    }
+
+    bool operator !=(const ConstIterator& other) const {
+      return iter_ != other.GetIter;
+    }
+
+    const RAW_CONSTITER& GetIter() const {
+      return iter_;
+    }
+
+   private:
+    ConstIterator(RAW_CONSTITER iter):iter_(iter) {
+    }
+
+    RAW_CONSTITER iter_;
+  };
+
   explicit ShmMultiset(const char* name):shm_rbtree_(name) {
   }
 
@@ -74,40 +192,28 @@ class ShmMultiset {
     return shm_rbtree_.GetExtend();
   }
 
-  RbtreeNode<T>* Begin() {
-    return shm_rbtree_.Begin();
+  Iterator Begin() {
+    return Iterator(shm_rbtree_.Begin());
   }
 
-  const RbtreeNode<T>* Begin()const {
-    return shm_rbtree_.Begin();
+  ConstIterator Begin() const {
+    return ConstIterator(shm_rbtree_.Begin());
   }
 
-  const RbtreeNode<T>* End()const {
-    return shm_rbtree_.End();
+  ConstIterator End() const {
+    return ConstIterator(shm_rbtree_.End());
   }
 
-  RbtreeNode<T>* Next(RbtreeNode<T>* p_cur) {
-    return shm_rbtree_.Next(p_cur);
+  Iterator RBegin() {
+    return Iterator(shm_rbtree_.RBegin());
   }
 
-  const RbtreeNode<T>* Next(const RbtreeNode<T>* p_cur)const {
-    return shm_rbtree_.Next(p_cur);
+  ConstIterator RBegin() const {
+    return ConstIterator(shm_rbtree_.RBegin());
   }
 
-  RbtreeNode<T>* RBegin() {
-    return shm_rbtree_.RBegin();
-  }
-
-  const RbtreeNode<T>* RBegin()const {
-    return shm_rbtree_.RBegin();
-  }
-
-  RbtreeNode<T>* RNext(RbtreeNode<T>* p_cur) {
-    return shm_rbtree_.RNext(p_cur);
-  }
-
-  const RbtreeNode<T>* RNext(const RbtreeNode<T>* p_cur)const {
-    return shm_rbtree_.RNext(p_cur);
+  ConstIterator REnd() const {
+    return ConstIterator(shm_rbtree_.REnd());
   }
 
   T* Minimum() {
@@ -115,7 +221,7 @@ class ShmMultiset {
     if (RbtreeFlag::OFFT_ERROR == min_offset) {
       return ShmBase::ShmFailed<T>();
     }
-    return &shm_rbtree_.Offset(min_offset)->data;
+    return &shm_rbtree_.ExtOffset(min_offset)->data;
   }
 
   const T* Minimum()const {
@@ -123,7 +229,7 @@ class ShmMultiset {
     if (RbtreeFlag::OFFT_ERROR == min_offset) {
       return ShmBase::ShmFailed<T>();
     }
-    return &shm_rbtree_.Offset(min_offset)->data;
+    return &shm_rbtree_.ExtOffset(min_offset)->data;
   }
 
   T* Maximum() {
@@ -131,7 +237,7 @@ class ShmMultiset {
     if (RbtreeFlag::OFFT_ERROR == max_offset) {
       return ShmBase::ShmFailed<T>();
     }
-    return &shm_rbtree_.Offset(max_offset)->data;
+    return &shm_rbtree_.ExtOffset(max_offset)->data;
   }
 
   const T* Maximum()const {
@@ -139,7 +245,7 @@ class ShmMultiset {
     if (RbtreeFlag::OFFT_ERROR == max_offset) {
       return ShmBase::ShmFailed<T>();
     }
-    return &shm_rbtree_.Offset(max_offset)->data;
+    return &shm_rbtree_.ExtOffset(max_offset)->data;
   }
 
   bool Clear() {
@@ -160,7 +266,7 @@ class ShmMultiset {
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<T>();
     }
-    return &shm_rbtree_.Offset(offset)->data;
+    return &shm_rbtree_.ExtOffset(offset)->data;
   }
 
   const T* Find(const T& data)const {
@@ -168,55 +274,31 @@ class ShmMultiset {
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<T>();
     }
-    return &shm_rbtree_.Offset(offset)->data;
+    return &shm_rbtree_.ExtOffset(offset)->data;
   }
 
-  RbtreeNode<T>* LowerBound(const T& data) {
-    off_t offset = shm_rbtree_.LowerBound(data);
-    if (RbtreeFlag::OFFT_ERROR == offset) {
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-    return shm_rbtree_.Offset(offset);
+  Iterator LowerBound(const T& data) {
+    return Iterator(shm_rbtree_.LowerBound(data));
   }
 
-  const RbtreeNode<T>* LowerBound(const T& data)const {
-    off_t offset = shm_rbtree_.LowerBound(data);
-    if (RbtreeFlag::OFFT_ERROR == offset) {
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-    return shm_rbtree_.Offset(offset);
+  ConstIterator LowerBound(const T& data) const {
+    return ConstIterator(shm_rbtree_.LowerBound(data));
   }
 
-  RbtreeNode<T>* UpperBound(const T& data) {
-    off_t offset = shm_rbtree_.UpperBound(data);
-    if (RbtreeFlag::OFFT_ERROR == offset) {
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-    return shm_rbtree_.Offset(offset);
+  Iterator UpperBound(const T& data) {
+    return Iterator(shm_rbtree_.UpperBound(data));
   }
 
-  const RbtreeNode<T>* UpperBound(const T& data)const {
-    off_t offset = shm_rbtree_.UpperBound(data);
-    if (RbtreeFlag::OFFT_ERROR == offset) {
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-    return shm_rbtree_.Offset(offset);
+  ConstIterator UpperBound(const T& data) const {
+    return ConstIterator(shm_rbtree_.UpperBound(data));
   }
 
-  RbtreeNode<T>* EqualRange(const T& data) {
-    off_t offset = shm_rbtree_.EqualRange(data);
-    if (RbtreeFlag::OFFT_ERROR == offset) {
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-    return shm_rbtree_.Offset(offset);
+  Iterator EqualRange(const T& data) {
+    return Iterator(shm_rbtree_.EqualRange(data));
   }
 
-  const RbtreeNode<T>* EqualRange(const T& data)const {
-    off_t offset = shm_rbtree_.EqualRange(data);
-    if (RbtreeFlag::OFFT_ERROR == offset) {
-      return ShmBase::ShmFailed<RbtreeNode<T> >();
-    }
-    return shm_rbtree_.Offset(offset);
+  ConstIterator EqualRange(const T& data) const {
+    return ConstIterator(shm_rbtree_.EqualRange(data));
   }
 
   bool ToDot(const std::string& filename,

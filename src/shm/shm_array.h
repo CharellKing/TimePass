@@ -26,7 +26,10 @@ struct ArrayHead {
 };
 
 struct ArrayBucket {
-  off_t front;
+  union {
+    off_t front;
+    off_t root;
+  };
   off_t size;
 };
 

@@ -83,6 +83,10 @@ class ShmList {
       return p_list_->ExtOffset(cur_offset_)->data;
     }
 
+    T* operator->() throw (int) {
+      return &*this;
+    }
+
     bool operator !=(const Iterator& iter) const {
       return p_list_ != iter.GetList() || cur_offset_ != iter.GetOffset();
     }
@@ -146,6 +150,10 @@ class ShmList {
       }
 
       return p_list_->ExtOffset(cur_offset_)->data;
+    }
+
+    const T* operator->()const throw (int) {
+      return &*this;
     }
 
     bool operator !=(const Iterator& iter) const {
