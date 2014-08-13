@@ -1,23 +1,11 @@
-/*
- * shm_hashlist.h
- *
- *  Created on: 2014年8月6日
- *      Author: root
+/* COPYRIGHT:   Copyright 2014 CharellkingQu
+ * LICENCE:     GPL
+ * AUTHOR:      CharellkingQu
+ * DATE:        2014-08-13
  */
 
 #ifndef _SHM_SHM_HASHLIST_H_
 #define _SHM_SHM_HASHLIST_H_
-
-
-/* COPYRIGHT:   Copyright 2014 CharellkingQu
- * LICENCE:     GPL
- * AUTHOR:      CharellkingQu
- * DATE:        2014-07-27
- */
-
-#ifndef _SHM_SHM_LIST_H_
-
-#define _SHM_SHM_LIST_H_
 
 #include <errno.h>
 
@@ -25,12 +13,17 @@
 
 #include <string>
 
-#include "shm/shm_array.h"
+#include "shm/shm_list.h"
+#include "shm/shm_hash.h"
 
 namespace TimePass {
-template <typename EXTEND>
-struct HashListHead {
-  HashListHead(): capacity(0), size(0), bucket_size(0), free_stack(-1) {
+template<typename EXTEND>
+struct HashlistHead {
+  HashlistHead()
+      : capacity(0),
+        size(0),
+        bucket_size(0),
+        free_stack(-1) {
   }
 
   off_t capacity;
@@ -41,28 +34,166 @@ struct HashListHead {
   EXTEND extend;
 };
 
-template <typename T>
-struct HashlistNode {
-  off_t bucket;
-  ListNode<T>* p_data;
-};
-
-template <typename T, typename EXTEND = off_t>
+template<typename T, int (*Compare)(const T& a, const T& b) = T::Compare,
+    off_t HashFunc(const T& a) = T::HashFunc, typename EXTEND = char>
 class ShmHashlist {
  public:
-  explicit ShmHashlist(const char* name):shm_array_(name), p_head_(NULL),
-                                         p_bucket_(NULL), p_ext_(NULL), p_data_(NULL){
+  class Iterator;
+  class ConstIterator;
+  class Iterator {
+   public:
+    friend class ShmHashlist;
+    Iterator()
+        : p_hashlist_(NULL),
+          bucket_(-1),
+          cur_offset_(-1) {
+    }
+
+    Iterator& operator ++() {
+      p_hashlist_->ExtNext(bucket_, cur_offset_);
+      return *this;
+    }
+
+    Iterator operator ++(int) {
+      Iterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    T& operator*() throw (int) {
+      if (NULL == p_hashlist_ || bucket_ < 0
+          || bucket_ >= p_hashlist_->Head()->bucket_size || cur_offset_ < 0
+          || cur_offset_ >= p_hashlist_->Capacity()) {
+        throw ErrorNo::PTR_NULL;
+      }
+
+      return p_hashlist_->ExtOffset(cur_offset_)->data;
+    }
+
+    T* operator->() throw (int) {
+      return &(**this);
+    }
+
+    bool operator !=(const Iterator& iter) const {
+      return p_hashlist_ != iter.GetList() || cur_offset_ != iter.GetOffset()
+          || bucket_ != iter.GetBucket();
+    }
+
+    bool operator !=(const ConstIterator& iter) const {
+      return p_hashlist_ != iter.GetList() || cur_offset_ != iter.GetOffset()
+          || bucket_ != iter.GetBucket();
+    }
+
+    const ShmHashlist<T, Compare, HashFunc, EXTEND>* GetList() const {
+      return p_hashlist_;
+    }
+
+    off_t GetBucket() const {
+      return bucket_;
+    }
+
+    off_t GetOffset() const {
+      return cur_offset_;
+    }
+
+   private:
+    Iterator(ShmHashlist<T, Compare, HashFunc, EXTEND>* p_hashlist, off_t bucket,
+             off_t cur_offset)
+        : p_hashlist_(p_hashlist),
+          bucket_(bucket),
+          cur_offset_(cur_offset) {
+    }
+
+    ShmHashlist<T, Compare, HashFunc, EXTEND>* p_hashlist_;
+    off_t bucket_;
+    off_t cur_offset_;
+  };
+
+  class ConstIterator {
+   public:
+    friend class ShmHashlist;
+    ConstIterator()
+        : p_hashlist_(NULL),
+          bucket_(-1),
+          cur_offset_(-1) {
+    }
+
+    ConstIterator& operator ++() {
+      p_hashlist_->ExtNext(bucket_, cur_offset_);
+      return *this;
+    }
+
+    ConstIterator operator ++(int) {
+      ConstIterator iter(*this);
+      ++(*this);
+      return iter;
+    }
+
+    const T& operator*() throw (int) {
+      if (NULL == p_hashlist_ || cur_offset_ < 0
+          || cur_offset_ >= p_hashlist_->Capacity()) {
+        throw ErrorNo::PTR_NULL;
+      }
+
+      return p_hashlist_->ExtOffset(cur_offset_)->data;
+    }
+
+    const T* operator->()const throw (int) {
+      return &*this;
+    }
+
+    bool operator !=(const ConstIterator& iter) const {
+      return p_hashlist_ != iter.GetList() || cur_offset_ != iter.GetOffset()
+          || bucket_ != iter.GetBucket();
+    }
+
+    bool operator !=(const Iterator& iter) const {
+      return p_hashlist_ != iter.GetList() || cur_offset_ != iter.GetOffset()
+          || bucket_ != iter.GetBucket();
+    }
+
+    const ShmHashlist<T, Compare, HashFunc, EXTEND>* GetList() const {
+      return p_hashlist_;
+    }
+
+    off_t GetBucket() const {
+      return bucket_;
+    }
+
+    off_t GetOffset() const {
+      return cur_offset_;
+    }
+
+   private:
+    ConstIterator(const ShmHashlist<T, Compare, HashFunc, EXTEND>* p_hashlist, off_t bucket,
+                  off_t cur_offset)
+        : p_hashlist_(p_hashlist),
+          bucket_(bucket),
+          cur_offset_(cur_offset) {
+    }
+
+    const ShmHashlist<T, Compare, HashFunc, EXTEND>* p_hashlist_;
+    off_t bucket_;
+    off_t cur_offset_;
+  };
+
+  explicit ShmHashlist(const char* name)
+      : shm_array_(name),
+        p_head_(NULL),
+        p_bucket_(NULL),
+        p_ext_(NULL),
+        p_data_(NULL) {
   }
 
   bool Create(off_t capacity) {
-    off_t tmp = (off_t)capacity / Hash::factor;
+    off_t tmp = static_cast<off_t>(capacity / Hash::factor);
     off_t bucket_size = 1;
 
-    while (bucket_size < tmp) { /*保证bucket_size为2^n*/
-        bucket_size <<= 1;
+    while (bucket_size < tmp) { /*bucket_size 2^n*/
+      bucket_size <<= 1;
     }
 
-    if (false == shm_array_.RawCreate(capacity, bucket_size)) {
+    if (false == shm_array_.ExtCreate(capacity, bucket_size)) {
       return false;
     }
 
@@ -76,7 +207,7 @@ class ShmHashlist {
     p_bucket_ = shm_array_.Bucket();
 
     p_ext_ = &p_head_->extend;
-    p_data_ = shm_array_.Begin();
+    p_data_ = &(*shm_array_.Begin());
 
     return true;
   }
@@ -92,8 +223,8 @@ class ShmHashlist {
 
     p_head_ = shm_array_.GetExtend();
     p_bucket_ = shm_array_.Bucket();
-    p_ext_  = &p_head_->extend;
-    p_data_ = shm_array_.Begin();
+    p_ext_ = &p_head_->extend;
+    p_data_ = &(*shm_array_.Begin());
     return true;
   }
 
@@ -101,11 +232,11 @@ class ShmHashlist {
     return shm_array_.Close();
   }
 
-  bool IsOpen()const {
+  bool IsOpen() const {
     return NULL != p_head_;
   }
 
-  off_t Capacity()const  {
+  off_t Capacity() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -113,7 +244,7 @@ class ShmHashlist {
     return p_head_->capacity;
   }
 
-  off_t Size()const {
+  off_t Size() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -122,7 +253,7 @@ class ShmHashlist {
     return p_head_->size;
   }
 
-  off_t TotalBytes()const {
+  off_t TotalBytes() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
@@ -131,23 +262,23 @@ class ShmHashlist {
     return shm_array_.TotalBytes();
   }
 
-  off_t UsedBytes()const {
+  off_t UsedBytes() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return -1;
     }
 
-    return shm_array_.NonDataBytes() + sizeof(ListNode<T>) * p_head_->size;
+    return shm_array_.ExtHeadBytes() + sizeof(ListNode<T> ) * p_head_->size;
   }
 
-  const char* Name()const {
+  const char* Name() const {
     return shm_array_.Name();
   }
 
-  const ListHead<EXTEND>* Head()const {
+  const HashlistHead<EXTEND>* Head() const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListHead<EXTEND> >();
+      return ShmBase::ShmFailed<HashlistHead<EXTEND> >();
     }
     return p_head_;
   }
@@ -170,159 +301,20 @@ class ShmHashlist {
     return p_ext_;
   }
 
-  HashlistNode<T> Begin() {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    off_t i = 0;
-    for(; i < p_head_->bucket_size; ++i) {
-      if ((p_bucket_ + i)->size > 0) {
-        break;
-      }
-    }
-
-    if (i == p_head_->bucket_size) {
-      return NULL;
-    }
-
-    HashlistNode<T> node();
-    p_bucket_[i]->front;
-    return p_data_ + p_head_->front;
+  Iterator Begin() {
+    off_t bucket = -1, offset = -1;
+    InnerBegin(bucket, offset);
+    return Iterator(this, bucket, offset);
   }
 
-  const ListNode<T>* Begin()const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (-1 == p_head_->front) {
-      return NULL;
-    }
-
-    return p_data_ + p_head_->front;
+  ConstIterator Begin() const {
+    off_t bucket = -1, offset = -1;
+    InnerBegin(bucket, offset);
+    return ConstIterator(this, bucket, offset);
   }
 
-  const ListNode<T>* End() {
-    return NULL;
-  }
-
-  ListNode<T>* Next(ListNode<T>* p_cur) {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (NULL == p_cur) {
-      Error::SetErrno(ErrorNo::PTR_NULL);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (-1 == p_cur->next) {
-      return NULL;
-    }
-    return p_data_ + p_cur->next;
-  }
-
-  const ListNode<T>* Next(const ListNode<T>* p_cur)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (NULL == p_cur) {
-      Error::SetErrno(ErrorNo::PTR_NULL);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (-1 == p_cur->next) {
-      return NULL;
-    }
-    return p_data_ + p_cur->next;
-  }
-
-  ListNode<T>* At(off_t index) {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (index < 0 || index >= p_head_->size) {
-      Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return NULL;
-    }
-
-    return p_data_ + RawAt(index);
-  }
-
-  const ListNode<T>* At(off_t index)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (index < 0 || index >= p_head_->size) {
-      Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return NULL;
-    }
-
-    return p_data_ + RawAt(index);
-  }
-
-  off_t Index(const ListNode<T>* p_data)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return -1;
-    }
-
-    if (NULL == p_data) {
-      Error::SetErrno(ErrorNo::PTR_NULL);
-      return -1;
-    }
-
-    if (p_data < p_data_ || p_data > (p_data_ + p_head_->capacity)) {
-      Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return -1;
-    }
-
-    off_t cur_offset = p_head_->front;
-    off_t index = 0;
-    while (cur_offset >= 0) {
-      if (p_data == (p_data_ + cur_offset)) {
-        break;
-      }
-      cur_offset = (p_data_ + cur_offset)->next;
-      ++index;
-    }
-
-    if (cur_offset < 0) {
-      Error::SetErrno(ErrorNo::SHM_NOT_FOUND);
-      return -1;
-    }
-
-    return index;
-  }
-
-  off_t Offset(const ListNode<T>* p_data)const {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return -1;
-    }
-
-    if (NULL == p_data) {
-      Error::SetErrno(ErrorNo::PTR_NULL);
-      return -1;
-    }
-
-    off_t offset = p_data - p_data_;
-    if (offset < 0 || offset >= p_head_->size) {
-      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
-      return -1;
-    }
-
-    return offset;
+  ConstIterator End() const {
+    return ConstIterator(this, -1, -1);
   }
 
   bool Clear() {
@@ -331,214 +323,97 @@ class ShmHashlist {
       return false;
     }
 
-    p_head_->front = -1;
-    p_head_->back = -1;
     p_head_->free_stack = -1;
     p_head_->size = 0;
+
+    for (off_t i = 0; i < p_head_->bucket_size; ++i) {
+      p_bucket_[i].front = -1;
+      p_bucket_[i].size = 0;
+    }
     return true;
   }
 
-  ListNode<T>* PushFront(const T& data) {
+  bool Insert(const T& data) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
+      return false;
+    }
+
+    off_t bucket = HashFunc(data) & (p_head_->bucket_size - 1);
+
+    if (InnerFind(data, bucket) >= 0) {
+      Error::SetErrno(ErrorNo::SHM_KEY_EXISTED);
+      return false;
     }
 
     off_t free_offset = GetFree();
     if (-1 == free_offset) {
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-
-    (p_data_ + free_offset)->data = data;
-    (p_data_ + free_offset)->next = p_head_->front;
-    p_head_->front = free_offset;
-    if (-1 == p_head_->back) {
-      p_head_->back = p_head_->front;
-    }
-    ++p_head_->size;
-    return p_data_ + free_offset;
-  }
-
-  ListNode<T>* PushBack(const T& data) {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    off_t free_offset = GetFree();
-    if (-1 == free_offset) {
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    (p_data_ + free_offset)->data = data;
-    (p_data_ + free_offset)->next = -1;
-
-    if (-1 == p_head_->back) {
-      p_head_->front = p_head_->back = free_offset;
-    } else {
-      (p_data_ + p_head_->back)->next = free_offset;
-      p_head_->back = free_offset;
-    }
-    ++p_head_->size;
-    return p_data_ + free_offset;
-  }
-
-  bool PopFront(T* p_remove) {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
     }
 
-    if (p_head_->size <= 0) {
-      Error::SetErrno(ErrorNo::SHM_LIST_EMPTY);
-      return false;
-    }
+    (p_data_ + free_offset)->data = data;
+    (p_data_ + free_offset)->next = p_bucket_[bucket].front;
 
-    SetFree(p_head_->front);
-    if (p_remove) {
-      *p_remove = (p_data_ + p_head_->front)->data;
-    }
-    if (p_head_->back == p_head_->front) {
-      p_head_->back = p_head_->front = -1;
-    } else {
-      p_head_->front = (p_data_ + p_head_->front)->next;
-    }
+    p_bucket_[bucket].front = free_offset;
+    ++p_bucket_[bucket].size;
 
-    --p_head_->size;
+    ++p_head_->size;
+
     return true;
   }
 
-  bool PopBack(T* p_remove) {
+  bool Remove(const T& data, T* p_remove) {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
     }
 
-    if (p_head_->size <= 0) {
-      Error::SetErrno(ErrorNo::SHM_LIST_EMPTY);
-      return false;
-    }
+    off_t bucket = HashFunc(data) & (p_head_->bucket_size - 1);
 
-    SetFree(p_head_->back);
-    if (p_remove) {
-      *p_remove = (p_data_ + p_head_->back)->data;
-    }
+    off_t cur_offset = p_bucket_[bucket].front, prior_offset = p_bucket_[bucket]
+        .front;
 
-    if (p_head_->back == p_head_->front) {
-      p_head_->back = p_head_->front = -1;
-    } else {
-      off_t back = p_head_->front;
-      ListNode<T>* p_cur = p_data_ + p_head_->front;
-      while (p_head_->back == p_cur->next) {
-        p_cur = p_data_ + p_cur->next;
-        back = p_cur->next;
+    while (cur_offset >= 0) {
+      if (0 == Compare((p_data_ + cur_offset)->data, data)) {
+        if (p_remove) {
+          *p_remove = (p_data_ + cur_offset)->data;
+        }
+
+        if (cur_offset == p_bucket_[bucket].front) {
+          p_bucket_[bucket].front = (p_data_ + cur_offset)->next;
+        } else {
+          (p_data_ + prior_offset)->next = (p_data_ + cur_offset)->next;
+        }
+
+        SetFree(cur_offset);
+
+        --p_bucket_[bucket].size;
+        --p_head_->size;
       }
-      p_cur->next = -1;
-      p_head_->back = back;
     }
-
-    --p_head_->size;
     return true;
   }
 
-  ListNode<T>* Front() {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
+  ListNode<T>* Find(const T& data) {
+    off_t bucket = HashFunc(data) & (p_head_->bucket_size - 1);
+    off_t offset = InnerFind(data, bucket);
+    if (offset < 0) {
+      return NULL;
     }
-
-    if (p_head_->size <= 0) {
-      Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    return p_data_ + p_head_->front;
+    return p_data_ + offset;
   }
 
-  ListNode<T>* Back() {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
+  const ListNode<T>* Find(const T& data) const {
+    off_t bucket = HashFunc(data) & (p_head_->bucket_size - 1);
+    off_t offset = InnerFind(data, bucket);
+    if (offset < 0) {
+      return NULL;
     }
-
-    if (p_head_->size <= 0) {
-      Error::SetErrno(ErrorNo::SHM_IS_EMPTY);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    return p_data_ + p_head_->back;
-  }
-
-  ListNode<T>* Insert(const T& data, off_t index) {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (index < 0 || index > p_head_->size) {
-      Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-    if (0 == index) {
-      return PushFront(data);
-    }
-
-    if (p_head_->size == index) {
-      return PushBack(data);
-    }
-
-
-    off_t free_offset = GetFree();
-    if (-1 == free_offset) {
-      return ShmBase::ShmFailed<ListNode<T> >();
-    }
-
-
-    off_t prior = RawAt(index - 1);
-
-    (p_data_ + free_offset)->data = data;
-    (p_data_ + free_offset)->next = (p_data_ + prior)->next;
-    (p_data_ + prior)->next = free_offset;
-
-    ++p_head_->size;
-    return p_data_ + free_offset;
-  }
-
-  bool Remove(off_t index, T* p_remove) {
-    if (NULL == p_head_) {
-      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
-      return false;
-    }
-
-    if (index <0 || index >= p_head_->size) {
-      Error::SetErrno(ErrorNo::SHM_INDEX_EXCEED);
-      return false;
-    }
-
-    if (0 == index) {
-      return PopFront(p_remove);
-    }
-
-    if (p_head_->size - 1 == index) {
-      return PopBack(p_remove);
-    }
-
-    off_t prior_offset = RawAt(index - 1);
-
-    ListNode<T>* p_prior = p_data_ + prior_offset;
-    SetFree(p_prior->next);
-    if (p_remove) {
-      *p_remove = (p_data_ + p_prior->next)->data;
-    }
-    p_prior->next = (p_data_ + p_prior->next)->next;
-    --p_head_->size;
-    return true;
+    return p_data_ + offset;
   }
 
   bool ToDot(const std::string& filename,
-            const std::string (*Label)(const T& value))const {
+             const std::string (*Label)(const T& value)) const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return false;
@@ -546,35 +421,21 @@ class ShmHashlist {
 
     FILE* fp = fopen(filename.c_str(), "wb");
     if (NULL == fp) {
-      Error::SetErrno(errno);
       return false;
     }
 
-    std::string str;
-    const ListNode<T> *p_cur = p_data_ + p_head_->front;
-    off_t cur = p_head_->front;
-    off_t prior = -1;
-    fprintf(fp, "digraph G {\n");
-    if (-1 != p_head_->front) {
-        fprintf(fp, "rankdir=LR;\n");
-        fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\n",
-                p_head_->front, Label(p_cur->data).c_str());
-        prior = cur;
-        cur = p_cur->next;
-        p_cur = p_data_ + cur;
-    }
+    /*draw bucket*/
+    fprintf(fp, "digraph G {\nrankdir=LR;\n ");
+    DrawBucket(fp);
 
-    while (-1 != cur) {
-        fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\nNode%ld->Node%ld\n",
-                cur, Label(p_cur->data).c_str(), prior, cur);
-        prior = cur;
-        cur = p_cur->next;
-        p_cur = p_data_ + cur;
+    for (off_t i = 0; i < p_head_->bucket_size; ++i) {
+      DrawList(fp, i, Label);
     }
 
     fprintf(fp, "}\n");
     fclose(fp);
     return true;
+
   }
 
   bool Commit(bool is_sync) {
@@ -586,6 +447,59 @@ class ShmHashlist {
     return shm_array_.Commit(is_sync);
   }
 
+  ListNode<T>* ExtOffset(off_t offset) {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmBase::ShmFailed<ListNode<T> >();
+    }
+
+    if (offset < 0 || offset >= p_head_->capacity) {
+      return NULL;
+    }
+
+    return p_data_ + offset;
+  }
+
+  const ListNode<T>* ExtOffset(off_t offset) const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmBase::ShmFailed<ListNode<T> >();
+    }
+
+    if (offset < 0 || offset >= p_head_->capacity) {
+      Error::SetErrno(ErrorNo::SHM_OFFSET_EXCEED);
+      return ShmBase::ShmFailed<ListNode<T> >();
+    }
+
+    return p_data_ + offset;
+  }
+
+  void ExtNext(off_t& bucket, off_t& offset) const {
+    if (NULL == p_head_) {
+      bucket = -1;
+      offset = -1;
+    }
+
+    if (offset < 0 || offset >= p_head_->capacity) {
+      bucket = -1;
+      offset = -1;
+    }
+
+    ListNode<T>* p_node = p_data_ + offset;
+    offset = p_node->next;
+    if (offset < 0) {
+      ++bucket;
+      while (bucket < p_head_->bucket_size && p_bucket_[bucket].front < 0) {
+        ++bucket;
+      }
+    }
+
+    if (bucket < p_head_->bucket_size) {
+      offset = p_bucket_[bucket].front;
+    } else {
+      bucket = -1;
+    }
+  }
 
  private:
   off_t GetFree() {
@@ -593,14 +507,12 @@ class ShmHashlist {
       off_t ret = p_head_->free_stack;
       p_head_->free_stack = (p_data_ + p_head_->free_stack)->next;
       return ret;
-    } else {
-      if (p_head_->size >= p_head_->capacity) {
-        if (false == Resize(p_head_->capacity << 1)) {
-          return -1;
-        }
-      }
+    } else if (p_head_->size < p_head_->capacity) {
       return p_head_->size;
     }
+
+    Error::SetErrno(ErrorNo::SHM_HASHLIST_FULL);
+    return -1;
   }
 
   void SetFree(off_t offset) {
@@ -611,7 +523,7 @@ class ShmHashlist {
     p_head_->free_stack = offset;
   }
 
-  off_t RawAt(off_t index)const {
+  off_t InnerAt(off_t index) const {
     ListNode<T>* p_cur = p_data_ + p_head_->front;
     off_t cur_offset = p_head_->front;
     while (index > 0) {
@@ -622,13 +534,83 @@ class ShmHashlist {
     return cur_offset;
   }
 
-  ShmArray<ListNode<T>, HashListHead<EXTEND> > shm_array_;
-  HashListHead<EXTEND>* p_head_;
-  ArrayBucket*      p_bucket_;
-  EXTEND*   p_ext_;
+  void InnerBegin(off_t& bucket, off_t& offset) const {
+    bucket = -1, offset = -1;
+    if (p_head_) {
+      for (bucket = 0; bucket < p_head_->bucket_size; ++bucket) {
+        if (p_bucket_[bucket].front >= 0) {
+          break;
+        }
+      }
+
+      if (bucket == p_head_->bucket_size) {
+        bucket = -1;
+      }
+
+      if (-1 != bucket) {
+        offset = p_bucket_[bucket].front;
+      }
+    }
+  }
+
+  off_t InnerFind(const T& data, off_t bucket) {
+    off_t offset = p_bucket_[bucket].front;
+    while (offset >= 0) {
+      if (0 == Compare((p_data_ + offset)->data, data)) {
+        return offset;
+      }
+      offset = (p_data_ + offset)->next;
+    }
+    return -1;
+  }
+
+  void DrawBucket(FILE* fp)const {
+    if (p_head_->bucket_size > 0) {
+      fprintf(fp, "bucket [shape=record, label=\"<f0> 0");
+    }
+    for (off_t i = 1; i < p_head_->bucket_size; ++i) {
+      fprintf(fp, "|<f%ld>%ld", i, i);
+    }
+
+    if (p_head_->bucket_size > 0) {
+      fprintf(fp, "\"];\n");
+    }
+  }
+
+  void DrawList(FILE* fp, off_t bucket,
+                const std::string (*Label)(const T& value))const {
+    if (p_bucket_[bucket].front >= 0) {
+      off_t cur_offset = p_bucket_[bucket].front;
+      if (cur_offset >= 0) {
+        fprintf(fp, "rankdir=LR;\n");
+        fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\n", cur_offset,
+                Label((p_data_ + cur_offset)->data).c_str());
+      }
+
+      off_t prior_offset = cur_offset;
+      cur_offset = (p_data_ + cur_offset)->next;
+      while (cur_offset >= 0) {
+
+        fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\nNode%ld->Node%ld\n",
+                cur_offset, Label((p_data_ + cur_offset)->data).c_str(), prior_offset,
+                cur_offset);
+        prior_offset = cur_offset;
+        cur_offset = (p_data_ + cur_offset)->next;
+      }
+
+      /*connect bucket to list*/
+      fprintf(fp, "bucket:f%ld->Node%ld\n", bucket, p_bucket_[bucket].front);
+    }
+
+  }
+
+  ShmArray<ListNode<T>, HashlistHead<EXTEND> > shm_array_;
+  HashlistHead<EXTEND>* p_head_;
+  ArrayBucket* p_bucket_;
+  EXTEND* p_ext_;
   ListNode<T>* p_data_;
 };
-};
-
+}
+;
 
 #endif /* _SHM_SHM_HASHLIST_H_ */

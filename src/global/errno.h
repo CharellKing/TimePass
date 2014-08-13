@@ -22,6 +22,7 @@ const int SHM_LIST_EMPTY           = 19881008; /*list is empty*/
 const int SHM_OFFSET_EXCEED        = 19881009; /*offset is exceed*/
 const int SHM_KEY_EXISTED          = 19881010; /*key is existed*/
 const int SHM_BUCKET_NEGTIVE       = 19881011; /*bucket >= 0 */
+const int SHM_HASHLIST_FULL        = 19881012; /*hash list is full*/
 
 const int PTR_NULL                 = 20001001; /*pointer null*/
 }; /*namespace ErrorNo*/
