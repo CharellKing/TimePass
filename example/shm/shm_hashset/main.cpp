@@ -14,8 +14,13 @@
 
 const char* t_month[] = { "January", "February", "March", "April", "May",
     "June", "July", "August", "September", "October", "November", "December" };
+
 int len = sizeof(t_month) / sizeof(char*);
+
+const char* SHM_FILE = "shm_hashset";
+
 const int n_month[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+
 struct Month {
   Month(const char* t_month, int n_month)
       : n_month(n_month) {
@@ -30,9 +35,11 @@ struct Month {
   char t_month[16];
   int n_month;
 };
+
 const std::string Label(const Month& a) {
   return std::string(a.t_month);
 }
+
 off_t Convert(const char* digit) {
   int ret = -1;
   if (sizeof(off_t) == sizeof(int32_t)) {
@@ -52,19 +59,19 @@ void ToDotPs(const char* name, const TimePass::ShmHashset<Month>* p_l) {
   system(cmd);
 }
 void Create(off_t len) {
-  TimePass::ShmHashset<Month> months("/tmp/hashset");
+  TimePass::ShmHashset<Month> months(SHM_FILE);
   if (false == months.Create(len)) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
   }
 }
 void Destroy() {
-  TimePass::ShmHashset<Month> months("/tmp/hashset");
+  TimePass::ShmHashset<Month> months(SHM_FILE);
   if (false == months.Destroy()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
   }
 }
 void Insert() {
-  TimePass::ShmHashset<Month> months("/tmp/hashset");
+  TimePass::ShmHashset<Month> months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
@@ -73,8 +80,9 @@ void Insert() {
     months.Insert(Month(t_month[i], n_month[i]));
   }
 }
+
 void Remove() {
-  TimePass::ShmHashset<Month> months("/tmp/hashset");
+  TimePass::ShmHashset<Month> months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
@@ -86,35 +94,58 @@ void Remove() {
     ToDotPs(name, &months);
   }
 }
+
 void Show() {
-  TimePass::ShmHashset<Month> months("/tmp/hashset");
+  TimePass::ShmHashset<Month> months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
   }
-  ToDotPs("hashset", &months);
+  ToDotPs(SHM_FILE, &months);
 }
 void Clear() {
-  TimePass::ShmHashset<Month> months("/tmp/hashset");
+  TimePass::ShmHashset<Month> months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
   }
   months.Clear();
 }
+
+void About() {
+  TimePass::ShmHashset<Month> months(SHM_FILE);
+  if (false == months.Open()) {
+    printf("errno = %d\n", TimePass::Error::GetErrno());
+    return;
+  }
+
+  printf("capacity = %ld, size = %ld, TotalBytes = %ld, UsedBytes = %ld",
+         months.Capacity(), months.Size(),
+         months.TotalBytes(), months.UsedBytes());
+}
+
+void Usage() {
+  printf("usage:\n"
+         "-a for info\n"
+         "-h for help\n"
+         "-c [capacity] for create\n"
+         "-d for destroy\n"
+         "-i for write\n"
+         "-r for remove\n"
+         "-s for dot\n"
+         "-e for clear\n");
+}
+
 int main(int argc, char** argv) {
-  int result = getopt(argc, argv, "eirdsc:");
+  int result = getopt(argc, argv, "aheirdsc:");
   if (-1 == result) {
-    printf("usage:\n"
-           "-c [capacity] for create\n"
-           "-d for destroy\n"
-           "-i for write\n"
-           "-r for remove\n"
-           "-s for dot\n"
-           "-e for clear\n");
+    Usage();
     return 0;
   }
   switch (result) {
+    case 'a':
+      About();
+      break;
     case 'c':
       Create(Convert(optarg));
       break;
@@ -132,6 +163,9 @@ int main(int argc, char** argv) {
       break;
     case 'e':
       Clear();
+      break;
+    case 'h':
+      Usage();
       break;
   }
   return 0;
