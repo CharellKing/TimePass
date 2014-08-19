@@ -148,7 +148,7 @@ void About() {
     return;
   }
 
-  printf("capacity = %ld size = %ld, total_size = %ld used_size = %ld",
+  printf("capacity = %ld size = %ld, total_bytes = %ld used_bytes = %ld",
          numbers.Capacity(), numbers.Size(), numbers.TotalBytes(),
          numbers.UsedBytes());
 
@@ -277,4 +277,3 @@ int main(int argc, char** argv) {
   }
   return 0;
 }
-
