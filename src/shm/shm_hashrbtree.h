@@ -234,7 +234,7 @@ class ShmHashrbtree {
 
   Iterator Begin() {
     off_t bucket = -1, offset = -1;
-    ExtBegin(bucket, offset);
+    InnerBegin(bucket, offset);
     return Iterator(this, bucket, offset);
   }
 
@@ -270,7 +270,7 @@ class ShmHashrbtree {
       return false;
     }
 
-    off_t bucket = HashFunc(data) & (p_head_->bucket_size - 1);
+    off_t bucket = HashFunc(data) & (BucketSize() - 1);
     ArrayBucket* p_bucket = shm_rbtree_.Bucket();
     return shm_rbtree_.ExtRemove(&p_bucket[bucket].root, data, p_remove);
   }
@@ -282,9 +282,9 @@ class ShmHashrbtree {
       return false;
     }
 
-    off_t bucket = HashFunc(data) & (p_head_->bucket_size - 1);
+    off_t bucket = HashFunc(data) & (BucketSize() - 1);
     ArrayBucket* p_bucket = shm_rbtree_.Bucket();
-    return shm_rbtree_.ExtFind(p_bucket_[bucket], data);
+    return shm_rbtree_.ExtFind(p_bucket[bucket], data);
   }
 
   /* convert the data structure to dot language script*/
@@ -303,9 +303,12 @@ class ShmHashrbtree {
 
     fprintf(fp, "digraph G {\n");
     DrawBucket(fp);
-    ArrayBucket* p_bucket = shm_rbtree_.Bucket();
-    for(int i = 0; i < BucketSize(); ++i) {
-      shm_rbtree_.ExtTraverse(fp, p_bucket_[i].root, ToString);
+    const ArrayBucket* p_bucket = shm_rbtree_.Bucket();
+    for (off_t i = 0; i < BucketSize(); ++i) {
+      shm_rbtree_.ExtTraverse(fp, p_bucket[i].root, ToString);
+      if (p_bucket[i].root >= 0) {
+        fprintf(fp, "bucket:f%ld->%ld\n", i, p_bucket[i].root);
+      }
     }
     fprintf(fp, "}\n");
     fclose(fp);
@@ -352,6 +355,7 @@ class ShmHashrbtree {
       }
     }
   }
+
  private:
   void InnerBegin(off_t& bucket, off_t& offset) const {
     bucket = -1, offset = -1;
@@ -362,13 +366,25 @@ class ShmHashrbtree {
       }
     }
 
-      if (bucket == BucketSize()) {
-        bucket = -1;
-      }
+    if (bucket == BucketSize()) {
+      bucket = -1;
+    }
 
-      if (-1 != bucket) {
-        offset = p_bucket[bucket].root;
-      }
+    if (-1 != bucket) {
+      offset = p_bucket[bucket].root;
+    }
+  }
+
+  void DrawBucket(FILE* fp)const {
+    if (BucketSize() > 0) {
+      fprintf(fp, "bucket [shape=record, label=\"<f0> 0");
+    }
+    for (off_t i = 1; i < BucketSize(); ++i) {
+      fprintf(fp, "|<f%ld>%ld", i, i);
+    }
+
+    if (BucketSize() > 0) {
+      fprintf(fp, "\"];\n");
     }
   }
 
