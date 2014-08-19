@@ -437,7 +437,7 @@ class ShmRbtree {
     p_head_->free_stack = -1;
 
     if (p_bucket_) {
-      for(int i = 0; i < BucketSize(); ++i) {
+      for (int i = 0; i < BucketSize(); ++i) {
         p_bucket_[i].root = -1;
         p_bucket_[i].size = 0;
       }
@@ -625,6 +625,14 @@ class ShmRbtree {
   }
 
   ArrayBucket* Bucket() {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return NULL;
+    }
+    return p_bucket_;
+  }
+
+  const ArrayBucket* Bucket()const {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return NULL;
