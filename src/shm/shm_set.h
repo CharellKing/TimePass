@@ -263,7 +263,7 @@ class ShmSet {
   }
 
   T* Find(const T& data) {
-    off_t offset = shm_rbtree_.FindNode(data);
+    off_t offset = shm_rbtree_.Find(data);
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<T>();
     }
@@ -271,7 +271,7 @@ class ShmSet {
   }
 
   const T* Find(const T& data) const {
-    off_t offset = shm_rbtree_.FindNode(data);
+    off_t offset = shm_rbtree_.Find(data);
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<T>();
     }
@@ -314,7 +314,6 @@ class ShmSet {
  private:
   ShmRbtree<T, Compare, EXTEND> shm_rbtree_;
 };
-}
-;
+};
 
 #endif /* SHM_SET_H_ */
