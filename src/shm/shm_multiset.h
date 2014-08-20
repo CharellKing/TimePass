@@ -262,7 +262,7 @@ class ShmMultiset {
   }
 
   T* Find(const T& data) {
-    off_t offset = shm_rbtree_.FindNode(data);
+    off_t offset = shm_rbtree_.Find(data);
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<T>();
     }
@@ -270,7 +270,7 @@ class ShmMultiset {
   }
 
   const T* Find(const T& data)const {
-    off_t offset = shm_rbtree_.FindNode(data);
+    off_t offset = shm_rbtree_.Find(data);
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<T>();
     }

@@ -130,11 +130,11 @@ class ShmHashlist {
     }
 
     const T& operator*() throw (int) {
-      if (NULL == p_hashlist_ || cur_offset_ < 0
-          || cur_offset_ >= p_hashlist_->Capacity()) {
+      if (NULL == p_hashlist_ || bucket_ < 0 ||
+          bucket_ >= p_hashlist_->Head()->bucket_size || cur_offset_ < 0 ||
+          cur_offset_ >= p_hashlist_->Capacity()) {
         throw ErrorNo::PTR_NULL;
       }
-
       return p_hashlist_->ExtOffset(cur_offset_)->data;
     }
 

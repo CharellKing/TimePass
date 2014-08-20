@@ -273,7 +273,7 @@ class ShmMap {
   }
 
   MAP_DATA* Find(const KEY& key) {
-    off_t offset = shm_rbtree_.FindNode(MAP_DATA(key));
+    off_t offset = shm_rbtree_.Find(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_DATA>();
     }
@@ -281,7 +281,7 @@ class ShmMap {
   }
 
   const MAP_DATA* Find(const KEY& key) const {
-    off_t offset = shm_rbtree_.FindNode(MAP_DATA(key));
+    off_t offset = shm_rbtree_.Find(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_DATA>();
     }
@@ -324,7 +324,6 @@ class ShmMap {
  private:
   SHM_RBTREE shm_rbtree_;
 };
-}
-;
+};
 
 #endif /* SHM_MAP_H_ */
