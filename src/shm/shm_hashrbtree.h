@@ -29,7 +29,7 @@ class ShmHashrbtree {
   class ConstIterator;
   class Iterator {
    public:
-    friend class ShmHashRbtree;
+    friend class ShmHashrbtree;
     Iterator():p_hashrbtree_(NULL), bucket_(-1), cur_offset_(-1) {
     }
 
@@ -47,7 +47,7 @@ class ShmHashrbtree {
 
     T& operator*() throw (int) {
       if (NULL == p_hashrbtree_ || bucket_ < 0 ||
-          bucket_ >= p_hashrbtree_->Head()->bucket_size ||
+          bucket_ >= p_hashrbtree_->BucketSize() ||
           cur_offset_ < 0 || cur_offset_ >= p_hashrbtree_->Capacity()) {
         throw ErrorNo::PTR_NULL;
       }
@@ -98,8 +98,12 @@ class ShmHashrbtree {
 
   class ConstIterator {
    public:
-    friend class ShmHashRbtree;
+    friend class ShmHashrbtree;
     ConstIterator() : p_hashrbtree_(NULL), bucket_(-1), cur_offset_(-1) {
+    }
+
+    ConstIterator(const Iterator& iter) : p_hashrbtree_(iter.GetHashrbtree()),
+        bucket_(iter.GetBucket()), cur_offset_(iter.GetOffset()) {
     }
 
     /*prefix*/
@@ -116,7 +120,7 @@ class ShmHashrbtree {
 
     const T& operator*()const throw (int) {
       if (NULL == p_hashrbtree_ || bucket_ < 0 ||
-          bucket_ >= p_hashrbtree_->Head()->bucket_size ||
+          bucket_ >= p_hashrbtree_->BucketSize() ||
           cur_offset_ < 0 || cur_offset_ >= p_hashrbtree_->Capacity()) {
         throw ErrorNo::PTR_NULL;
       }
@@ -125,7 +129,7 @@ class ShmHashrbtree {
     }
 
     const T* operator->()const throw (int) {
-      return &*this;
+      return &(**this);
     }
 
     bool operator !=(const Iterator& iter) const {
@@ -328,7 +332,7 @@ class ShmHashrbtree {
   }
 
   void ExtNext(off_t& bucket, off_t& offset) const {
-    const RbtreeHead<EXTEND>* p_head = shm_rbtree_->Head();
+    const RbtreeHead<EXTEND>* p_head = shm_rbtree_.Head();
     if (ShmBase::ShmFailed<RbtreeHead<EXTEND> >() == p_head) {
       bucket = -1;
       offset = -1;
@@ -339,11 +343,10 @@ class ShmHashrbtree {
       offset = -1;
     }
 
-    RbtreeNode<T>* p_node = shm_rbtree_.ExtOffset(offset);
-    offset = p_node->next;
+    offset = shm_rbtree_.ExtNext(offset);
     if (offset < 0) {
       ++bucket;
-      ArrayBucket* p_bucket = shm_rbtree_.Bucket();
+      const ArrayBucket* p_bucket = shm_rbtree_.Bucket();
       while (bucket < BucketSize() && p_bucket[bucket].root < 0) {
         ++bucket;
       }
@@ -359,7 +362,7 @@ class ShmHashrbtree {
  private:
   void InnerBegin(off_t& bucket, off_t& offset) const {
     bucket = -1, offset = -1;
-    ArrayBucket* p_bucket = shm_rbtree_.Bucket();
+    const ArrayBucket* p_bucket = shm_rbtree_.Bucket();
     for (bucket = 0; bucket < BucketSize(); ++bucket) {
       if (p_bucket[bucket].root >= 0) {
         break;

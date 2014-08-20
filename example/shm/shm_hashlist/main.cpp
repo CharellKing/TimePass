@@ -112,6 +112,13 @@ void Read() {
     ++iter;
   }
   putchar('\n');
+
+  TimePass::ShmHashlist<Month>::ConstIterator citer = months.Begin();
+  while (months.End() != citer) {
+    printf("<%s, %d> ", citer->t_month, citer->n_month);
+    ++citer;
+  }
+  putchar('\n');
 }
 
 void Show() {

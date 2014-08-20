@@ -112,6 +112,30 @@ void Clear() {
   months.Clear();
 }
 
+void Read() {
+  TimePass::ShmHashset<Month> months(SHM_FILE);
+  if (false == months.Open()) {
+    printf("errno = %d\n", TimePass::Error::GetErrno());
+    return;
+  }
+
+  printf("read:\n");
+  TimePass::ShmHashset<Month>::Iterator iter = months.Begin();
+  while (months.End() != iter) {
+    printf("<%s %d>, ", iter->t_month, iter->n_month);
+    ++iter;
+  }
+  putchar('\n');
+
+  printf("constread:\n");
+  TimePass::ShmHashset<Month>::ConstIterator citer = months.Begin();
+  while (months.End() != citer) {
+    printf("<%s %d>, ", citer->t_month, citer->n_month);
+    ++citer;
+  }
+  putchar('\n');
+}
+
 void About() {
   TimePass::ShmHashset<Month> months(SHM_FILE);
   if (false == months.Open()) {
@@ -124,9 +148,11 @@ void About() {
          months.TotalBytes(), months.UsedBytes());
 }
 
+
 void Usage() {
   printf("usage:\n"
          "-a for info\n"
+         "-b for read\n"
          "-h for help\n"
          "-c [capacity] for create\n"
          "-d for destroy\n"
@@ -137,7 +163,7 @@ void Usage() {
 }
 
 int main(int argc, char** argv) {
-  int result = getopt(argc, argv, "aheirdsc:");
+  int result = getopt(argc, argv, "baheirdsc:");
   if (-1 == result) {
     Usage();
     return 0;
@@ -145,6 +171,9 @@ int main(int argc, char** argv) {
   switch (result) {
     case 'a':
       About();
+      break;
+    case 'b':
+      Read();
       break;
     case 'c':
       Create(Convert(optarg));

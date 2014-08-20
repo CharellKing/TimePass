@@ -118,6 +118,10 @@ class ShmHashlist {
           cur_offset_(-1) {
     }
 
+    ConstIterator(const Iterator& iter):p_hashlist_(iter.GetList()),
+        bucket_(iter.GetBucket()), cur_offset_(iter.GetOffset()){
+    }
+
     ConstIterator& operator ++() {
       p_hashlist_->ExtNext(bucket_, cur_offset_);
       return *this;
@@ -129,7 +133,7 @@ class ShmHashlist {
       return iter;
     }
 
-    const T& operator*() throw (int) {
+    const T& operator*()const throw (int) {
       if (NULL == p_hashlist_ || bucket_ < 0 ||
           bucket_ >= p_hashlist_->Head()->bucket_size || cur_offset_ < 0 ||
           cur_offset_ >= p_hashlist_->Capacity()) {
@@ -139,7 +143,7 @@ class ShmHashlist {
     }
 
     const T* operator->()const throw (int) {
-      return &*this;
+      return &(**this);
     }
 
     bool operator !=(const ConstIterator& iter) const {

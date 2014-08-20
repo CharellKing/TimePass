@@ -74,6 +74,9 @@ class ShmHashset {
     ConstIterator() {
     }
 
+    ConstIterator(const Iterator& iter):iter_(iter.GetIter()){
+    }
+
     //prefix
     ConstIterator& operator ++() {
       ++iter_;
@@ -99,7 +102,7 @@ class ShmHashset {
     }
 
     bool operator !=(const ConstIterator& other) const {
-      return iter_ != other.GetIter;
+      return iter_ != other.GetIter();
     }
 
     const RAW_CONSTITER& GetIter() const {
@@ -136,27 +139,27 @@ class ShmHashset {
     return shm_hashrbtree_.Close();
   }
 
-  bool IsOpen() {
+  bool IsOpen()const {
     return shm_hashrbtree_.IsOpen();
   }
 
-  off_t Capacity() {
+  off_t Capacity()const {
     return shm_hashrbtree_.Capacity();
   }
 
-  off_t Size() {
+  off_t Size()const {
     return shm_hashrbtree_.Size();
   }
 
-  off_t TotalBytes() {
+  off_t TotalBytes()const {
     return shm_hashrbtree_.TotalBytes();
   }
 
-  off_t UsedBytes() {
+  off_t UsedBytes()const {
     return shm_hashrbtree_.UsedBytes();
   }
 
-  const char* Name() {
+  const char* Name()const {
     return shm_hashrbtree_.Name();
   }
 
