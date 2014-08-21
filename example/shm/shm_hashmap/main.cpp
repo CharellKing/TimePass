@@ -3,22 +3,25 @@
  * AUTHOR: CharellkingQu
  * DATE : 2014-04-17
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h> /*getopt*/
-#include<string>
+#include <string>
 #include "global/error.h"
 #include "shm/shm_hashmap.h"
 #include "shm/shm_hash.h"
 
 #define SHM_FILE "shm_hashmap"
 
-const char* t_month[] = { "January", "February", "March", "April", "May",
-    "June", "July", "August", "September", "October", "November", "December" };
-int len = sizeof(t_month) / sizeof(char*);
+const char* t_month[] = {"January", "February", "March", "April",
+                         "May", "June", "July", "August", "September",
+                         "October", "November", "December"};
 
 const int n_month[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+
+int len = sizeof(t_month) / sizeof(t_month[0]);
 
 struct MonthName {
   explicit MonthName(const char* t_month) {

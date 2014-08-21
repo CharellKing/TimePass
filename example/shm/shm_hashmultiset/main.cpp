@@ -12,14 +12,16 @@
 #include "shm/shm_hashmultiset.h"
 #include "shm/shm_hash.h"
 
-const char* t_month[] = { "January", "February", "March", "April", "May",
-    "June", "July", "August", "September", "October", "November", "February" };
 
-int len = sizeof(t_month) / sizeof(char*);
-
-const char* SHM_FILE = "shm_hashmultiset";
+const char* t_month[] = {"January", "February", "March", "April",
+                                  "May", "June", "July", "August", "September",
+                                  "October", "November", "February"};
 
 const int n_month[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 2 };
+
+const int len = sizeof(t_month) / sizeof(t_month[0]);
+
+const char* SHM_FILE = "shm_hashmultiset";
 
 struct Month {
   Month(const char* t_month, int n_month)

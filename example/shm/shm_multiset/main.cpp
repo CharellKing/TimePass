@@ -16,6 +16,8 @@
 
 #define SHM_FILE "shm_multiset"
 
+
+
 const int array[] = {12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14,
                      13, 10, 16, 6, 10, 8, 17};
 
@@ -26,6 +28,8 @@ int Compare(const int& x, const int& y) {
   if (x < y) return -1;
   return 0;
 }
+
+typedef TimePass::ShmMultiset<int, Compare> SHM_MULTISET;
 
 const std::string Label(const int& num) {
   char t_num[128];
@@ -43,7 +47,7 @@ off_t Convert(const char* digit) {
   return ret;
 }
 
-void ToDotPs(const char* name, const TimePass::ShmMultiset<int, Compare>* p_l) {
+void ToDotPs(const char* name, const SHM_MULTISET* p_l) {
   char cmd[100];
   char file[100];
   snprintf(file, sizeof(file) - 1, "%s.dot", name);
@@ -57,7 +61,7 @@ void ToDotPs(const char* name, const TimePass::ShmMultiset<int, Compare>* p_l) {
 
 
 void Create(off_t len) {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Create(len)) {
     printf("errno=%d\n",
            TimePass::Error::GetErrno());
@@ -65,14 +69,14 @@ void Create(off_t len) {
 }
 
 void Destroy() {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Destroy()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
   }
 }
 
 void Insert() {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
@@ -86,7 +90,7 @@ void Insert() {
 }
 
 void Remove() {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
@@ -104,7 +108,7 @@ void Remove() {
 }
 
 void Show() {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
@@ -113,7 +117,7 @@ void Show() {
 }
 
 void Clear() {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
@@ -122,13 +126,13 @@ void Clear() {
 }
 
 void Read() {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
   printf("升序: ");
-  TimePass::ShmMultiset<int, Compare>::Iterator beg = numbers.Begin();
+  SHM_MULTISET::Iterator beg = numbers.Begin();
   while (numbers.End() != beg) {
     printf("%d ", *(beg++));
   }
@@ -143,7 +147,7 @@ void Read() {
 }
 
 void About() {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
@@ -161,14 +165,14 @@ void About() {
 
 /*(from, end)*/
 void Range1(int from, int to) {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
 
-  TimePass::ShmMultiset<int, Compare>::Iterator from_iter = numbers.UpperBound(from);
-  TimePass::ShmMultiset<int, Compare>::Iterator to_iter = numbers.LowerBound(to);
+  SHM_MULTISET::Iterator from_iter = numbers.UpperBound(from);
+  SHM_MULTISET::Iterator to_iter = numbers.LowerBound(to);
   while (from_iter != numbers.End() && from_iter != to_iter) {
     printf("%d ", *(from_iter++));
   }
@@ -177,21 +181,21 @@ void Range1(int from, int to) {
 
 /*[from, end)*/
 void Range2(int from, int to) {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
 
-  TimePass::ShmMultiset<int, Compare>::Iterator from_iter = numbers.EqualRange(from);
-  TimePass::ShmMultiset<int, Compare>::Iterator to_iter = numbers.LowerBound(to);
+  SHM_MULTISET::Iterator from_iter = numbers.EqualRange(from);
+  SHM_MULTISET::Iterator to_iter = numbers.LowerBound(to);
   while (from_iter != numbers.End() && from_iter != to_iter) {
     printf("%d ", *(from_iter++));
   }
   putchar('\n');
 }
 void AllFunc() {
-  TimePass::ShmMultiset<int, Compare> numbers(SHM_FILE);
+  SHM_MULTISET numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;

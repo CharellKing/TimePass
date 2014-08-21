@@ -31,8 +31,9 @@ int Compare(const int& x, const int& y) {
     return 0;
 }
 
+typedef TimePass::ShmMap<int, char, Compare> SHM_MAP;
 
-typedef TimePass::ShmMap<int, char, Compare>::MAP_NODE MAP_NODE;
+typedef SHM_MAP::MAP_NODE MAP_NODE;
 
 const std::string Label(const TimePass::ShmPair<int, char, Compare>& a) {
     char t_num[128];
@@ -64,21 +65,21 @@ void ToDotPs(const char* name,
 
 
 void Create(off_t len) {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    SHM_MAP numbers(SHM_FILE);
     if (false == numbers.Create(len)) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
     }
 }
 
 void Destroy() {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    SHM_MAP numbers(SHM_FILE);
     if (false == numbers.Destroy()) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
     }
 }
 
 void Insert() {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    SHM_MAP numbers(SHM_FILE);
     if (false == numbers.Open()) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
@@ -92,7 +93,7 @@ void Insert() {
 }
 
 void Remove() {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    SHM_MAP numbers(SHM_FILE);
     if (false == numbers.Open()) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
@@ -106,7 +107,7 @@ void Remove() {
 }
 
 void Show() {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    SHM_MAP numbers(SHM_FILE);
     if (false == numbers.Open()) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
@@ -115,7 +116,7 @@ void Show() {
 }
 
 void Clear() {
-    TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+    SHM_MAP numbers(SHM_FILE);
     if (false == numbers.Open()) {
         printf("errno=%d\n", TimePass::Error::GetErrno());
         return;
@@ -124,13 +125,13 @@ void Clear() {
 }
 
 void Read() {
-  TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+  SHM_MAP numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
   printf("asc: ");
-  TimePass::ShmMap<int, char, Compare>::Iterator beg = numbers.Begin();
+  SHM_MAP::Iterator beg = numbers.Begin();
   while (numbers.End() != beg) {
     printf("<%d %c>", beg->first, beg->second);
     ++beg;
@@ -147,7 +148,7 @@ void Read() {
 }
 
 void About() {
-  TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+  SHM_MAP numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
@@ -165,14 +166,14 @@ void About() {
 
 /*(from, end)*/
 void Range1(int from, int to) {
-  TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+  SHM_MAP numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
 
-  TimePass::ShmMap<int, char, Compare>::Iterator from_iter = numbers.UpperBound(from);
-  TimePass::ShmMap<int, char, Compare>::Iterator to_iter = numbers.LowerBound(to);
+  SHM_MAP::Iterator from_iter = numbers.UpperBound(from);
+  SHM_MAP::Iterator to_iter = numbers.LowerBound(to);
   while (from_iter != numbers.End() && from_iter != to_iter) {
     printf("<%d %c>", from_iter->first, from_iter->second);
     ++from_iter;
@@ -183,14 +184,14 @@ void Range1(int from, int to) {
 
 /*[from, end)*/
 void Range2(int from, int to) {
-  TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+  SHM_MAP numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;
   }
 
-  TimePass::ShmMap<int, char, Compare>::Iterator from_iter = numbers.EqualRange(from);
-  TimePass::ShmMap<int, char, Compare>::Iterator to_iter = numbers.LowerBound(to);
+  SHM_MAP::Iterator from_iter = numbers.EqualRange(from);
+  SHM_MAP::Iterator to_iter = numbers.LowerBound(to);
 
   while (from_iter != numbers.End() && from_iter != to_iter) {
     printf("<%d, %c> ", from_iter->first, from_iter->second);
@@ -200,7 +201,7 @@ void Range2(int from, int to) {
 }
 
 void AllFunc() {
-  TimePass::ShmMap<int, char, Compare> numbers(SHM_FILE);
+  SHM_MAP numbers(SHM_FILE);
   if (false == numbers.Open()) {
     printf("errno=%d\n", TimePass::Error::GetErrno());
     return;

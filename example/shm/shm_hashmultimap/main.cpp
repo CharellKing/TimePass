@@ -14,11 +14,13 @@
 
 #define SHM_FILE "shm_hashmultimap"
 
-const char* t_month[] = { "January", "February", "March", "April", "May",
-    "June", "July", "August", "September", "October", "November", "March" };
-int len = sizeof(t_month) / sizeof(char*);
+const char* t_month[] = {"January", "February", "March", "April",
+                                  "May", "June", "July", "August", "September",
+                                  "October", "November", "March" };
 
-const int n_month[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 3 };
+const int n_month[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 3};
+
+const int len = sizeof(t_month) / sizeof(t_month[0]);
 
 struct MonthName {
   explicit MonthName(const char* t_month) {
@@ -32,8 +34,10 @@ struct MonthName {
   }
   char t_month[32];
 };
-typedef TimePass::ShmHashpair<MonthName, int, MonthName::Compare,
-    MonthName::HashFunc> SHM_HASH_PAIR;
+
+typedef TimePass::ShmHashmultimap<MonthName, int> SHM_HASHMULTIMAP;
+
+typedef TimePass::ShmHashpair<MonthName, int> SHM_HASH_PAIR;
 
 const std::string Label(const SHM_HASH_PAIR& a) {
   return std::string(a.first.t_month);
@@ -50,7 +54,7 @@ off_t Convert(const char* digit) {
 }
 
 void ToDotPs(const char* name,
-             const TimePass::ShmHashmultimap<MonthName, int>* p_l) {
+             const SHM_HASHMULTIMAP* p_l) {
   char cmd[100];
   char file[100];
   snprintf(file, sizeof(file) - 1, "%s.dot", name);
@@ -61,20 +65,20 @@ void ToDotPs(const char* name,
 }
 
 void Create(off_t len) {
-  TimePass::ShmHashmultimap<MonthName, int> months(SHM_FILE);
+  SHM_HASHMULTIMAP months(SHM_FILE);
   if (false == months.Create(len)) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
   }
 }
 void Destroy() {
-  TimePass::ShmHashmultimap<MonthName, int> months(SHM_FILE);
+  SHM_HASHMULTIMAP months(SHM_FILE);
   if (false == months.Destroy()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
   }
 }
 
 void Insert() {
-  TimePass::ShmHashmultimap<MonthName, int> months(SHM_FILE);
+  SHM_HASHMULTIMAP months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
@@ -87,7 +91,7 @@ void Insert() {
 }
 
 void Remove() {
-  TimePass::ShmHashmultimap<MonthName, int> months(SHM_FILE);
+  SHM_HASHMULTIMAP months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
@@ -101,7 +105,7 @@ void Remove() {
 }
 
 void Show() {
-  TimePass::ShmHashmultimap<MonthName, int> months(SHM_FILE);
+  SHM_HASHMULTIMAP months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
@@ -110,7 +114,7 @@ void Show() {
 }
 
 void Clear() {
-  TimePass::ShmHashmultimap<MonthName, int> months(SHM_FILE);
+  SHM_HASHMULTIMAP months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
@@ -119,14 +123,14 @@ void Clear() {
 }
 
 void Read() {
-  TimePass::ShmHashmultimap<MonthName, int> months(SHM_FILE);
+  SHM_HASHMULTIMAP months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
   }
 
   printf("read:\n");
-  TimePass::ShmHashmultimap<MonthName, int>::Iterator iter = months.Begin();
+  SHM_HASHMULTIMAP::Iterator iter = months.Begin();
   while (months.End() != iter) {
     printf("<%s %d>, ", iter->first.t_month, iter->second);
     ++iter;
@@ -134,7 +138,7 @@ void Read() {
   putchar('\n');
 
   printf("constread:\n");
-  TimePass::ShmHashmultimap<MonthName, int>::ConstIterator citer = months.Begin();
+  SHM_HASHMULTIMAP::ConstIterator citer = months.Begin();
   while (months.End() != citer) {
     printf("<%s %d>, ", citer->first.t_month, citer->second);
     ++citer;
@@ -143,13 +147,13 @@ void Read() {
 }
 
 void Find() {
-  TimePass::ShmHashmultimap<MonthName, int> months(SHM_FILE);
+  SHM_HASHMULTIMAP months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
   }
 
-  TimePass::ShmHashmultimap<MonthName, int>::MAP_DATA* p_data =
+  SHM_HASHMULTIMAP::MAP_DATA* p_data =
       months.Find(MonthName(t_month[0]));
   if (p_data) {
     printf("find <%s %d>\n", p_data->first.t_month, p_data->second);
@@ -157,7 +161,7 @@ void Find() {
 }
 
 void About() {
-  TimePass::ShmHashmultimap<MonthName, int> months(SHM_FILE);
+  SHM_HASHMULTIMAP months(SHM_FILE);
   if (false == months.Open()) {
     printf("errno = %d\n", TimePass::Error::GetErrno());
     return;
