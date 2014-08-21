@@ -4,8 +4,8 @@
  * DATE :       2014-07-30
  */
 
-#ifndef _SHM_SHM_HASHRBTREE_H_
-#define _SHM_SHM_HASHRBTREE_H_
+#ifndef SRC_SHM_SHM_HASHRBTREE_H_
+#define SRC_SHM_SHM_HASHRBTREE_H_
 
 #include <errno.h>
 
@@ -21,10 +21,11 @@
 namespace TimePass {
 template<typename KEY,
          typename VALUE,
-         int (*Comp)(const KEY& a,const KEY& b)=KEY::Compare,
+         int (*Comp)(const KEY& a, const KEY& b)=KEY::Compare,
          off_t (*HashF)(const KEY& key)=KEY::HashFunc>
 struct ShmHashpair {
-  ShmHashpair(KEY key = KEY(), VALUE value = VALUE()) : first(key), second(value) {
+  ShmHashpair(KEY key = KEY(), VALUE value = VALUE()):first(key),
+                                                      second(value) {
   }
 
   static int Compare(const ShmHashpair<KEY, VALUE, Comp, HashF>& a,
@@ -55,17 +56,17 @@ class ShmHashrbtree {
 
     // prefix
     Iterator& operator ++() {
-      p_hashrbtree_->ExtNext(bucket_, cur_offset_);
+      p_hashrbtree_->ExtNext(&bucket_, &cur_offset_);
       return *this;
     }
 
-    Iterator operator ++(int) {
+    Iterator operator ++(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
-    T& operator*() throw (int) {
+    T& operator*() throw(int) {
       if (NULL == p_hashrbtree_ || bucket_ < 0 ||
           bucket_ >= p_hashrbtree_->BucketSize() ||
           cur_offset_ < 0 || cur_offset_ >= p_hashrbtree_->Capacity()) {
@@ -75,7 +76,7 @@ class ShmHashrbtree {
       return p_hashrbtree_->ExtOffset(cur_offset_)->data;
     }
 
-    T* operator->() throw (int) {
+    T* operator->() throw(int) {
       return &(**this);
     }
 
@@ -122,23 +123,25 @@ class ShmHashrbtree {
     ConstIterator() : p_hashrbtree_(NULL), bucket_(-1), cur_offset_(-1) {
     }
 
-    ConstIterator(const Iterator& iter) : p_hashrbtree_(iter.GetHashrbtree()),
-        bucket_(iter.GetBucket()), cur_offset_(iter.GetOffset()) {
+    explicit ConstIterator(const Iterator& iter)
+        : p_hashrbtree_(iter.GetHashrbtree()),
+          bucket_(iter.GetBucket()),
+          cur_offset_(iter.GetOffset()) {
     }
 
-    /*prefix*/
+    // prefix
     ConstIterator& operator ++() {
-      p_hashrbtree_->ExtNext(bucket_, cur_offset_);
+      p_hashrbtree_->ExtNext(&bucket_, &cur_offset_);
       return *this;
     }
 
-    ConstIterator operator ++(int) {
+    ConstIterator operator ++(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
-    const T& operator*()const throw (int) {
+    const T& operator*()const throw(int) {
       if (NULL == p_hashrbtree_ || bucket_ < 0 ||
           bucket_ >= p_hashrbtree_->BucketSize() ||
           cur_offset_ < 0 || cur_offset_ >= p_hashrbtree_->Capacity()) {
@@ -148,17 +151,19 @@ class ShmHashrbtree {
       return p_hashrbtree_->ExtOffset(cur_offset_)->data;
     }
 
-    const T* operator->()const throw (int) {
+    const T* operator->()const throw(int) {
       return &(**this);
     }
 
     bool operator !=(const Iterator& iter) const {
-      return p_hashrbtree_ != iter.GetHashrbtree() || bucket_ != iter.GetBucket() ||
+      return p_hashrbtree_ != iter.GetHashrbtree() ||
+             bucket_ != iter.GetBucket() ||
              cur_offset_ != iter.GetOffset();
     }
 
-    bool operator !=(const ConstIterator& iter) const {
-      return p_hashrbtree_ != iter.GetHashrbtree() || bucket_ != iter.GetBucket() ||
+    bool operator !=(const ConstIterator& iter)const {
+      return p_hashrbtree_ != iter.GetHashrbtree() ||
+             bucket_ != iter.GetBucket() ||
              cur_offset_ != iter.GetOffset();
     }
 
@@ -175,7 +180,9 @@ class ShmHashrbtree {
     }
 
    private:
-    ConstIterator(const SHM_HASHRBTREE* p_hashrbtree, off_t bucket, off_t cur_offset)
+    ConstIterator(const SHM_HASHRBTREE* p_hashrbtree,
+                  off_t bucket,
+                  off_t cur_offset)
                   : p_hashrbtree_(p_hashrbtree),
                     bucket_(bucket),
                     cur_offset_(cur_offset) {
@@ -258,13 +265,13 @@ class ShmHashrbtree {
 
   Iterator Begin() {
     off_t bucket = -1, offset = -1;
-    InnerBegin(bucket, offset);
+    InnerBegin(&bucket, &offset);
     return Iterator(this, bucket, offset);
   }
 
   ConstIterator Begin() const {
     off_t bucket = -1, offset = -1;
-    InnerBegin(bucket, offset);
+    InnerBegin(&bucket, &offset);
     return ConstIterator(this, bucket, offset);
   }
 
@@ -362,50 +369,50 @@ class ShmHashrbtree {
     return shm_rbtree_.ExtOffset(offset);
   }
 
-  void ExtNext(off_t& bucket, off_t& offset) const {
+  void ExtNext(off_t* p_nbucket, off_t* p_offset) const {
     const RbtreeHead<EXTEND>* p_head = shm_rbtree_.Head();
     if (ShmBase::ShmFailed<RbtreeHead<EXTEND> >() == p_head) {
-      bucket = -1;
-      offset = -1;
+      *p_nbucket = -1;
+      *p_offset = -1;
     }
 
-    if (offset < 0 || offset >= p_head->capacity) {
-      bucket = -1;
-      offset = -1;
+    if (*p_offset < 0 || *p_offset >= p_head->capacity) {
+      *p_nbucket = -1;
+      *p_offset = -1;
     }
 
-    offset = shm_rbtree_.ExtNext(offset);
-    if (offset < 0) {
-      ++bucket;
+    *p_offset = shm_rbtree_.ExtNext(*p_offset);
+    if (*p_offset < 0) {
+      ++*p_nbucket;
       const ArrayBucket* p_bucket = shm_rbtree_.Bucket();
-      while (bucket < BucketSize() && p_bucket[bucket].root < 0) {
-        ++bucket;
+      while (*p_nbucket < BucketSize() && p_bucket[*p_nbucket].root < 0) {
+        ++(*p_nbucket);
       }
 
-      if (bucket < BucketSize()) {
-        offset = shm_rbtree_.Minimum(p_bucket[bucket].root);;
+      if (*p_nbucket < BucketSize()) {
+        *p_offset = shm_rbtree_.Minimum(p_bucket[*p_nbucket].root);
       } else {
-        bucket = -1;
+        *p_nbucket = -1;
       }
     }
   }
 
  private:
-  void InnerBegin(off_t& bucket, off_t& offset) const {
-    bucket = -1, offset = -1;
+  void InnerBegin(off_t* p_nbucket, off_t* p_offset) const {
+    *p_nbucket = -1, *p_offset = -1;
     const ArrayBucket* p_bucket = shm_rbtree_.Bucket();
-    for (bucket = 0; bucket < BucketSize(); ++bucket) {
-      if (p_bucket[bucket].root >= 0) {
+    for (*p_nbucket = 0; *p_nbucket < BucketSize(); ++(*p_nbucket)) {
+      if (p_bucket[*p_nbucket].root >= 0) {
         break;
       }
     }
 
-    if (bucket == BucketSize()) {
-      bucket = -1;
+    if (*p_nbucket == BucketSize()) {
+      *p_nbucket = -1;
     }
 
-    if (-1 != bucket) {
-      offset = shm_rbtree_.Minimum(p_bucket[bucket].root);
+    if (-1 != *p_nbucket) {
+      *p_offset = shm_rbtree_.Minimum(p_bucket[*p_nbucket].root);
     }
   }
 
@@ -426,4 +433,4 @@ class ShmHashrbtree {
 };
 }; /*namespace TimePass*/
 
-#endif /* _SHM_SHM_RBTREE_H_ */
+#endif  // SRC_SHM_SHM_HASHRBTREE_H_

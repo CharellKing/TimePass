@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _GLOBAL_ERRNO_H_
-#define _GLOBAL_ERRNO_H_
+#ifndef SRC_GLOBAL_ERRNO_H_
+#define SRC_GLOBAL_ERRNO_H_
 
 namespace TimePass {
 namespace ErrorNo {
@@ -25,7 +25,7 @@ const int SHM_BUCKET_NEGTIVE       = 19881011; /*bucket >= 0 */
 const int SHM_HASHLIST_FULL        = 19881012; /*hash list is full*/
 
 const int PTR_NULL                 = 20001001; /*pointer null*/
-}; /*namespace ErrorNo*/
-}; /*namespace TimePass*/
+};  // namespace ErrorNo
+};  // namespace TimePass
 
-#endif /* _GLOBAL_ERRNO_H_ */
+#endif  // SRC_GLOBAL_ERRNO_H_

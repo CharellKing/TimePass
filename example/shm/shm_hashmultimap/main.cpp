@@ -39,6 +39,8 @@ typedef TimePass::ShmHashmultimap<MonthName, int> SHM_HASHMULTIMAP;
 
 typedef TimePass::ShmHashpair<MonthName, int> SHM_HASH_PAIR;
 
+typedef SHM_HASHMULTIMAP::ConstIterator ConstIterator;
+
 const std::string Label(const SHM_HASH_PAIR& a) {
   return std::string(a.first.t_month);
 }
@@ -138,7 +140,7 @@ void Read() {
   putchar('\n');
 
   printf("constread:\n");
-  SHM_HASHMULTIMAP::ConstIterator citer = months.Begin();
+  ConstIterator citer = (ConstIterator)(months.Begin());
   while (months.End() != citer) {
     printf("<%s %d>, ", citer->first.t_month, citer->second);
     ++citer;

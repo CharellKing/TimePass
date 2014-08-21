@@ -4,8 +4,8 @@
  * DATE :       2014-07-22
  */
 
-#ifndef _SHM_SHM_VECTOR_H_
-#define _SHM_SHM_VECTOR_H_
+#ifndef SRC_SHM_SHM_VECTOR_H_
+#define SRC_SHM_SHM_VECTOR_H_
 
 #include <cstring>
 #include <cstdio>
@@ -36,10 +36,10 @@ class ShmVector {
   class Iterator {
    public:
     friend class ShmVector;
-    Iterator():p_vector_(NULL), cur_offset_(-1){
+    Iterator():p_vector_(NULL), cur_offset_(-1) {
     }
 
-    //prefix
+    // prefix
     Iterator& operator ++() {
       if (p_vector_ && cur_offset_ < p_vector_->Size()) {
         ++cur_offset_;
@@ -47,7 +47,7 @@ class ShmVector {
       return *this;
     }
 
-    Iterator operator ++(int) {
+    Iterator operator ++(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
@@ -60,14 +60,15 @@ class ShmVector {
       return *this;
     }
 
-    Iterator& operator --(int) {
+    Iterator& operator --(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
     T& operator*()throw(int) {
-      if (NULL == p_vector_ || cur_offset_ < 0 || cur_offset_ >= p_vector_->Size()) {
+      if (NULL == p_vector_ || cur_offset_ < 0 ||
+          cur_offset_ >= p_vector_->Size()) {
         throw ErrorNo::PTR_NULL;
       }
 
@@ -105,12 +106,13 @@ class ShmVector {
     ConstIterator():p_vector_(NULL), cur_offset_(-1) {
     }
 
-    ConstIterator(const Iterator& iter):p_vector_(NULL), cur_offset_(-1) {
+    explicit ConstIterator(const Iterator& iter):p_vector_(NULL),
+                                                 cur_offset_(-1) {
       p_vector_ = iter.GetArray();
       cur_offset_ = iter.GetOffset();
     }
 
-    //prefix
+    // prefix
     ConstIterator& operator ++() {
       if (p_vector_ && cur_offset_ < p_vector_->Size()) {
         ++cur_offset_;
@@ -118,7 +120,7 @@ class ShmVector {
       return *this;
     }
 
-    ConstIterator operator ++(int) {
+    ConstIterator operator ++(int none) {
       ConstIterator iter(*this);
       ++(*this);
       return iter;
@@ -131,14 +133,15 @@ class ShmVector {
       return *this;
     }
 
-    ConstIterator& operator --(int) {
+    ConstIterator& operator --(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
     const T& operator*()const throw(int) {
-      if (NULL == p_vector_ || cur_offset_ < 0 || cur_offset_ >= p_vector_->Size()) {
+      if (NULL == p_vector_ || cur_offset_ < 0 ||
+          cur_offset_ >= p_vector_->Size()) {
         throw ErrorNo::PTR_NULL;
       }
 
@@ -632,4 +635,4 @@ class ShmVector {
 };
 };
 
-#endif /*_SHM_SHM_VECTOR_H_*/
+#endif  // SRC_SHM_SHM_VECTOR_H_

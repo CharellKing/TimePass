@@ -4,8 +4,8 @@
  * DATE :       2014-04-12
  */
 
-#ifndef _SHM_SHM_ARRAY_H_
-#define _SHM_SHM_ARRAY_H_
+#ifndef SRC_SHM_SHM_ARRAY_H_
+#define SRC_SHM_SHM_ARRAY_H_
 
 #include <cstring>
 #include <cstdio>
@@ -41,10 +41,10 @@ class ShmArray {
   class Iterator {
    public:
     friend class ShmArray;
-    Iterator():p_array_(NULL), cur_offset_(-1){
+    Iterator():p_array_(NULL), cur_offset_(-1) {
     }
 
-    //prefix
+    // prefix
     Iterator& operator ++() {
       if (p_array_ && cur_offset_ < p_array_->Capacity()) {
         ++cur_offset_;
@@ -52,7 +52,7 @@ class ShmArray {
       return *this;
     }
 
-    Iterator operator ++(int) {
+    Iterator operator ++(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
@@ -65,14 +65,15 @@ class ShmArray {
       return *this;
     }
 
-    Iterator& operator --(int) {
+    Iterator& operator --(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
     T& operator*()throw(int) {
-      if (NULL == p_array_ || cur_offset_ < 0 || cur_offset_ >= p_array_->Capacity()) {
+      if (NULL == p_array_ || cur_offset_ < 0 ||
+          cur_offset_ >= p_array_->Capacity()) {
         throw ErrorNo::PTR_NULL;
       }
 
@@ -110,12 +111,13 @@ class ShmArray {
     ConstIterator():p_array_(NULL), cur_offset_(-1) {
     }
 
-    ConstIterator(const Iterator& iter):p_array_(NULL), cur_offset_(-1) {
+    explicit ConstIterator(const Iterator& iter):p_array_(NULL),
+                                                 cur_offset_(-1) {
       p_array_ = iter.GetArray();
       cur_offset_ = iter.GetOffset();
     }
 
-    //prefix
+    // prefix
     ConstIterator& operator ++() {
       if (p_array_ && cur_offset_ < p_array_->Capacity()) {
         ++cur_offset_;
@@ -123,7 +125,7 @@ class ShmArray {
       return *this;
     }
 
-    ConstIterator operator ++(int) {
+    ConstIterator operator ++(int none) {
       ConstIterator iter(*this);
       ++(*this);
       return iter;
@@ -136,14 +138,15 @@ class ShmArray {
       return *this;
     }
 
-    ConstIterator& operator --(int) {
+    ConstIterator& operator --(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
     const T& operator*()const throw(int) {
-      if (NULL == p_array_ || cur_offset_ < 0 || cur_offset_ >= p_array_->Capacity()) {
+      if (NULL == p_array_ || cur_offset_ < 0 ||
+          cur_offset_ >= p_array_->Capacity()) {
         throw ErrorNo::PTR_NULL;
       }
 
@@ -485,6 +488,6 @@ class ShmArray {
   EXTEND*    p_ext_;
   T*         p_data_;
 };
-}; /*namespace TimePass*/
+};  // namespace TimePass
 
-#endif /* _SHM_SHM_ARRAY_H_ */
+#endif  // SRC_SHM_SHM_ARRAY_H_

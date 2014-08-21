@@ -1,12 +1,12 @@
-/*
- * shm_hashmultiset.h
- *
- *  Created on: 2014年8月20日
- *      Author: root
+/* COPYRIGHT:   Copyright 2014 CharellkingQu
+ * LICENSE:     GPL
+ * AUTHOR:      CharellkingQu
+ * DATE :       2014-08-20
  */
 
-#ifndef _SHM_SHM_HASHMULTISET_H_
-#define _SHM_SHM_HASHMULTISET_H_
+
+#ifndef SRC_SHM_SHM_HASHMULTISET_H_
+#define SRC_SHM_SHM_HASHMULTISET_H_
 
 #include <string>
 
@@ -20,7 +20,8 @@ class ShmHashmultiset {
   class Iterator;
   class ConstIterator;
 
-  typedef typename ShmHashrbtree<T, Compare, HashFunc, EXTEND>::Iterator RAW_ITER;
+  typedef typename ShmHashrbtree<T, Compare,
+                                 HashFunc, EXTEND>::Iterator RAW_ITER;
   typedef typename ShmHashrbtree<T, Compare, HashFunc, EXTEND>::ConstIterator
       RAW_CONSTITER;
 
@@ -30,23 +31,23 @@ class ShmHashmultiset {
     Iterator() {
     }
 
-    //prefix
+    // prefix
     Iterator& operator ++() {
       ++iter_;
       return *this;
     }
 
-    Iterator operator ++(int) {
+    Iterator operator ++(int none) {
       Iterator copy_iter(*this);
       ++iter_;
       return copy_iter;
     }
 
-    T& operator*() throw (int) {
+    T& operator*() throw(int) {
       return *iter_;
     }
 
-    T* operator->() throw (int) {
+    T* operator->() throw(int) {
       return &(*iter_);
     }
 
@@ -63,7 +64,7 @@ class ShmHashmultiset {
     }
 
    private:
-    Iterator(RAW_ITER iter):iter_(iter){
+    explicit Iterator(RAW_ITER iter):iter_(iter) {
     }
 
     RAW_ITER iter_;
@@ -75,26 +76,26 @@ class ShmHashmultiset {
     ConstIterator() {
     }
 
-    ConstIterator(const Iterator& iter):iter_(iter.GetIter()){
+    explicit ConstIterator(const Iterator& iter):iter_(iter.GetIter()) {
     }
 
-    //prefix
+    // prefix
     ConstIterator& operator ++() {
       ++iter_;
       return *this;
     }
 
-    ConstIterator operator ++(int) {
+    ConstIterator operator ++(int none) {
       Iterator copy_iter(*this);
       ++iter_;
       return copy_iter;
     }
 
-    const T& operator*() const throw (int) {
+    const T& operator*() const throw(int) {
       return *iter_;
     }
 
-    const T* operator->()const throw (int) {
+    const T* operator->()const throw(int) {
       return &(*iter_);
     }
 
@@ -111,7 +112,7 @@ class ShmHashmultiset {
     }
 
    private:
-    ConstIterator(RAW_CONSTITER iter):iter_(iter) {
+    explicit ConstIterator(RAW_CONSTITER iter):iter_(iter) {
     }
 
     RAW_CONSTITER iter_;
@@ -234,4 +235,4 @@ class ShmHashmultiset {
 
 
 
-#endif /* _SHM_SHM_HASHMULTISET_H_ */
+#endif  // SRC_SHM_SHM_HASHMULTISET_H_

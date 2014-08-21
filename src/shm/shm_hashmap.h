@@ -4,8 +4,8 @@
  * DATE :       2014-08-19
  */
 
-#ifndef SHM_SHM_HASHMAP_H_
-#define SHM_SHM_HASHMAP_H_
+#ifndef SRC_SHM_SHM_HASHMAP_H_
+#define SRC_SHM_SHM_HASHMAP_H_
 
 #include <string>
 
@@ -36,40 +36,40 @@ class ShmHashmap {
     Iterator() {
     }
 
-    //prefix
+    // prefix
     Iterator& operator ++() {
       ++iter_;
       return *this;
     }
 
-    Iterator operator ++(int) {
+    Iterator operator ++(int none) {
       Iterator copy_iter(*this);
       ++iter_;
       return copy_iter;
     }
 
-    MAP_DATA& operator*() throw (int) {
+    MAP_DATA& operator*() throw(int) {
       return *iter_;
     }
 
-    MAP_DATA* operator->() throw (int) {
+    MAP_DATA* operator->() throw(int) {
       return &(*iter_);
     }
 
-    bool operator !=(const Iterator& other) const {
+    bool operator !=(const Iterator& other)const {
       return iter_ != other.GetIter();
     }
 
-    bool operator !=(const ConstIterator& other) const {
+    bool operator !=(const ConstIterator& other)const {
       return iter_ != other.GetIter();
     }
 
-    const RAW_ITER& GetIter() const {
+    const RAW_ITER& GetIter()const {
       return iter_;
     }
 
    private:
-    Iterator(RAW_ITER iter):iter_(iter){
+    explicit Iterator(RAW_ITER iter):iter_(iter) {
     }
 
     RAW_ITER iter_;
@@ -81,43 +81,43 @@ class ShmHashmap {
     ConstIterator() {
     }
 
-    ConstIterator(const Iterator& iter):iter_(iter.GetIter()){
+    explicit ConstIterator(const Iterator& iter):iter_(iter.GetIter()) {
     }
 
-    //prefix
+    // prefix
     ConstIterator& operator ++() {
       ++iter_;
       return *this;
     }
 
-    ConstIterator operator ++(int) {
+    ConstIterator operator ++(int none) {
       Iterator copy_iter(*this);
       ++iter_;
       return copy_iter;
     }
 
-    const MAP_DATA& operator*() const throw (int) {
+    const MAP_DATA& operator*() const throw(int) {
       return *iter_;
     }
 
-    const MAP_DATA* operator->()const throw (int) {
+    const MAP_DATA* operator->()const throw(int) {
       return &(*iter_);
     }
 
-    bool operator !=(const Iterator& other) const {
+    bool operator !=(const Iterator& other)const {
       return iter_ != other.GetIter();
     }
 
-    bool operator !=(const ConstIterator& other) const {
+    bool operator !=(const ConstIterator& other)const {
       return iter_ != other.GetIter();
     }
 
-    const RAW_CONSTITER& GetIter() const {
+    const RAW_CONSTITER& GetIter()const {
       return iter_;
     }
 
    private:
-    ConstIterator(RAW_CONSTITER iter):iter_(iter) {
+    explicit ConstIterator(RAW_CONSTITER iter):iter_(iter) {
     }
 
     RAW_CONSTITER iter_;
@@ -243,4 +243,4 @@ class ShmHashmap {
 
 
 
-#endif /* SHM_SHM_HASHMAP_H_ */
+#endif  // SRC_SHM_SHM_HASHMAP_H_

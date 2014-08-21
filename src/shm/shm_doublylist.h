@@ -4,8 +4,8 @@
  * DATE :       2014-07-28
  */
 
-#ifndef _SHM_DOUBLYLIST_H_
-#define _SHM_DOUBLYLIST_H_
+#ifndef SRC_SHM_SHM_DOUBLYLIST_H_
+#define SRC_SHM_SHM_DOUBLYLIST_H_
 
 #include <errno.h>
 
@@ -54,20 +54,20 @@ class ShmDoublylist {
   class Iterator {
    public:
     friend class ShmDoublylist;
-    Iterator()
-        : p_list_(NULL),
-          cur_offset_(-1) {
+    Iterator():p_list_(NULL), cur_offset_(-1) {
     }
 
     Iterator& operator ++() {
       DoublylistNode<T>* p_node = p_list_->ExtOffset(cur_offset_);
-      if (p_list_ && cur_offset_ >= 0 && cur_offset_ < p_list_->Capacity()) {
+      if (p_list_ &&
+          cur_offset_ >= 0 &&
+          cur_offset_ < p_list_->Capacity()) {
         cur_offset_ = p_node->next;
       }
       return *this;
     }
 
-    Iterator operator ++(int) {
+    Iterator operator ++(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
@@ -75,21 +75,24 @@ class ShmDoublylist {
 
     Iterator& operator --() {
       DoublylistNode<T>* p_node = p_list_->ExtOffset(cur_offset_);
-      if (p_list_ && cur_offset_ >= 0 && cur_offset_ < p_list_->Capacity()) {
+      if (p_list_ &&
+          cur_offset_ >= 0 &&
+          cur_offset_ < p_list_->Capacity()) {
         cur_offset_ = p_node->prior;
       }
       return *this;
     }
 
-    Iterator operator --(int) {
+    Iterator operator --(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
-    T& operator*() throw (int) {
-      if (NULL == p_list_ || cur_offset_ < 0
-          || cur_offset_ >= p_list_->Size()) {
+    T& operator*() throw(int) {
+      if (NULL == p_list_ ||
+          cur_offset_ < 0 ||
+          cur_offset_ >= p_list_->Size()) {
         throw ErrorNo::PTR_NULL;
       }
 
@@ -130,14 +133,14 @@ class ShmDoublylist {
           cur_offset_(-1) {
     }
 
-    ConstIterator(const Iterator& iter)
+    explicit ConstIterator(const Iterator& iter)
         : p_list_(NULL),
           cur_offset_(-1) {
       p_list_ = iter.GetList();
       cur_offset_ = iter.GetOffset();
     }
 
-    //prefix
+    // prefix
     ConstIterator& operator ++() {
       DoublylistNode<T>* p_node = p_list_->ExtOffset(cur_offset_);
       if (p_list_ && p_node) {
@@ -146,7 +149,7 @@ class ShmDoublylist {
       return *this;
     }
 
-    ConstIterator operator ++(int) {
+    ConstIterator operator ++(int none) {
       ConstIterator iter(*this);
       ++(*this);
       return iter;
@@ -160,13 +163,13 @@ class ShmDoublylist {
       return *this;
     }
 
-    ConstIterator operator --(int) {
+    ConstIterator operator --(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
-    const T& operator*() const throw (int) {
+    const T& operator*() const throw(int) {
       if (NULL == p_list_ || cur_offset_ < 0
           || cur_offset_ >= p_list_->Size()) {
         throw ErrorNo::PTR_NULL;
@@ -280,8 +283,8 @@ class ShmDoublylist {
       return -1;
     }
 
-    return sizeof(off_t) + sizeof(ArrayHead) + sizeof(DoublylistHead<EXTEND> )
-        + sizeof(DoublylistNode<T> ) * p_head_->size;
+    return shm_array_.ExtHeadBytes() +
+           sizeof(DoublylistNode<T>) * p_head_->size;
   }
 
   const char* Name() const {
@@ -899,7 +902,6 @@ class ShmDoublylist {
   EXTEND* p_ext_;
   DoublylistNode<T>* p_data_;
 };
-}
-;
+};
 
-#endif /* _SHM_DOUBLYLIST_H_ */
+#endif  // SRC_SHM_SHM_DOUBLYLIST_H_

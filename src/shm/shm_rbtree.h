@@ -4,8 +4,8 @@
  * DATE :       2014-07-30
  */
 
-#ifndef _SHM_SHM_RBTREE_H_
-#define _SHM_SHM_RBTREE_H_
+#ifndef SRC_SHM_SHM_RBTREE_H_
+#define SRC_SHM_SHM_RBTREE_H_
 
 #include <errno.h>
 
@@ -34,11 +34,10 @@ enum {
 enum {
   OFFT_ERROR = -2,
 };
-};
-/*namespace RbtreeFlag*/
+};  // namespace RbtreeFlag
 
-template<typename KEY, typename VALUE, int (*Comp)(const KEY& a,
-                                                   const KEY& b)=KEY::Compare>
+template<typename KEY, typename VALUE,
+         int (*Comp)(const KEY& a, const KEY& b)=KEY::Compare>
 struct ShmPair {
   ShmPair(KEY key, VALUE value)
       : first(key),
@@ -93,7 +92,7 @@ struct RbtreeNode {
 };
 
 template<typename T, int (*Compare)(const T& a, const T& b) = T::Compare,
-    typename EXTEND = off_t>
+         typename EXTEND = off_t>
 class ShmRbtree {
  public:
   class Iterator;
@@ -106,7 +105,7 @@ class ShmRbtree {
           cur_offset_(-1) {
     }
 
-    /*prefix*/
+    // prefix
     Iterator& operator ++() {
       if (p_rbtree_ && cur_offset_ >= 0
           && cur_offset_ < p_rbtree_->Capacity()) {
@@ -144,15 +143,15 @@ class ShmRbtree {
       return p_rbtree_->ExtOffset(cur_offset_)->data;
     }
 
-    bool operator !=(const Iterator& iter) const {
+    bool operator !=(const Iterator& iter)const {
       return p_rbtree_ != iter.GetRbtree() || cur_offset_ != iter.GetOffset();
     }
 
-    bool operator !=(const ConstIterator& iter) const {
+    bool operator !=(const ConstIterator& iter)const {
       return p_rbtree_ != iter.GetRbtree() || cur_offset_ != iter.GetOffset();
     }
 
-    const ShmRbtree<T, Compare, EXTEND>* GetRbtree() const {
+    const ShmRbtree<T, Compare, EXTEND>* GetRbtree()const {
       return p_rbtree_;
     }
 
@@ -178,7 +177,7 @@ class ShmRbtree {
           cur_offset_(-1) {
     }
 
-    //prefix
+    // prefix
     ConstIterator& operator ++() {
       if (p_rbtree_ && cur_offset_ >= 0
           && cur_offset_ < p_rbtree_->Capacity()) {
@@ -207,7 +206,7 @@ class ShmRbtree {
       return iter;
     }
 
-    const T& operator*()const throw (int) {
+    const T& operator*()const throw(int) {
       if (NULL == p_rbtree_ || cur_offset_ < 0
           || cur_offset_ >= p_rbtree_->Capacity()) {
         throw ErrorNo::PTR_NULL;
@@ -216,15 +215,17 @@ class ShmRbtree {
       return p_rbtree_->ExtOffset(cur_offset_)->data;
     }
 
-    bool operator !=(const Iterator& iter) const {
-      return p_rbtree_ != iter.GetRbtree() || cur_offset_ != iter.GetOffset();
+    bool operator !=(const Iterator& iter)const {
+      return p_rbtree_ != iter.GetRbtree() ||
+             cur_offset_ != iter.GetOffset();
     }
 
-    bool operator !=(const ConstIterator& iter) const {
-      return p_rbtree_ != iter.GetRbtree() || cur_offset_ != iter.GetOffset();
+    bool operator !=(const ConstIterator& iter)const {
+      return p_rbtree_ != iter.GetRbtree() ||
+             cur_offset_ != iter.GetOffset();
     }
 
-    const ShmRbtree<T, Compare, EXTEND>* GetRbtree() const {
+    const ShmRbtree<T, Compare, EXTEND>* GetRbtree()const {
       return p_rbtree_;
     }
 
@@ -320,7 +321,8 @@ class ShmRbtree {
       return -1;
     }
 
-    return shm_array_.ExtHeadBytes() + sizeof(RbtreeNode<T> ) * p_head_->size;
+    return shm_array_.ExtHeadBytes() +
+           sizeof(RbtreeNode<T>) * p_head_->size;
   }
 
   const char* Name() const {
@@ -1358,4 +1360,4 @@ class ShmRbtree {
 };
 };/*namespace TimePass*/
 
-#endif /* _SHM_SHM_RBTREE_H_ */
+#endif  // SRC_SHM_SHM_RBTREE_H_

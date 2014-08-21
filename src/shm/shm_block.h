@@ -4,9 +4,9 @@
  * DATE :       2014-04-03
  */
 
-#ifndef _SHM_SHM_BLOCK_H_
+#ifndef SRC_SHM_SHM_BLOCK_H_
 
-#define _SHM_SHM_BLOCK_H_
+#define SRC_SHM_SHM_BLOCK_H_
 
 #include "shm/shm_base.h"
 
@@ -69,4 +69,4 @@ class ShmBlock {
 };
 
 
-#endif /*_SHM_SHM_BLOCK_H_*/
+#endif  // SRC_SHM_SHM_BLOCK_H_

@@ -38,6 +38,8 @@ struct Month {
   int n_month;
 };
 
+typedef TimePass::ShmHashmultiset<Month>::ConstIterator ConstIterator;
+
 const std::string Label(const Month& a) {
   return std::string(a.t_month);
 }
@@ -130,7 +132,7 @@ void Read() {
   putchar('\n');
 
   printf("constread:\n");
-  TimePass::ShmHashmultiset<Month>::ConstIterator citer = months.Begin();
+  ConstIterator citer = (ConstIterator)(months.Begin());
   while (months.End() != citer) {
     printf("<%s %d>, ", citer->t_month, citer->n_month);
     ++citer;

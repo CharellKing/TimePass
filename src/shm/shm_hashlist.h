@@ -4,8 +4,8 @@
  * DATE:        2014-08-13
  */
 
-#ifndef _SHM_SHM_HASHLIST_H_
-#define _SHM_SHM_HASHLIST_H_
+#ifndef SRC_SHM_SHM_HASHLIST_H_
+#define SRC_SHM_SHM_HASHLIST_H_
 
 #include <errno.h>
 
@@ -50,17 +50,17 @@ class ShmHashlist {
     }
 
     Iterator& operator ++() {
-      p_hashlist_->ExtNext(bucket_, cur_offset_);
+      p_hashlist_->ExtNext(&bucket_, &cur_offset_);
       return *this;
     }
 
-    Iterator operator ++(int) {
+    Iterator operator ++(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
-    T& operator*() throw (int) {
+    T& operator*() throw(int) {
       if (NULL == p_hashlist_ || bucket_ < 0
           || bucket_ >= p_hashlist_->Head()->bucket_size || cur_offset_ < 0
           || cur_offset_ >= p_hashlist_->Capacity()) {
@@ -70,7 +70,7 @@ class ShmHashlist {
       return p_hashlist_->ExtOffset(cur_offset_)->data;
     }
 
-    T* operator->() throw (int) {
+    T* operator->() throw(int) {
       return &(**this);
     }
 
@@ -97,7 +97,8 @@ class ShmHashlist {
     }
 
    private:
-    Iterator(ShmHashlist<T, Compare, HashFunc, EXTEND>* p_hashlist, off_t bucket,
+    Iterator(ShmHashlist<T, Compare, HashFunc, EXTEND>* p_hashlist,
+             off_t bucket,
              off_t cur_offset)
         : p_hashlist_(p_hashlist),
           bucket_(bucket),
@@ -118,22 +119,29 @@ class ShmHashlist {
           cur_offset_(-1) {
     }
 
-    ConstIterator(const Iterator& iter):p_hashlist_(iter.GetList()),
-        bucket_(iter.GetBucket()), cur_offset_(iter.GetOffset()){
+    explicit ConstIterator(const Iterator& iter):p_hashlist_(iter.GetList()),
+        bucket_(iter.GetBucket()), cur_offset_(iter.GetOffset()) {
     }
 
     ConstIterator& operator ++() {
-      p_hashlist_->ExtNext(bucket_, cur_offset_);
+      p_hashlist_->ExtNext(&bucket_, &cur_offset_);
       return *this;
     }
 
-    ConstIterator operator ++(int) {
+    ConstIterator operator ++(int none) {
       ConstIterator iter(*this);
       ++(*this);
       return iter;
     }
 
-    const T& operator*()const throw (int) {
+    ConstIterator& operator=(const Iterator& iter) {
+      p_hashlist_ = iter.GetList();
+      bucket_ = iter.GetBucket();
+      cur_offset_ = iter.GetOffset();
+      return *this;
+    }
+
+    const T& operator*()const throw(int) {
       if (NULL == p_hashlist_ || bucket_ < 0 ||
           bucket_ >= p_hashlist_->Head()->bucket_size || cur_offset_ < 0 ||
           cur_offset_ >= p_hashlist_->Capacity()) {
@@ -142,7 +150,7 @@ class ShmHashlist {
       return p_hashlist_->ExtOffset(cur_offset_)->data;
     }
 
-    const T* operator->()const throw (int) {
+    const T* operator->()const throw(int) {
       return &(**this);
     }
 
@@ -169,7 +177,8 @@ class ShmHashlist {
     }
 
    private:
-    ConstIterator(const ShmHashlist<T, Compare, HashFunc, EXTEND>* p_hashlist, off_t bucket,
+    ConstIterator(const ShmHashlist<T, Compare, HashFunc, EXTEND>* p_hashlist,
+                  off_t bucket,
                   off_t cur_offset)
         : p_hashlist_(p_hashlist),
           bucket_(bucket),
@@ -307,13 +316,13 @@ class ShmHashlist {
 
   Iterator Begin() {
     off_t bucket = -1, offset = -1;
-    InnerBegin(bucket, offset);
+    InnerBegin(&bucket, &offset);
     return Iterator(this, bucket, offset);
   }
 
   ConstIterator Begin() const {
     off_t bucket = -1, offset = -1;
-    InnerBegin(bucket, offset);
+    InnerBegin(&bucket, &offset);
     return ConstIterator(this, bucket, offset);
   }
 
@@ -442,7 +451,6 @@ class ShmHashlist {
     fprintf(fp, "}\n");
     fclose(fp);
     return true;
-
   }
 
   bool Commit(bool is_sync) {
@@ -481,29 +489,30 @@ class ShmHashlist {
     return p_data_ + offset;
   }
 
-  void ExtNext(off_t& bucket, off_t& offset) const {
+  void ExtNext(off_t* p_bucket, off_t* p_offset) const {
     if (NULL == p_head_) {
-      bucket = -1;
-      offset = -1;
+      *p_bucket = -1;
+      *p_offset = -1;
     }
 
-    if (offset < 0 || offset >= p_head_->capacity) {
-      bucket = -1;
-      offset = -1;
+    if (*p_offset < 0 || *p_offset >= p_head_->capacity) {
+      *p_bucket = -1;
+      *p_offset = -1;
     }
 
-    ListNode<T>* p_node = p_data_ + offset;
-    offset = p_node->next;
-    if (offset < 0) {
-      ++bucket;
-      while (bucket < p_head_->bucket_size && p_bucket_[bucket].front < 0) {
-        ++bucket;
+    ListNode<T>* p_node = p_data_ + *p_offset;
+    *p_offset = p_node->next;
+    if (*p_offset < 0) {
+      ++(*p_bucket);
+      while (*p_bucket < p_head_->bucket_size &&
+             p_bucket_[*p_bucket].front < 0) {
+        ++(*p_bucket);
       }
 
-      if (bucket < p_head_->bucket_size) {
-        offset = p_bucket_[bucket].front;
+      if (*p_bucket < p_head_->bucket_size) {
+        *p_offset = p_bucket_[*p_bucket].front;
       } else {
-        bucket = -1;
+        *p_bucket = -1;
       }
     }
   }
@@ -541,21 +550,21 @@ class ShmHashlist {
     return cur_offset;
   }
 
-  void InnerBegin(off_t& bucket, off_t& offset) const {
-    bucket = -1, offset = -1;
+  void InnerBegin(off_t* p_bucket, off_t* p_offset)const {
+    *p_bucket = -1, *p_offset = -1;
     if (p_head_) {
-      for (bucket = 0; bucket < p_head_->bucket_size; ++bucket) {
-        if (p_bucket_[bucket].front >= 0) {
+      for (*p_bucket = 0; *p_bucket < p_head_->bucket_size; ++(*p_bucket)) {
+        if (p_bucket_[*p_bucket].front >= 0) {
           break;
         }
       }
 
-      if (bucket == p_head_->bucket_size) {
-        bucket = -1;
+      if (*p_bucket == p_head_->bucket_size) {
+        *p_bucket = -1;
       }
 
-      if (-1 != bucket) {
-        offset = p_bucket_[bucket].front;
+      if (-1 != *p_bucket) {
+        *p_offset = p_bucket_[*p_bucket].front;
       }
     }
   }
@@ -597,10 +606,9 @@ class ShmHashlist {
       off_t prior_offset = cur_offset;
       cur_offset = (p_data_ + cur_offset)->next;
       while (cur_offset >= 0) {
-
         fprintf(fp, "Node%ld[shape=box, label=\"%s\"];\nNode%ld->Node%ld\n",
-                cur_offset, Label((p_data_ + cur_offset)->data).c_str(), prior_offset,
-                cur_offset);
+                cur_offset, Label((p_data_ + cur_offset)->data).c_str(),
+                prior_offset, cur_offset);
         prior_offset = cur_offset;
         cur_offset = (p_data_ + cur_offset)->next;
       }
@@ -608,7 +616,6 @@ class ShmHashlist {
       /*connect bucket to list*/
       fprintf(fp, "bucket:f%ld->Node%ld\n", bucket, p_bucket_[bucket].front);
     }
-
   }
 
   ShmArray<ListNode<T>, HashlistHead<EXTEND> > shm_array_;
@@ -617,7 +624,6 @@ class ShmHashlist {
   EXTEND* p_ext_;
   ListNode<T>* p_data_;
 };
-}
-;
+};
 
-#endif /* _SHM_SHM_HASHLIST_H_ */
+#endif  // SRC_SHM_SHM_HASHLIST_H_

@@ -4,8 +4,8 @@
  * DATE : 2014-04-15
  */
 
-#ifndef _SHM_SHM_HASH_H_
-#define _SHM_SHM_HASH_H_
+#ifndef SRC_SHM_SHM_HASH_H_
+#define SRC_SHM_SHM_HASH_H_
 
 namespace TimePass {
 namespace Hash {
@@ -43,9 +43,9 @@ off_t HashFunc(int32_t x) {
 off_t HashFunc(u_int32_t x) {
   return x;
 }
-}; /*namespace Hash*/
-}; /*namespace TimePass*/
+};  // namespace Hash
+};  // namespace TimePass
 
 
 
-#endif /* _SHM_SHM_HASH_H_ */
+#endif  // SRC_SHM_SHM_HASH_H_

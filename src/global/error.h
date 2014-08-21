@@ -4,9 +4,9 @@
  * DATE :       2014-04-03
 */
 
-#ifndef _GLOBAL_ERROR_H
+#ifndef SRC_GLOBAL_ERROR_H_
 
-#define _GLOBAL_ERROR_H
+#define SRC_GLOBAL_ERROR_H_
 
 namespace TimePass {
 class Error {
@@ -17,8 +17,8 @@ class Error {
   Error() {
   }
   static int errno_;
-};  /*namespace Error*/
-};  /*namespace TimePass*/
+};  // namespace Error
+};  // namespace TimePass
 
 
-#endif /*_GLOBAL_ERROR_H*/
+#endif  // SRC_GLOBAL_ERROR_H_

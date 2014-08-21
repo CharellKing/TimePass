@@ -4,8 +4,8 @@
  * DATE :       2014-04-12
  */
 
-#ifndef _SHM_SHM_BASE_H_
-#define _SHM_SHM_BASE_H_
+#ifndef SRC_SHM_SHM_BASE_H_
+#define SRC_SHM_SHM_BASE_H_
 
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -64,4 +64,4 @@ T* ShmFailed() {
 }; /*namespace ShmBase*/
 }; /*namespace TimePass*/
 
-#endif /* _SHM_SHM_BASE_H_ */
+#endif  // SRC_SHM_SHM_BASE_H_

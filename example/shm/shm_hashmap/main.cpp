@@ -137,7 +137,8 @@ void Read() {
   putchar('\n');
 
   printf("constread:\n");
-  TimePass::ShmHashmap<MonthName, int>::ConstIterator citer = months.Begin();
+  TimePass::ShmHashmap<MonthName, int>::ConstIterator citer =
+      (TimePass::ShmHashmap<MonthName, int>::ConstIterator)(months.Begin());
   while (months.End() != citer) {
     printf("<%s %d>, ", citer->first.t_month, citer->second);
     ++citer;

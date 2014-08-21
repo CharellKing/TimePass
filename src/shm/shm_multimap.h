@@ -4,16 +4,17 @@
  * DATE :       2014-08-05
  */
 
-#ifndef _SHM_SHM_MULTIMAP_H_
-#define _SHM_SHM_MULTIMAP_H_
+#ifndef SRC_SHM_SHM_MULTIMAP_H_
+#define SRC_SHM_SHM_MULTIMAP_H_
 
 #include <string>
 
 #include "shm/shm_rbtree.h"
 
 namespace TimePass {
-template<typename KEY, typename VALUE, int (*Compare)(
-    const KEY& a, const KEY& b) = KEY::Compare, typename EXTEND = off_t>
+template<typename KEY, typename VALUE,
+         int (*Compare)(const KEY& a, const KEY& b) = KEY::Compare,
+         typename EXTEND = off_t>
 class ShmMultimap {
  public:
   typedef ShmPair<KEY, VALUE, Compare> MAP_DATA;
@@ -23,8 +24,10 @@ class ShmMultimap {
   class Iterator;
   class ConstIterator;
 
-  typedef typename ShmRbtree<MAP_DATA, MAP_DATA::Compare, EXTEND>::Iterator RAW_ITER;
-  typedef typename ShmRbtree<MAP_DATA, MAP_DATA::Compare, EXTEND>::ConstIterator RAW_CONSTITER;
+  typedef typename ShmRbtree<MAP_DATA, MAP_DATA::Compare,
+                             EXTEND>::Iterator RAW_ITER;
+  typedef typename ShmRbtree<MAP_DATA, MAP_DATA::Compare,
+                             EXTEND>::ConstIterator RAW_CONSTITER;
 
   class Iterator {
    public:
@@ -32,13 +35,13 @@ class ShmMultimap {
     Iterator() {
     }
 
-    //prefix
+    // prefix
     Iterator& operator ++() {
       ++iter_;
       return *this;
     }
 
-    Iterator operator ++(int) {
+    Iterator operator ++(int none) {
       Iterator copy_iter(*this);
       ++iter_;
       return copy_iter;
@@ -49,17 +52,17 @@ class ShmMultimap {
       return *this;
     }
 
-    Iterator operator --(int) {
+    Iterator operator --(int none) {
       Iterator copy_iter(*this);
       ++iter_;
       return copy_iter;
     }
 
-    MAP_DATA& operator*() throw (int) {
+    MAP_DATA& operator*() throw(int) {
       return *iter_;
     }
 
-    MAP_DATA* operator->() throw (int) {
+    MAP_DATA* operator->() throw(int) {
       return &(*iter_);
     }
 
@@ -76,7 +79,7 @@ class ShmMultimap {
     }
 
    private:
-    Iterator(RAW_ITER iter)
+    explicit Iterator(RAW_ITER iter)
         : iter_(iter) {
     }
 
@@ -89,13 +92,13 @@ class ShmMultimap {
     ConstIterator() {
     }
 
-    //prefix
+    // prefix
     ConstIterator& operator ++() {
       ++iter_;
       return *this;
     }
 
-    ConstIterator operator ++(int) {
+    ConstIterator operator ++(int none) {
       Iterator copy_iter(*this);
       ++iter_;
       return copy_iter;
@@ -106,17 +109,17 @@ class ShmMultimap {
       return *this;
     }
 
-    ConstIterator operator --(int) {
+    ConstIterator operator --(int none) {
       Iterator copy_iter(*this);
       --iter_;
       return copy_iter;
     }
 
-    const MAP_DATA& operator*() const throw (int) {
+    const MAP_DATA& operator*()const throw(int) {
       return *iter_;
     }
 
-    const MAP_DATA* operator->() const throw (int) {
+    const MAP_DATA* operator->()const throw(int) {
       return &(*iter_);
     }
 
@@ -133,7 +136,7 @@ class ShmMultimap {
     }
 
    private:
-    ConstIterator(RAW_CONSTITER iter)
+    explicit ConstIterator(RAW_CONSTITER iter)
         : iter_(iter) {
     }
 
@@ -324,7 +327,6 @@ class ShmMultimap {
  private:
   SHM_RBTREE shm_rbtree_;
 };
-}
-;
+};
 
-#endif /* SHM_MAP_H_ */
+#endif  // SRC_SHM_SHM_MULTIMAP_H_

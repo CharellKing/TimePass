@@ -4,9 +4,9 @@
  * DATE:        2014-07-27
  */
 
-#ifndef _SHM_SHM_LIST_H_
+#ifndef SRC_SHM_SHM_LIST_H_
 
-#define _SHM_SHM_LIST_H_
+#define SRC_SHM_SHM_LIST_H_
 
 #include <errno.h>
 
@@ -68,13 +68,13 @@ class ShmList {
       return *this;
     }
 
-    Iterator operator ++(int) {
+    Iterator operator ++(int none) {
       Iterator iter(*this);
       ++(*this);
       return iter;
     }
 
-    T& operator*() throw (int) {
+    T& operator*() throw(int) {
       if (NULL == p_list_ || cur_offset_ < 0
           || cur_offset_ >= p_list_->Size()) {
         throw ErrorNo::PTR_NULL;
@@ -83,15 +83,15 @@ class ShmList {
       return p_list_->ExtOffset(cur_offset_)->data;
     }
 
-    T* operator->() throw (int) {
+    T* operator->() throw(int) {
       return &*this;
     }
 
-    bool operator !=(const Iterator& iter) const {
+    bool operator !=(const Iterator& iter)const {
       return p_list_ != iter.GetList() || cur_offset_ != iter.GetOffset();
     }
 
-    bool operator !=(const ConstIterator& iter) const {
+    bool operator !=(const ConstIterator& iter)const {
       return p_list_ != iter.GetList() || cur_offset_ != iter.GetOffset();
     }
 
@@ -121,14 +121,14 @@ class ShmList {
           cur_offset_(-1) {
     }
 
-    ConstIterator(const Iterator& iter)
+    explicit ConstIterator(const Iterator& iter)
         : p_list_(NULL),
           cur_offset_(-1) {
       p_list_ = iter.GetList();
       cur_offset_ = iter.GetOffset();
     }
 
-    //prefix
+    // prefix
     ConstIterator& operator ++() {
       ListNode<T>* p_node = p_list_->ExtOffset(cur_offset_);
       if (p_list_ && p_node) {
@@ -137,13 +137,13 @@ class ShmList {
       return *this;
     }
 
-    ConstIterator operator ++(int) {
+    ConstIterator operator ++(int none) {
       ConstIterator iter(*this);
       ++(*this);
       return iter;
     }
 
-    const T& operator*() const throw (int) {
+    const T& operator*() const throw(int) {
       if (NULL == p_list_ || cur_offset_ < 0
           || cur_offset_ >= p_list_->Size()) {
         throw ErrorNo::PTR_NULL;
@@ -152,7 +152,7 @@ class ShmList {
       return p_list_->ExtOffset(cur_offset_)->data;
     }
 
-    const T* operator->()const throw (int) {
+    const T* operator->()const throw(int) {
       return &*this;
     }
 
@@ -295,7 +295,8 @@ class ShmList {
   }
 
   Iterator Begin() {
-    if (NULL == p_head_ || p_head_->front < 0 || p_head_->front >= p_head_->capacity) {
+    if (NULL == p_head_ || p_head_->front < 0 ||
+        p_head_->front >= p_head_->capacity) {
       return Iterator(this, -1);
     }
 
@@ -303,7 +304,8 @@ class ShmList {
   }
 
   ConstIterator Begin() const {
-    if (NULL == p_head_ || p_head_->front < 0 || p_head_->front >= p_head_->capacity) {
+    if (NULL == p_head_ || p_head_->front < 0 ||
+        p_head_->front >= p_head_->capacity) {
       return End();
     }
 
@@ -736,7 +738,6 @@ class ShmList {
   EXTEND* p_ext_;
   ListNode<T>* p_data_;
 };
-}
-;
+};
 
-#endif
+#endif  // SRC_SHM_SHM_LIST_H_

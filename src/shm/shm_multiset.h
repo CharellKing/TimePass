@@ -4,8 +4,8 @@
  * DATE :       2014-08-05
  */
 
-#ifndef _SHM_SHM_MULTISET_H_
-#define _SHM_SHM_MULTISET_H_
+#ifndef SRC_SHM_SHM_MULTISET_H_
+#define SRC_SHM_SHM_MULTISET_H_
 
 #include <string>
 
@@ -28,13 +28,13 @@ class ShmMultiset {
     Iterator() {
     }
 
-    //prefix
+    // prefix
     Iterator& operator ++() {
       ++iter_;
       return *this;
     }
 
-    Iterator operator ++(int) {
+    Iterator operator ++(int none) {
       Iterator copy_iter(*this);
       ++iter_;
       return copy_iter;
@@ -45,17 +45,17 @@ class ShmMultiset {
       return *this;
     }
 
-    Iterator operator --(int) {
+    Iterator operator --(int none) {
       Iterator copy_iter(*this);
       ++iter_;
       return copy_iter;
     }
 
-    T& operator*() throw (int) {
+    T& operator*() throw(int) {
       return *iter_;
     }
 
-    T* operator->() throw (int) {
+    T* operator->() throw(int) {
       return &(*iter_);
     }
 
@@ -72,7 +72,7 @@ class ShmMultiset {
     }
 
    private:
-    Iterator(RAW_ITER iter):iter_(iter){
+    explicit Iterator(RAW_ITER iter):iter_(iter) {
     }
 
     RAW_ITER iter_;
@@ -84,13 +84,13 @@ class ShmMultiset {
     ConstIterator() {
     }
 
-    //prefix
+    // prefix
     ConstIterator& operator ++() {
       ++iter_;
       return *this;
     }
 
-    ConstIterator operator ++(int) {
+    ConstIterator operator ++(int none) {
       Iterator copy_iter(*this);
       ++iter_;
       return copy_iter;
@@ -101,17 +101,17 @@ class ShmMultiset {
       return *this;
     }
 
-    ConstIterator operator --(int) {
+    ConstIterator operator --(int none) {
       Iterator copy_iter(*this);
       --iter_;
       return copy_iter;
     }
 
-    const T& operator*() const throw (int) {
+    const T& operator*()const throw(int) {
       return *iter_;
     }
 
-    const T* operator->()const throw (int) {
+    const T* operator->()const throw(int) {
       return &(*iter_);
     }
 
@@ -128,7 +128,7 @@ class ShmMultiset {
     }
 
    private:
-    ConstIterator(RAW_CONSTITER iter):iter_(iter) {
+    explicit ConstIterator(RAW_CONSTITER iter):iter_(iter) {
     }
 
     RAW_CONSTITER iter_;
@@ -317,4 +317,4 @@ class ShmMultiset {
 
 
 
-#endif /* _SHM_SHM_MULTISET_H_ */
+#endif  // SRC_SHM_SHM_MULTISET_H_
