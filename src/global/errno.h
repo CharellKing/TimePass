@@ -24,6 +24,9 @@ const int SHM_KEY_EXISTED          = 19881010; /*key is existed*/
 const int SHM_BUCKET_NEGTIVE       = 19881011; /*bucket >= 0 */
 const int SHM_HASHLIST_FULL        = 19881012; /*hash list is full*/
 
+const int LOCK_IS_BUSY             = 19891001; /*lock is busy*/
+const int LOCK_STATUS_UNKNOWN      = 19891002; /*lock status is unknown*/
+
 const int PTR_NULL                 = 20001001; /*pointer null*/
 };  // namespace ErrorNo
 };  // namespace TimePass

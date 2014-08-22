@@ -17,8 +17,9 @@ SET(GLOBAL_STATIC "global_static")
 SET(SHM_SHARED "shm_shared")
 SET(SHM_STATIC "shm_static")
 
-# SET(LOCK_SHARED "lock_shared")
-# SET(LOCK_STATIC "lock_static")
+SET(LOCK_SHARED "lock_shared")
+SET(LOCK_STATIC "lock_static")
+
 # SET(MODEL_SHARED "model_shared")
 # SET(MODEL_STATIC "model_static")
 # SET(SOCK_SHARED "sock_shared")
@@ -31,6 +32,7 @@ SET(SHM_STATIC "shm_static")
 
 ADD_SUBDIRECTORY(global)
 ADD_SUBDIRECTORY(shm)
+ADD_SUBDIRECTORY(lock)
 
 # ADD_SUBDIRECTORY(lock)
 # ADD_SUBDIRECTORY(model)
