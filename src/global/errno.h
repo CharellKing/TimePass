@@ -28,6 +28,8 @@ const int LOCK_IS_BUSY             = 19891001; /*lock is busy*/
 const int LOCK_STATUS_UNKNOWN      = 19891002; /*lock status is unknown*/
 
 const int PTR_NULL                 = 20001001; /*pointer null*/
+const int SIZE_NON_FIT             = 20001002; /*size is not fit*/
+
 };  // namespace ErrorNo
 };  // namespace TimePass
 
