@@ -129,8 +129,7 @@ bool TimePass::RWSem::UnLock() {
 
 int TimePass::RWSem::LockStatus() {
   int ret = UNLOCK;
-  if (0 == p_read_->GetValue()
-      && SemMutex::LOCK == p_mutex_->LockStatus()) {
+  if (0 == p_read_->GetValue() && SemMutex::LOCK == p_mutex_->LockStatus()) {
     ret = WLOCK;
   } else if (p_read_->GetValue() > 0) {
     ret = RLOCK;
