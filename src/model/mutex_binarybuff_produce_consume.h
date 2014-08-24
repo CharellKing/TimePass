@@ -4,8 +4,8 @@
  * DATE :       2014-05-07
  */
 
-#ifndef SRC_MODEL_MUTEX_MULTIBUFF_PRODUCE_CONSUME_H_
-#define SRC_MODEL_MUTEX_MULTIBUFF_PRODUCE_CONSUME_H_
+#ifndef SRC_MODEL_MUTEX_BINARYBUFF_PRODUCE_CONSUME_H_
+#define SRC_MODEL_MUTEX_BINARYBUFF_PRODUCE_CONSUME_H_
 
 #include <vector>
 #include <list>
@@ -18,6 +18,10 @@ namespace TimePass {
 template<typename T>
 class MutexMultiBuffProduceConsume {
  public:
+  enum {
+    BINARY = 2;
+  }
+
   MutexMultiBuffProduceConsume()
       : p_buffs_(NULL),
         buff_amount_(0),
@@ -27,8 +31,8 @@ class MutexMultiBuffProduceConsume {
   virtual ~MutexMultiBuffProduceConsume() {
   }
 
-  bool Create(size_t buff_amount, size_t buff_size) {
-    if (buff_amount < 2 || buff_size < 1024) {
+  bool Create(size_t queue_capacity) {
+    if (queue_capacity <= 0) {
       Error::SetErrno(ErrorNo::SIZE_NON_FIT);
       return false;
     }
@@ -41,23 +45,19 @@ class MutexMultiBuffProduceConsume {
       return false;
     }
 
-    buff_amount_ = buff_amount;
-    buff_size_ = buff_size;
+    queue_capacity_ = queue_capacity;
 
-    p_buffs_ = new std::vector<T>[buff_amount];
-    for (size_t i = 0; i < buff_amount; ++i) {
-      produce_buffs_.push_front(p_buffs_ + i);
-    }
+    p_buffs_ = new std::vector<T>[BINARY];
+    p_produce_buff_ = &p_buffs_[0];
+    p_consume_buff_ = &p_buffs_[1];
 
     return true;
   }
 
   bool Destroy() {
-    delete[] p_buffs_;
-    produce_buffs_.clear();
-    consume_buffs_.clear();
-    buff_amount_ = 0;
-    buff_size_ = 0;
+    delete [] p_buffs_;
+    p_buffs_ = NULL;
+    queue_capacity_ = 0;
 
     if (false == produce_mutex_.Destroy()) {
       return false;
@@ -110,57 +110,50 @@ class MutexMultiBuffProduceConsume {
     return consume_mutex_.Wait();
   }
 
-  bool ProduceBuffsIsEmpty() {
-    return produce_buffs_.empty();
+  bool ProduceBuffIsEmpty() {
+    return p_produce_buff_->empty();
   }
 
-  bool ConsumeBuffsIsEmpty() {
-    return consume_buffs_.empty();
+  bool ProduceBuffIsFull() {
+    return p_produce_buff_->size() == queue_capacity_;
   }
 
-  std::vector<T>* PopProduceBuff() {
-    std::vector<T>* p_front = produce_buffs_.front();
-    produce_buffs_.pop_front();
-    return p_front;
+  bool ConsumeBuffIsEmpty() {
+    return p_consume_buff_->empty();
   }
 
-  std::vector<T>* PopConsumeBuff() {
-    std::vector<T>* p_front = consume_buffs_.front();
-    consume_buffs_.pop_front();
-    return p_front;
+  std::vector<T>* ProduceBuff() {
+    return p_produce_buff_;
   }
 
-  void PushProduceBuff(std::vector<T>* p_buff) {
-    produce_buffs_.push_back(p_buff);
+  std::vector<T>* ConsumeBuff() {
+    return p_consume_buff_;
   }
 
-  void PushConsumeBuff(std::vector<T>* p_buff) {
-    consume_buffs_.push_back(p_buff);
-  }
-
-  size_t BuffSize() const {
-    return buff_size_;
+  void SwapBuff() {
+    std::vector<T>* p_tmp_buff = p_produce_buff_;
+    p_produce_buff_ = p_consume_buff_;
+    p_consume_buff_ = p_tmp_buff;
   }
 
   virtual void Produce(std::vector<T>* p_buffs_) = 0;
 
   virtual void Consume(std::vector<T>* p_buffs_) = 0;
 
-  virtual bool ProduceComplete() = 0;
+  virtual bool ProduceIsComplete() = 0;
 
   virtual bool ConsumeComplete() = 0;
 
  private:
-  std::vector<T>* p_buffs_; /*buff_amount_个buff*/
-  std::list<std::vector<T>*> produce_buffs_; /*the buff to wait producings*/
-  std::list<std::vector<T>*> consume_buffs_; /*the buff to wait consuming*/
+  std::vector<T>* p_buffs_;
+  std::vector<T>* p_produce_buff_;  // the buff for produce
+  std::vector<T>* p_consume_buff_;  // the buff for consume
 
-  size_t buff_amount_; /*buff's amount*/
-  size_t buff_size_; /*used buff's size*/
+  size_t queue_capacity_;  // queue's capacity
 
   CondMutex produce_mutex_; /*producer lock*/
   CondMutex consume_mutex_; /*consumer lock*/
 };
 };  // namespace TimePass
 
-#endif  // SRC_MODEL_MUTEX_MULTIBUFF_PRODUCE_CONSUME_H_
+#endif  // SRC_MODEL_MUTEX_BINARYBUFF_PRODUCE_CONSUME_H_
