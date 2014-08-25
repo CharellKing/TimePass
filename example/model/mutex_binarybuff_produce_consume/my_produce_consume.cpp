@@ -13,8 +13,6 @@ MyProduceConsume::MyProduceConsume()
 void MyProduceConsume::Produce() {
   if (true == PushToProduceBuff(count_)) {
     printf("Push Success: %d\n", count_);
-  } else {
-    printf("Push Failed\n");
   }
   ++count_;
 }
@@ -23,17 +21,13 @@ void MyProduceConsume::Consume() {
   int ret = 0;
   if (true == PopFromConsumeBuff(&ret)) {
     printf("Pop Success: %d\n", ret);
-  } else {
-    printf("Pop Failed\n");
   }
 }
 
 bool MyProduceConsume::ProduceIsComplete() {
-  return count_ >= 10000;
+  return count_ >= 1000000;
 }
 
 bool MyProduceConsume::ConsumeIsComplete() {
   return ConsumeBuffIsEmpty() && ProduceIsComplete();
 }
-
-

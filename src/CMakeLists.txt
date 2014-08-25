@@ -20,23 +20,25 @@ SET(SHM_STATIC "shm_static")
 SET(LOCK_SHARED "lock_shared")
 SET(LOCK_STATIC "lock_static")
 
+SET(TIME_SHARED "time_shared")
+SET(TIME_STATIC "time_static")
+
+
 # SET(MODEL_SHARED "model_shared")
 # SET(MODEL_STATIC "model_static")
 # SET(SOCK_SHARED "sock_shared")
 # SET(SOCK_STATIC "sock_static")
 # SET(SYS_SHARED "sys_shared")
 # SET(SYS_STATIC "sys_static")
-# SET(TIME_SHARED "time_shared")
-# SET(TIME_STATIC "time_static")
-
 
 ADD_SUBDIRECTORY(global)
 ADD_SUBDIRECTORY(shm)
 ADD_SUBDIRECTORY(lock)
 ADD_SUBDIRECTORY(model)
+ADD_SUBDIRECTORY(time)
+
 # ADD_SUBDIRECTORY(lock)
 # ADD_SUBDIRECTORY(model)
 # ADD_SUBDIRECTORY(shm)
 # ADD_SUBDIRECTORY(sock)
 # ADD_SUBDIRECTORY(sys)
-# ADD_SUBDIRECTORY(time)

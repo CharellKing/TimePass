@@ -8,10 +8,13 @@
 #include "./my_produce_consume.h"
 #include "model/mutex_binarybuff_thread_func.h"
 #include "global/error.h"
+#include "time/watch.h"
 
 const int queue_capacity = 100;
 
 int main() {
+  TimePass::Watch wc;
+  wc.Start();
   pthread_t produce_thread, consume_thread;
   MyProduceConsume my_procon;
   if (false == my_procon.Create(queue_capacity)) {
@@ -36,5 +39,7 @@ int main() {
   my_procon.Destroy();
   printf("销毁\n");
 
+  wc.Stop();
+  printf("duration time: %d\n", wc.Duration());
   return 0;
 }
