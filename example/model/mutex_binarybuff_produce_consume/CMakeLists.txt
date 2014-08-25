@@ -1,0 +1,15 @@
+AUX_SOURCE_DIRECTORY(. SRC)
+ADD_EXECUTABLE(mutex_binarybuff_produce_consume ${SRC})
+
+IF (GLOBAL AND LOCK)
+	TARGET_LINK_LIBRARIES(mutex_binarybuff_produce_consume ${GLOBAL} ${LOCK})
+	INSTALL(TARGETS mutex_binarybuff_produce_consume RUNTIME DESTINATION bin)
+ELSE (GLOBAL AND LOCK)
+	IF (NOT GLOBAL)
+		MESSAGE("can't find libTimepassGlobal.so")
+	ENDIF (NOT GLOBAL)
+
+	IF (NOT LOCK)
+		MESSAGE("can't find libTimepassLock.so")
+	ENDIF (NOT LOCK)
+ENDIF (GLOBAL AND LOCK)
