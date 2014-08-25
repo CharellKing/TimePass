@@ -20,10 +20,10 @@ void* Produce(void* arg) {
       static_cast<MutexBinaryBuffProduceConsume<T>*>(arg);
   while (false == p_procon->ProduceIsComplete()) {
     p_procon->ProduceLock();
-
+    printf("begin produce");
     if (false == p_procon->ProduceIsComplete()) {
       p_procon->ProduceUnlock();
-      return break;
+      break;
     }
 
     if (p_procon->ProduceBuffIsFull()) {
@@ -36,6 +36,7 @@ void* Produce(void* arg) {
 
     p_procon->Produce();
 
+    printf("end produce");
     p_procon->ProduceUnlock();
   }
 
@@ -50,6 +51,7 @@ void* Consume(void* arg) {
   while (false == p_procon->ConsumeBuffIsEmpty() ||
          false == p_procon->ProduceIsComplete()) {
     p_procon->ConsumeLock();
+    printf("begin consume");
     if (true == p_procon->ConsumeBuffIsEmpty()) {
       if (true == p_procon->ProduceIsComplete()) {
         p_procon->ConsumeUnlock();
@@ -65,6 +67,7 @@ void* Consume(void* arg) {
       p_procon->ConsumeSignal();
     }
 
+    printf("end consume");
     p_procon->ConsumeUnlock();
   }
   return NULL;
