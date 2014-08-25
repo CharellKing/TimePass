@@ -7,6 +7,7 @@
 #ifndef SRC_MODEL_MUTEX_BINARYBUFF_PRODUCE_CONSUME_H_
 #define SRC_MODEL_MUTEX_BINARYBUFF_PRODUCE_CONSUME_H_
 
+#include <stdio.h>
 #include <list>
 
 #include"lock/cond_mutex.h"
@@ -114,15 +115,15 @@ class MutexBinaryBuffProduceConsume {
     return consume_mutex_.Wait();
   }
 
-  virtual bool ProduceBuffIsEmpty()const{
+  virtual bool ProduceBuffIsEmpty()const {
     return p_produce_buff_->empty();
   }
 
-  virtual bool ProduceBuffIsFull()const{
+  virtual bool ProduceBuffIsFull()const {
     return p_produce_buff_->size() == queue_capacity_;
   }
 
-  virtual bool ConsumeBuffIsEmpty()const{
+  virtual bool ConsumeBuffIsEmpty()const {
     return p_consume_buff_->empty();
   }
 
