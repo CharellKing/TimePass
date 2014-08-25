@@ -34,8 +34,6 @@ class FileLock {
 
  private:
   int fd_;
-  static const int flags_;
-  static const mode_t mode_;
 };
 };  // namespace TimePass
 
