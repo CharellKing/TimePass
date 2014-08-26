@@ -18,7 +18,8 @@ template<typename T>
 void* Produce(void* arg) {
   MutexBinaryBuffProduceConsume<T>* p_procon =
       static_cast<MutexBinaryBuffProduceConsume<T>*>(arg);
-  while (false == p_procon->ProduceIsComplete()) {
+  while (false == p_procon->ProduceIsComplete() ||
+         false == p_procon->ProduceBuffIsEmpty()) {
     /* p_procon->ProduceLock(); */
     /* if (true == p_procon->ProduceIsComplete()) { */
     /*   p_procon->ProduceUnlock(); */
@@ -27,13 +28,20 @@ void* Produce(void* arg) {
 
     if (p_procon->ProduceBuffIsFull()) {
       if (false == p_procon->ConsumeBuffIsEmpty()) {
+        printf("produce: produce_buff = %x, consume_buff = %x\n",
+               p_procon->ProduceBuff(), p_procon->ConsumeBuff());
+        p_procon->ProduceSignal();
         p_procon->ProduceWait();
       }
       p_procon->SwapBuff();
+      printf("swap: produce_buff = %x, consume_buff = %x\n",
+             p_procon->ProduceBuff(), p_procon->ConsumeBuff());
       p_procon->ProduceSignal();
     }
 
-    p_procon->Produce();
+    if (false == p_procon->ProduceIsComplete()) {
+      p_procon->Produce();
+    }
     /* p_procon->ProduceUnlock(); */
   }
 
@@ -46,15 +54,16 @@ void* Consume(void* arg) {
   MutexBinaryBuffProduceConsume<T>* p_procon =
       static_cast<MutexBinaryBuffProduceConsume<T>*>(arg);
   while (false == p_procon->ConsumeBuffIsEmpty() ||
-         false == p_procon->ProduceIsComplete()) {
+         false == p_procon->ProduceIsComplete() ||
+         false == p_procon->ProduceBuffIsEmpty()) {
     /* p_procon->ConsumeLock(); */
     if (true == p_procon->ConsumeBuffIsEmpty()) {
-      if (true == p_procon->ProduceIsComplete()) {
-        /* p_procon->ConsumeUnlock(); */
-        break;
-      } else {
-        p_procon->ConsumeWait();
-      }
+      printf("consume: produce_buff = %x, consume_buff = %x\n",
+             p_procon->ProduceBuff(), p_procon->ConsumeBuff());
+      printf("consume wait begin\n");
+      p_procon->ConsumeSignal();
+      p_procon->ConsumeWait();
+      printf("consume wait end\n");
     }
 
     p_procon->Consume();
@@ -65,6 +74,7 @@ void* Consume(void* arg) {
 
     /* p_procon->ConsumeUnlock(); */
   }
+  printf("consume end\n");
   return NULL;
 }
 };  // namespace MutexBinaryBuffThreadFunc

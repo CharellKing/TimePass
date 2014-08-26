@@ -23,10 +23,11 @@ int main() {
   }
   pthread_setconcurrency(2);
 
+  printf("create produce thread\n");
   pthread_create(&produce_thread, NULL,
                  TimePass::MutexBinaryBuffThreadFunc::Produce<int>,
                  reinterpret_cast<void*>(&my_procon));
-
+  printf("create consume thread\n");
   pthread_create(&consume_thread, NULL,
                  TimePass::MutexBinaryBuffThreadFunc::Consume<int>,
                  reinterpret_cast<void*>(&my_procon));

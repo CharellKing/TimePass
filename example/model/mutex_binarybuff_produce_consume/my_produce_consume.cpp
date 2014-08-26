@@ -25,7 +25,7 @@ void MyProduceConsume::Consume() {
 }
 
 bool MyProduceConsume::ProduceIsComplete() {
-  return count_ >= 1000000;
+  return count_ >= 10000;
 }
 
 bool MyProduceConsume::ConsumeIsComplete() {
