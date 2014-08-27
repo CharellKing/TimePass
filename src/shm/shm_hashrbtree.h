@@ -19,6 +19,26 @@
 #include "shm/shm_hash.h"
 
 namespace TimePass {
+template<typename KEY,
+         typename VALUE,
+         int (*Comp)(const KEY& a,const KEY& b)=KEY::Compare,
+         off_t (*HashF)(const KEY& key)=KEY::HashFunc>
+struct ShmHashpair {
+  ShmHashpair(KEY key = KEY(), VALUE value = VALUE()) : first(key), second(value) {
+  }
+
+  static int Compare(const ShmHashpair<KEY, VALUE, Comp, HashF>& a,
+                     const ShmHashpair<KEY, VALUE, Comp, HashF>& b) {
+    return Comp(a.first, b.first);
+  }
+
+  static off_t HashFunc(const ShmHashpair<KEY, VALUE, Comp, HashF>& a) {
+    return HashF(a.first);
+  }
+  KEY first;
+  VALUE second;
+};
+
 template<typename T, int (*Compare)(const T& a, const T& b) = T::Compare,
     off_t HashFunc(const T& a) = T::HashFunc, typename EXTEND = off_t>
 class ShmHashrbtree {
@@ -267,6 +287,17 @@ class ShmHashrbtree {
     return shm_rbtree_.ExtInsertUnique(&p_bucket[bucket].root, data);
   }
 
+  bool InsertMultiple(const T& data) {
+    if (false == shm_rbtree_.IsOpen()) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return false;
+    }
+
+    off_t bucket = HashFunc(data) & (BucketSize() - 1);
+    ArrayBucket* p_bucket = shm_rbtree_.Bucket();
+    return shm_rbtree_.ExtInsertMultiple(&p_bucket[bucket].root, data);
+  }
+
   /*remove data*/
   bool Remove(const T& data, T* p_remove) {
     if (false == shm_rbtree_.IsOpen()) {
@@ -288,7 +319,7 @@ class ShmHashrbtree {
 
     off_t bucket = HashFunc(data) & (BucketSize() - 1);
     ArrayBucket* p_bucket = shm_rbtree_.Bucket();
-    return shm_rbtree_.ExtFind(p_bucket[bucket], data);
+    return shm_rbtree_.ExtFind(p_bucket[bucket].root, data);
   }
 
   /* convert the data structure to dot language script*/
@@ -352,7 +383,7 @@ class ShmHashrbtree {
       }
 
       if (bucket < BucketSize()) {
-        offset = p_bucket[bucket].root;
+        offset = shm_rbtree_.Minimum(p_bucket[bucket].root);;
       } else {
         bucket = -1;
       }
@@ -374,7 +405,7 @@ class ShmHashrbtree {
     }
 
     if (-1 != bucket) {
-      offset = p_bucket[bucket].root;
+      offset = shm_rbtree_.Minimum(p_bucket[bucket].root);
     }
   }
 
