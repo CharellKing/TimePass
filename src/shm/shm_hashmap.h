@@ -9,22 +9,26 @@
 
 #include <string>
 
-#include "shm/shm_rbtree.h"
+#include "shm/shm_hashrbtree.h"
 
 namespace TimePass {
-template<typename KEY, typename VALUE, int (*Compare)(
-    const KEY& a, const KEY& b) = KEY::Compare, typename EXTEND = off_t>
+template <typename KEY,
+          typename VALUE,
+          int (*Compare)(const KEY& a, const KEY& b) = KEY::Compare,
+          off_t (*HashFunc)(const KEY& key) = KEY::HashFunc,
+          typename EXTEND = off_t>
 class ShmHashmap {
  public:
-  typedef ShmPair<KEY, VALUE, Compare> MAP_DATA;
+  typedef ShmHashpair<KEY, VALUE, Compare, HashFunc> MAP_DATA;
   typedef RbtreeNode<MAP_DATA> MAP_NODE;
-  typedef ShmHashrbtree<MAP_DATA, MAP_DATA::Compare, EXTEND> SHM_HASHRBTREE;
-
-  class Iterator;
-  class ConstIterator;
+  typedef ShmHashrbtree<MAP_DATA, MAP_DATA::Compare,
+                                 MAP_DATA::HashFunc, EXTEND> SHM_HASHRBTREE;
 
   typedef typename SHM_HASHRBTREE::Iterator RAW_ITER;
   typedef typename SHM_HASHRBTREE::ConstIterator RAW_CONSTITER;
+
+  class Iterator;
+  class ConstIterator;
 
   class Iterator {
    public:
@@ -65,8 +69,7 @@ class ShmHashmap {
     }
 
    private:
-    Iterator(RAW_ITER iter)
-        : iter_(iter) {
+    Iterator(RAW_ITER iter):iter_(iter){
     }
 
     RAW_ITER iter_;
@@ -76,6 +79,9 @@ class ShmHashmap {
    public:
     friend class ShmHashmap;
     ConstIterator() {
+    }
+
+    ConstIterator(const Iterator& iter):iter_(iter.GetIter()){
     }
 
     //prefix
@@ -103,7 +109,7 @@ class ShmHashmap {
     }
 
     bool operator !=(const ConstIterator& other) const {
-      return iter_ != other.GetIter;
+      return iter_ != other.GetIter();
     }
 
     const RAW_CONSTITER& GetIter() const {
@@ -111,8 +117,7 @@ class ShmHashmap {
     }
 
    private:
-    ConstIterator(RAW_CONSTITER iter)
-        : iter_(iter) {
+    ConstIterator(RAW_CONSTITER iter):iter_(iter) {
     }
 
     RAW_CONSTITER iter_;
@@ -141,31 +146,31 @@ class ShmHashmap {
     return shm_hashrbtree_.Close();
   }
 
-  bool IsOpen() {
+  bool IsOpen()const {
     return shm_hashrbtree_.IsOpen();
   }
 
-  off_t Capacity() {
+  off_t Capacity()const {
     return shm_hashrbtree_.Capacity();
   }
 
-  off_t Size() {
+  off_t Size()const {
     return shm_hashrbtree_.Size();
   }
 
-  off_t TotalBytes() {
+  off_t TotalBytes()const {
     return shm_hashrbtree_.TotalBytes();
   }
 
-  off_t UsedBytes() {
+  off_t UsedBytes()const {
     return shm_hashrbtree_.UsedBytes();
   }
 
-  const char* Name() {
+  const char* Name()const {
     return shm_hashrbtree_.Name();
   }
 
-  const RbtreeHead<EXTEND>* Head() const {
+  const RbtreeHead<EXTEND>* Head()const {
     return NULL;
   }
 
@@ -173,7 +178,7 @@ class ShmHashmap {
     return shm_hashrbtree_.SetExtend(ext);
   }
 
-  const EXTEND* GetExtend() {
+  const EXTEND* GetExtend()const {
     return shm_hashrbtree_.GetExtend();
   }
 
@@ -181,11 +186,11 @@ class ShmHashmap {
     return Iterator(shm_hashrbtree_.Begin());
   }
 
-  ConstIterator Begin() const {
+  ConstIterator Begin()const {
     return ConstIterator(shm_hashrbtree_.Begin());
   }
 
-  ConstIterator End() const {
+  ConstIterator End()const {
     return ConstIterator(shm_hashrbtree_.End());
   }
 
@@ -207,7 +212,7 @@ class ShmHashmap {
   }
 
   MAP_DATA* Find(const KEY& key) {
-    off_t offset = shm_hashrbtree_.FindNode(MAP_DATA(key));
+    off_t offset = shm_hashrbtree_.Find(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_DATA>();
     }
@@ -215,7 +220,7 @@ class ShmHashmap {
   }
 
   const MAP_DATA* Find(const KEY& key) const {
-    off_t offset = shm_hashrbtree_.FindNode(MAP_DATA(key));
+    off_t offset = shm_hashrbtree_.Find(MAP_DATA(key));
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<MAP_DATA>();
     }
