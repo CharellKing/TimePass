@@ -163,7 +163,7 @@ class ShmHashset {
     return shm_hashrbtree_.Name();
   }
 
-  const RbtreeHead<EXTEND>* Head() const {
+  const RbtreeHead<EXTEND>* Head()const {
     return shm_hashrbtree_.Head();
   }
 
@@ -171,7 +171,7 @@ class ShmHashset {
     return shm_hashrbtree_.SetExtend(ext);
   }
 
-  const EXTEND* GetExtend() {
+  const EXTEND* GetExtend()const {
     return shm_hashrbtree_.GetExtend();
   }
 
@@ -179,11 +179,11 @@ class ShmHashset {
     return Iterator(shm_hashrbtree_.Begin());
   }
 
-  ConstIterator Begin() const {
+  ConstIterator Begin()const {
     return ConstIterator(shm_hashrbtree_.Begin());
   }
 
-  ConstIterator End() const {
+  ConstIterator End()const {
     return ConstIterator(shm_hashrbtree_.End());
   }
 
@@ -201,7 +201,7 @@ class ShmHashset {
   }
 
   T* Find(const T& data) {
-    off_t offset = shm_hashrbtree_.FindNode(data);
+    off_t offset = shm_hashrbtree_.Find(data);
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<T>();
     }
@@ -209,7 +209,7 @@ class ShmHashset {
   }
 
   const T* Find(const T& data) const {
-    off_t offset = shm_hashrbtree_.FindNode(data);
+    off_t offset = shm_hashrbtree_.Find(data);
     if (RbtreeFlag::OFFT_ERROR == offset) {
       return ShmBase::ShmFailed<T>();
     }
