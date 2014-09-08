@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../global/error.h
+string
+-
+
+../sock/sock_base.h
+unistd.h
+-
+sys/types.h
+-
+sys/socket.h
+-
+
+/home/ck/TimePass/src/sock/sock_base.cpp
+sock/sock_base.h
+/home/ck/TimePass/src/sock/sock/sock_base.h
+errno.h
+-
+arpa/inet.h
+-
+global/error.h
+/home/ck/TimePass/src/sock/global/error.h
+

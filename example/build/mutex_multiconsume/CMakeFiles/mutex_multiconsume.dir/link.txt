@@ -1,0 +1,1 @@
+/usr/bin/c++   -g  -lrt -pthread CMakeFiles/mutex_multiconsume.dir/main.cpp.o CMakeFiles/mutex_multiconsume.dir/my_produce_consume.cpp.o  -o mutex_multiconsume -rdynamic 

@@ -11,7 +11,6 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 
-#include "global/macro.h"
 #include "global/error.h"
 #include "sock/sock_base.h"
 #include "global/util.h"

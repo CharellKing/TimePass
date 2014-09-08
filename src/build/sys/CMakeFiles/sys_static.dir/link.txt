@@ -1,0 +1,2 @@
+/usr/bin/ar cr libTimepassSys.a  CMakeFiles/sys_static.dir/sys.cpp.o
+/usr/bin/ranlib libTimepassSys.a

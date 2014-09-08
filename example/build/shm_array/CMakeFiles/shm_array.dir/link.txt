@@ -1,0 +1,1 @@
+/usr/bin/c++   -g  -lrt -pthread CMakeFiles/shm_array.dir/main.cpp.o  -o shm_array -rdynamic 

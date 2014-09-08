@@ -1,0 +1,1 @@
+/usr/bin/c++   -g  -lrt -pthread CMakeFiles/st_echosvr.dir/main.cpp.o  -o st_echosvr -rdynamic 

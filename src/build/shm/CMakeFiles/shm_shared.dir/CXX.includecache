@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../global/errno.h
+
+../global/error.h
+string
+-
+
+/home/ck/TimePass/src/shm/shm_base.cpp
+shm_base.h
+/home/ck/TimePass/src/shm/shm_base.h
+stdio.h
+-
+errno.h
+-
+string.h
+-
+global/error.h
+/home/ck/TimePass/src/shm/global/error.h
+global/errno.h
+/home/ck/TimePass/src/shm/global/errno.h
+
+/home/ck/TimePass/src/shm/shm_base.h
+sys/stat.h
+-
+sys/mman.h
+-
+sys/types.h
+-
+fcntl.h
+-
+unistd.h
+-
+string
+-
+

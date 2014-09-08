@@ -1,0 +1,1 @@
+/usr/bin/c++   -g  -lrt -pthread CMakeFiles/daytimetcpcli.dir/main.cpp.o  -o daytimetcpcli -rdynamic 

@@ -1,0 +1,1 @@
+/usr/bin/c++   -g  -lrt -pthread CMakeFiles/shm_doublylist.dir/main.cpp.o  -o shm_doublylist -rdynamic 

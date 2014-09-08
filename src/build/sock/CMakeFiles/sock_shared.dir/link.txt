@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -g -lrt -pthread -shared -Wl,-soname,libTimepassSock.so -o libTimepassSock.so CMakeFiles/sock_shared.dir/sock_base.cpp.o  -L/usr/local/TimePass/lib 

@@ -1,0 +1,1 @@
+/usr/bin/c++   -g  -lrt -pthread CMakeFiles/daytimetcpsrv.dir/main.cpp.o  -o daytimetcpsrv -rdynamic 

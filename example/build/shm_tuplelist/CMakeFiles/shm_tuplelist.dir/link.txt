@@ -1,0 +1,1 @@
+/usr/bin/c++   -g  -lrt -pthread CMakeFiles/shm_tuplelist.dir/main.cpp.o  -o shm_tuplelist -rdynamic 

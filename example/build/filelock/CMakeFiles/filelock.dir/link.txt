@@ -1,0 +1,1 @@
+/usr/bin/c++   -g  -lrt -pthread CMakeFiles/filelock.dir/main.cpp.o  -o filelock -rdynamic 

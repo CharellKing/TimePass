@@ -1,0 +1,2 @@
+/usr/bin/ar cr libTimepassGlobal.a  CMakeFiles/global_static.dir/util.cpp.o CMakeFiles/global_static.dir/error.cpp.o
+/usr/bin/ranlib libTimepassGlobal.a

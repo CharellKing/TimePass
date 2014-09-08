@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ck/TimePass/example/daytimetcpcli/main.cpp
+stdio.h
+-
+stdlib.h
+-
+sys/socket.h
+-
+sys/types.h
+-
+netinet/in.h
+-
+global/error.h
+/home/ck/TimePass/example/daytimetcpcli/global/error.h
+sock/sock_base.h
+/home/ck/TimePass/example/daytimetcpcli/sock/sock_base.h
+global/util.h
+/home/ck/TimePass/example/daytimetcpcli/global/util.h
+

@@ -1,0 +1,1 @@
+/usr/bin/c++   -g  -lrt -pthread CMakeFiles/sem_multibuff.dir/main.cpp.o CMakeFiles/sem_multibuff.dir/my_produce_consume.cpp.o  -o sem_multibuff -rdynamic 

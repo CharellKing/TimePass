@@ -1,0 +1,1 @@
+/usr/bin/c++   -g  -lrt -pthread CMakeFiles/rwmutex.dir/main.cpp.o  -o rwmutex -rdynamic 
