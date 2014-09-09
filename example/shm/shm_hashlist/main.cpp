@@ -160,7 +160,7 @@ void Usage() {
 }
 
 int main(int argc, char** argv) {
-  int result = getopt(argc, argv, "eirdsf:c:");
+  int result = getopt(argc, argv, "beirdsf:c:");
   if (-1 == result) {
     Usage();
     return 0;

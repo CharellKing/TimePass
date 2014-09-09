@@ -389,7 +389,10 @@ class ShmHashlist {
 
         --p_bucket_[bucket].size;
         --p_head_->size;
+        break;
       }
+      prior_offset = cur_offset;
+      cur_offset = (p_data_ + cur_offset)->next;
     }
     return true;
   }
@@ -492,12 +495,12 @@ class ShmHashlist {
       while (bucket < p_head_->bucket_size && p_bucket_[bucket].front < 0) {
         ++bucket;
       }
-    }
 
-    if (bucket < p_head_->bucket_size) {
-      offset = p_bucket_[bucket].front;
-    } else {
-      bucket = -1;
+      if (bucket < p_head_->bucket_size) {
+        offset = p_bucket_[bucket].front;
+      } else {
+        bucket = -1;
+      }
     }
   }
 
