@@ -7,6 +7,8 @@
 #ifndef SRC_MODEL_MUTEX_PRODUCE_CONSUME_H_
 #define SRC_MODEL_MUTEX_PRODUCE_CONSUME_H_
 
+#include <stdio.h>
+
 #include <list>
 
 #include "lock/cond_mutex.h"
@@ -15,8 +17,7 @@ namespace TimePass {
 template<typename T>
 class MutexProduceConsume {
  public:
-  explicit MutexProduceConsume(size_t capacity):capacity_(capacity),
-                                                q_(capacity) {
+  explicit MutexProduceConsume(size_t capacity):capacity_(capacity) {
   }
 
   virtual ~MutexProduceConsume() {

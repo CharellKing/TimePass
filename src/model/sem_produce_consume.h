@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _LOCK_SEM_PRODUCE_CONSUME_H_
-#define _LOCK_SEM_PRODUCE_CONSUME_H_
+#ifndef SRC_MODEL_SEM_PRODUCE_CONSUME_H_
+#define SRC_MODEL_SEM_PRODUCE_CONSUME_H_
 
 #include"shm/shm_queue.h"
 #include"lock/sem_mutex.h"
@@ -15,9 +15,8 @@ namespace TimePass {
 template <typename T, typename Param>
 class SemProduceConsume {
  public:
-    SemProduceConsume(const char* prefix_name):
-                         p_mutex_(NULL), p_empty_(NULL),
-                         p_stored_(NULL), p_queue_(NULL) {
+    SemProduceConsume(const char* prefix_name)
+        : p_mutex_(NULL), p_empty_(NULL),p_stored_(NULL), p_queue_(NULL) {
         char name[MAX_FILE];
         snprintf(name, sizeof(name) - 1, "%s_mutex", prefix_name);
         p_mutex_ = new SemMutex(name);
@@ -280,4 +279,4 @@ class SemProduceConsume {
 }; /*namespace TimePass*/
 
 
-#endif /* _LOCK_SEM_PRODUCE_CONSUME_H_ */
+#endif  // SRC_MODEL_SEM_PRODUCE_CONSUME_H_
