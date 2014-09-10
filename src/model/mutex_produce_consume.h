@@ -9,7 +9,7 @@
 
 #include <stdio.h>
 
-#include <list>
+#include <queue>
 
 #include "lock/cond_mutex.h"
 
@@ -17,7 +17,8 @@ namespace TimePass {
 template<typename T>
 class MutexProduceConsume {
  public:
-  explicit MutexProduceConsume(size_t capacity):capacity_(capacity) {
+  explicit MutexProduceConsume(size_t capacity)
+      :capacity_(capacity), produce_is_wait_(false), consume_is_wait_(false) {
   }
 
   virtual ~MutexProduceConsume() {
@@ -35,6 +36,10 @@ class MutexProduceConsume {
   }
 
   bool Destroy() {
+    capacity_ = 0;
+    produce_is_wait_ = false;
+    consume_is_wait_ = false;
+
     if (false == produce_mutex_.Destroy()) {
       return false;
     }
@@ -48,7 +53,7 @@ class MutexProduceConsume {
     return produce_mutex_.Lock();
   }
 
-  bool ProduceUnLock() {
+  bool ProduceUnlock() {
     return produce_mutex_.Unlock();
   }
 
@@ -61,28 +66,44 @@ class MutexProduceConsume {
   }
 
   bool ProduceSignal() {
+    consume_is_wait_ = false;
     return consume_mutex_.Signal();
   }
 
-  bool ProduceBroadCast() {
-    return consume_mutex_.BroadCast();
+  bool ProduceWait() {
+    produce_is_wait_ = true;
+    return produce_mutex_.Wait();
+  }
+
+  bool ConsumeSignal() {
+    produce_is_wait_ = false;
+    return produce_mutex_.Signal();
   }
 
   bool ConsumeWait() {
+    consume_is_wait_ = true;
     return consume_mutex_.Wait();
+  }
+
+  bool ProduceIsWait() {
+    return true == produce_is_wait_;
+  }
+
+  bool ConsumeIsWait() {
+    return true == consume_is_wait_;
   }
 
   bool Push(const T& a) {
     if (q_.size() >= capacity_) {
       return false;
     }
-    q_.push_back(a);
+    q_.push(a);
     return true;
   }
 
   void Pop() {
     if (false == q_.empty()) {
-      q_.pop_front();
+      q_.pop();
     }
   }
 
@@ -98,6 +119,10 @@ class MutexProduceConsume {
     return q_.size();
   }
 
+  bool IsFull() const {
+    return q_.size() >= capacity_;
+  }
+
   bool IsEmpty() const {
     return q_.empty();
   }
@@ -110,13 +135,13 @@ class MutexProduceConsume {
 
   virtual bool ConsumeComplete() = 0;
 
-  virtual bool Condition() = 0;
-
  private:
-  Mutex produce_mutex_;
+  CondMutex produce_mutex_;
   CondMutex consume_mutex_;
   size_t capacity_;
-  std::list<T> q_;
+  bool produce_is_wait_;
+  bool consume_is_wait_;
+  std::queue<T> q_;
 };
 };  // namespace TimePass
 

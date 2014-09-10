@@ -11,60 +11,59 @@
 
 namespace TimePass {
 namespace MutexThreadFuncLoader {
-template<typename T>
-void* MultiProduce(void* arg) {
+template <typename T>
+void* Produce(void* arg) {
   MutexProduceConsume<T>* p_procon = static_cast<MutexProduceConsume<T>*>(arg);
   while (false == p_procon->ProduceComplete()) {
     p_procon->ProduceLock();
+
     if (p_procon->ProduceComplete()) {
-      p_procon->ProduceUnLock();
+      p_procon->ProduceUnlock();
       return NULL;
     }
+
+    while (p_procon->IsFull()) {
+      p_procon->ProduceWait();
+    }
+
     p_procon->Produce();
-    p_procon->ProduceUnLock();
+    p_procon->ProduceUnlock();
     p_procon->ConsumeLock();
-    if (p_procon->Condition()) {
+    if (p_procon->ConsumeIsWait()) {
       p_procon->ProduceSignal();
     }
     p_procon->ConsumeUnlock();
   }
-
-  // when finish producing, maybe there are many consumer waiting
-  p_procon->ProduceBroadCast();
   return NULL;
 }
+
 
 template<typename T>
 void* Consume(void* arg) {
   MutexProduceConsume<T>* p_procon = static_cast<MutexProduceConsume<T>*>(arg);
   while (false == p_procon->ConsumeComplete()) {
     p_procon->ConsumeLock();
-    while (!p_procon->Condition()) {
+    if (p_procon->ConsumeComplete()) {
+      p_procon->ConsumeUnlock();
+      return NULL;
+    }
+
+    while (p_procon->IsEmpty()) {
       p_procon->ConsumeWait();
     }
+
     p_procon->Consume();
     p_procon->ConsumeUnlock();
+    p_procon->ProduceLock();
+    if (p_procon->ProduceIsWait()) {
+      p_procon->ConsumeSignal();
+    }
+    p_procon->ProduceUnlock();
   }
   return NULL;
 }
 
-template<typename T>
-void* MultiConsume(void* arg) {
-  MutexProduceConsume<T>* p_procon = static_cast<MutexProduceConsume<T>*>(arg);
-  while (false == p_procon->ConsumeComplete()) {
-    p_procon->ConsumeLock();
-    while (false == p_procon->ProduceComplete() && !p_procon->Condition()) {
-      p_procon->ConsumeWait();
-    }
-    if (true == p_procon->ConsumeComplete()) {
-      p_procon->ConsumeUnlock();
-      return NULL;
-    }
-    p_procon->Consume();
-    p_procon->ConsumeUnlock();
-  }
-  return NULL;
-}
+
 };  // namespace MutexThreadFuncLoader
 };  // namespace TimePass
 
