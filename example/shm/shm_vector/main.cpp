@@ -46,7 +46,7 @@ off_t Convert(const char* digit) {
 }
 
 void Create(off_t len) {
-  TimePass::ShmArray<int> numbers(SHM_FILE);
+  TimePass::ShmVector<int> numbers(SHM_FILE);
   if (false == numbers.Create(len)) {
     printf("errmsg=%d\n", TimePass::Error::GetErrno());
     return;

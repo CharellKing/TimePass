@@ -13,7 +13,7 @@
 #include "global/error.h"
 
 const int flag = O_CREAT | O_EXCL | O_RDWR;
-const int mode = 0x0600;
+const int mode = 0644;
 
 TimePass::Sem::Sem(const char* name):p_sem_(SEM_FAILED) {
   strncpy(name_, name, sizeof(name_) - 1);

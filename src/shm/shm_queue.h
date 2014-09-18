@@ -138,7 +138,15 @@ class ShmQueue {
     return true;
   }
 
-  const EXTEND* GetExtend() {
+  const EXTEND* GetExtend()const {
+    if (NULL == p_head_) {
+      Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
+      return ShmBase::ShmFailed<EXTEND>();
+    }
+    return p_ext_;
+  }
+
+  EXTEND* GetExtend() {
     if (NULL == p_head_) {
       Error::SetErrno(ErrorNo::SHM_NOT_OPEN);
       return ShmBase::ShmFailed<EXTEND>();
