@@ -11,7 +11,9 @@
 #include"model/mutex_thread_func_loader.h"
 #include"global/error.h"
 
-#define THREAD_NUM 2
+enum {
+  THREAD_NUM = 2,
+};
 
 int main() {
   pthread_t produce_thread, consume_thread;
@@ -37,9 +39,7 @@ int main() {
 
 
   pthread_join(produce_thread, NULL);
-
   pthread_join(consume_thread, NULL);
-
   my_procon.Destroy();
   return 0;
 }

@@ -15,7 +15,7 @@
 
 
 enum {
-  max_thread = 100,
+  MAX_THREAD = 100,
 };
 
 const char* prefix_name = "sem_consume_";
@@ -41,7 +41,7 @@ bool Produce(int thread_num) {
     return false;
   }
 
-  pthread_t produce_thread[max_thread];
+  pthread_t produce_thread[MAX_THREAD];
   pthread_setconcurrency(thread_num);
 
   for (int i = 0; i < thread_num; ++i) {
@@ -66,7 +66,7 @@ bool Consume(int thread_num) {
     return false;
   }
 
-  pthread_t consume_thread[max_thread];
+  pthread_t consume_thread[MAX_THREAD];
   pthread_setconcurrency(thread_num);
 
   for (int i = 0; i < thread_num; ++i) {
