@@ -104,7 +104,37 @@ class SemMultiBuffProduceConsume {
 
   bool Destroy() {
     bool ret = true;
+    bool ret = true;
+    char name[MAX_FILE_NAME] = {0};
 
+    if (NULL == p_array_) {
+      snprintf(name, sizeof(name) - 1, "%s_array", prefix_name_);
+      p_array_ = new ShmArray<int, Param>(name);
+    }
+
+    if (NULL == p_buffs_) {
+      p_buffs_ = new ShmVector<T>*[buff_amount];
+      for (off_t i = 0; i < buff_amount; ++i) {
+        snprintf(name, sizeof(name) - 1, "%s_buff%02ld", prefix_name_, i);
+        p_buffs_[i] = new ShmVector<T>(name);
+      }
+    }
+
+    if (NULL == p_mutex_) {
+      snprintf(name, sizeof(name) - 1, "%s_mutex", prefix_name_);
+      p_mutex_ = new SemMutex(name);
+    }
+
+    if (NULL == p_empty_) {
+      snprintf(name, sizeof(name) - 1, "%s_empty", prefix_name_);
+      p_empty_ = new Sem(name);
+    }
+
+    if (NULL == p_stored_) {
+      snprintf(name, sizeof(name) - 1, "%s_stored", prefix_name_);
+      p_stored_ = new Sem(name);
+    }
+    
     if (false == p_array_->Destroy()) {
       ret = false;
     }
@@ -306,7 +336,6 @@ class SemMultiBuffProduceConsume {
   virtual bool ConsumeComplete() = 0;
 
  private:
-
   char     prefix_name_[MAX_FILE_NAME]; /*buff and sem's prefix name*/
   ShmArray<int, Param>*       p_array_; /*array for param and flags*/
   ShmVector<T>**              p_buffs_; /*buff array*/
