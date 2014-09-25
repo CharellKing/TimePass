@@ -5,6 +5,7 @@ then
 	exit 1
 fi
 
+
 root=`pwd`
 opt="/usr/local/TimePass"
 if [ $# -eq 1 ]
